@@ -562,6 +562,51 @@
     #allBoard .patch-card { margin-bottom: 12px; }
     #allPatchGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     @media (max-width: 800px) { #allPatchGrid { grid-template-columns: 1fr; } }
+
+    /* ─── JARVIS JOOG ─── */
+    .joog-panel { display:flex; flex-direction:column; }
+    .joog-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px 16px;
+      background:linear-gradient(90deg,#0a0018,#1a0035);
+      border-bottom:2px solid var(--pink);
+    }
+    .joog-header-title { color:var(--pink); font-size:15px; letter-spacing:5px; text-shadow:0 0 12px var(--pink); }
+    .joog-header-sub { color:var(--text-muted); font-size:9px; letter-spacing:1.5px; }
+    .joog-body { display:flex; overflow-x:auto; background:#060010; border-bottom:1px solid var(--border); }
+    .joog-sec { border-right:1px solid var(--border); padding:10px 12px; flex-shrink:0; }
+    .joog-sec:last-child { border-right:none; }
+    .joog-sec-title {
+      font-size:8px; letter-spacing:2px; text-transform:uppercase;
+      color:var(--pink); text-align:center; margin-bottom:8px;
+      border-bottom:1px solid var(--border); padding-bottom:5px;
+    }
+    .joog-vco-row { display:flex; gap:10px; }
+    .joog-vco { display:flex; flex-direction:column; align-items:center; gap:4px; min-width:88px; }
+    .joog-vco-name { font-size:9px; letter-spacing:1px; color:var(--cyan); margin-bottom:2px; }
+    .joog-wave-row,.joog-range-row { display:flex; gap:2px; flex-wrap:wrap; justify-content:center; }
+    .joog-wb,.joog-rb {
+      background:var(--surface); border:1px solid var(--border); color:var(--text-muted);
+      padding:2px 4px; font-size:9px; border-radius:2px; cursor:pointer; font-family:inherit;
+    }
+    .joog-wb.active { background:var(--pink); color:#000; border-color:var(--pink); }
+    .joog-rb.active { background:var(--cyan); color:#000; border-color:var(--cyan); }
+    .joog-switch { display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text-muted);cursor:pointer;margin-top:3px; }
+    .joog-switch input { accent-color:var(--green); }
+    .joog-lfo-targets { display:flex; gap:2px; margin-top:4px; }
+    .joog-ltb {
+      background:var(--surface); border:1px solid var(--border); color:var(--text-muted);
+      padding:2px 5px; font-size:9px; border-radius:2px; cursor:pointer; font-family:inherit;
+    }
+    .joog-ltb.active { background:var(--yellow); color:#000; border-color:var(--yellow); }
+    .joog-keys-wrap {
+      display:flex; flex-direction:column; align-items:center;
+      padding:10px 16px 14px; gap:8px; background:#040009;
+    }
+    .joog-kb-controls { display:flex; align-items:center; gap:10px; font-size:11px; flex-wrap:wrap; }
+    #joog-piano { position:relative; display:flex; height:90px; user-select:none; }
+    #joog-piano .white-key { width:28px; }
+    #joog-piano .black-key { width:17px; height:56px; }
   </style>
 </head>
 <body>
@@ -573,6 +618,7 @@
     <button class="tab-btn" data-tab="tuner">Tuner</button>
     <button class="tab-btn" data-tab="tone">Tone Gen</button>
     <button class="tab-btn" data-tab="keys">Keys</button>
+    <button class="tab-btn" data-tab="joog">Joog</button>
     <button class="tab-btn" data-tab="all">All</button>
   </div>
 </header>
@@ -744,6 +790,8 @@
   </div><!-- /panel-keys -->
 
   <!-- ═══ ALL ═══ -->
+  <div class="panel" id="panel-joog"></div><!-- /panel-joog -->
+
   <div class="panel" id="panel-all">
     <div id="allBoard"></div>
   </div><!-- /panel-all -->
@@ -1736,28 +1784,41 @@ function qwertyNoteOn(key) {
   const semi = QWERTY_SEMIS[key];
   if (semi === undefined || heldQwerty.has(key)) return;
   heldQwerty.add(key);
-  const midi = (kbBaseOctave + 1) * 12 + semi;
-  const freq = midiToFreqKb(midi);
   const noteKey = `kb_${key}`;
-  document.querySelector(`[data-midi="${midi}"]`)?.classList.add('active');
-  startVoice(getKbTone(), freq, noteKey);
-  looperNoteOn(freq, noteKey);
+  if (joogTabActive) {
+    const midi = (joogOct + 1) * 12 + semi;
+    const freq = midiToFreqKb(midi);
+    document.querySelector(`#joog-piano [data-midi="${midi}"]`)?.classList.add('active');
+    joogNoteOn(freq, noteKey);
+  } else {
+    const midi = (kbBaseOctave + 1) * 12 + semi;
+    const freq = midiToFreqKb(midi);
+    document.querySelector(`#piano [data-midi="${midi}"]`)?.classList.add('active');
+    startVoice(getKbTone(), freq, noteKey);
+    looperNoteOn(freq, noteKey);
+  }
 }
 
 function qwertyNoteOff(key) {
   const semi = QWERTY_SEMIS[key];
   if (semi === undefined) return;
   heldQwerty.delete(key);
-  const midi = (kbBaseOctave + 1) * 12 + semi;
   const noteKey = `kb_${key}`;
-  document.querySelector(`[data-midi="${midi}"]`)?.classList.remove('active');
-  releaseVoice(noteKey);
-  looperNoteOff(noteKey);
+  if (joogTabActive) {
+    const midi = (joogOct + 1) * 12 + semi;
+    document.querySelector(`#joog-piano [data-midi="${midi}"]`)?.classList.remove('active');
+    joogNoteOff(noteKey);
+  } else {
+    const midi = (kbBaseOctave + 1) * 12 + semi;
+    document.querySelector(`#piano [data-midi="${midi}"]`)?.classList.remove('active');
+    releaseVoice(noteKey);
+    looperNoteOff(noteKey);
+  }
 }
 
 function initQWERTY() {
   window.addEventListener('keydown', e => {
-    if (!kbTabActive) return;
+    if (!kbTabActive && !joogTabActive) return;
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.repeat) return;
     qwertyNoteOn(e.key.toLowerCase());
   });
@@ -1779,13 +1840,23 @@ function initMIDI() {
           const freq = midiToFreqKb(note);
           const noteKey = `midi_${note}`;
           if (type === 0x90 && vel > 0) {
-            startVoice(getKbTone(), freq, noteKey);
-            looperNoteOn(freq, noteKey);
-            document.querySelector(`[data-midi="${note}"]`)?.classList.add('active');
+            if (joogTabActive) {
+              joogNoteOn(freq, noteKey);
+              document.querySelector(`#joog-piano [data-midi="${note}"]`)?.classList.add('active');
+            } else {
+              startVoice(getKbTone(), freq, noteKey);
+              looperNoteOn(freq, noteKey);
+              document.querySelector(`#piano [data-midi="${note}"]`)?.classList.add('active');
+            }
           } else if (type === 0x80 || (type === 0x90 && vel === 0)) {
-            releaseVoice(noteKey);
-            looperNoteOff(noteKey);
-            document.querySelector(`[data-midi="${note}"]`)?.classList.remove('active');
+            if (joogTabActive) {
+              joogNoteOff(noteKey);
+              document.querySelector(`#joog-piano [data-midi="${note}"]`)?.classList.remove('active');
+            } else {
+              releaseVoice(noteKey);
+              looperNoteOff(noteKey);
+              document.querySelector(`#piano [data-midi="${note}"]`)?.classList.remove('active');
+            }
           }
         };
       });
@@ -2009,12 +2080,435 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
     if(tab!=='tuner') stopAllTones();
     if(tab!=='tone' && tab!=='all') stopAllPatches();
+    if(tab!=='joog') joogStop();
     restorePatchCards();
     if(tab==='all') buildAllBoard();
     kbTabActive = (tab==='keys');
+    joogTabActive = (tab==='joog');
     if(tab==='keys') setTimeout(drawLoopViz,50);
   });
 });
+
+// ═════════════════════════════════════════
+// JARVIS JOOG — Moog-inspired Monosynth
+// ═════════════════════════════════════════
+
+const joogP = {
+  v1Wave:'sawtooth', v1Range:0, v1Tune:0, v1Fine:0,
+  v2Wave:'sawtooth', v2Range:0, v2Tune:-7, v2Fine:0,
+  v3Wave:'triangle', v3Range:0, v3Tune:0, v3Fine:0, v3Lfo:false,
+  mix1:100, mix2:50, mix3:0, mixNoise:0,
+  cutoff:3000, emphasis:0, contour:50, keyFollow:50,
+  fAtk:10, fDcy:200, fSus:50, fRel:300,
+  aAtk:5,  aDcy:100, aSus:80, aRel:300,
+  glide:0, joogVol:80,
+  lfoRate:5, lfoDepth:20, lfoTarget:'pitch',
+};
+
+let joogVoice = null;
+let joogTabActive = false;
+let joogLastFreq = null;
+let joogActiveKey = null;
+let joogOct = 3;
+
+function joogVcoFreq(baseFreq, rangeOcts, tuneSemis, fineCents){
+  return baseFreq * Math.pow(2, rangeOcts + tuneSemis/12 + fineCents/1200);
+}
+function joogCutoffForNote(freq){
+  const kf = joogP.keyFollow/100;
+  return Math.max(40, Math.min(18000, joogP.cutoff * Math.pow(freq/440, kf)));
+}
+
+function joogBuildVoice(freq){
+  const ctx=getCtx(), ana=getMasterAnalyser();
+  const v={};
+  v.mix=ctx.createGain();
+
+  // VCO 1
+  v.vco1=ctx.createOscillator(); v.vco1.type=joogP.v1Wave;
+  v.vco1.frequency.value=joogVcoFreq(freq,joogP.v1Range,joogP.v1Tune,joogP.v1Fine);
+  v.g1=ctx.createGain(); v.g1.gain.value=joogP.mix1/100;
+  v.vco1.connect(v.g1); v.g1.connect(v.mix);
+
+  // VCO 2
+  v.vco2=ctx.createOscillator(); v.vco2.type=joogP.v2Wave;
+  v.vco2.frequency.value=joogVcoFreq(freq,joogP.v2Range,joogP.v2Tune,joogP.v2Fine);
+  v.g2=ctx.createGain(); v.g2.gain.value=joogP.mix2/100;
+  v.vco2.connect(v.g2); v.g2.connect(v.mix);
+
+  // VCO 3 or LFO
+  if(joogP.v3Lfo){
+    v.lfo=ctx.createOscillator(); v.lfo.type=joogP.v3Wave;
+    v.lfo.frequency.value=joogP.lfoRate;
+    v.lfoGain=ctx.createGain();
+    v.lfo.connect(v.lfoGain);
+  } else {
+    v.vco3=ctx.createOscillator(); v.vco3.type=joogP.v3Wave;
+    v.vco3.frequency.value=joogVcoFreq(freq,joogP.v3Range,joogP.v3Tune,joogP.v3Fine);
+    v.g3=ctx.createGain(); v.g3.gain.value=joogP.mix3/100;
+    v.vco3.connect(v.g3); v.g3.connect(v.mix);
+  }
+
+  // Noise
+  if(joogP.mixNoise>0){
+    const len=ctx.sampleRate*2,buf=ctx.createBuffer(1,len,ctx.sampleRate),d=buf.getChannelData(0);
+    for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+    v.noise=ctx.createBufferSource(); v.noise.buffer=buf; v.noise.loop=true;
+    v.gnoise=ctx.createGain(); v.gnoise.gain.value=joogP.mixNoise/100;
+    v.noise.connect(v.gnoise); v.gnoise.connect(v.mix);
+  }
+
+  // Moog Ladder Filter — two 2-pole lowpass in series = 24 dB/oct
+  v.f1=ctx.createBiquadFilter(); v.f1.type='lowpass';
+  v.f2=ctx.createBiquadFilter(); v.f2.type='lowpass';
+  const cut=joogCutoffForNote(freq);
+  v.f1.frequency.value=cut; v.f2.frequency.value=cut;
+  const q=Math.max(0.5,joogP.emphasis*0.16);
+  v.f1.Q.value=q; v.f2.Q.value=q*0.75;
+  v.mix.connect(v.f1); v.f1.connect(v.f2);
+
+  // LFO routing
+  if(v.lfoGain){
+    if(joogP.lfoTarget==='pitch'){
+      v.lfoGain.gain.value=joogP.lfoDepth*2;
+      v.lfoGain.connect(v.vco1.detune); v.lfoGain.connect(v.vco2.detune);
+    } else if(joogP.lfoTarget==='filter'){
+      v.lfoFiltGain=ctx.createGain(); v.lfoFiltGain.gain.value=joogP.lfoDepth*60;
+      v.lfoGain.gain.value=1;
+      v.lfoGain.connect(v.lfoFiltGain);
+      v.lfoFiltGain.connect(v.f1.frequency); v.lfoFiltGain.connect(v.f2.frequency);
+    } else {
+      v.lfoGain.gain.value=joogP.lfoDepth*0.006;
+      v.lfoGain.connect(v.ampEnv); // wired after ampEnv created below — see patch below
+    }
+  }
+
+  // Amp envelope
+  v.ampEnv=ctx.createGain(); v.ampEnv.gain.value=0;
+  v.f2.connect(v.ampEnv);
+
+  // Amp LFO (tremolo) — connect after ampEnv exists
+  if(v.lfoGain && joogP.lfoTarget==='amp'){
+    try{v.lfoGain.disconnect();}catch(_){}
+    v.lfoGain.gain.value=joogP.lfoDepth*0.006;
+    v.lfoGain.connect(v.ampEnv.gain);
+  }
+
+  // Master volume
+  v.vol=ctx.createGain(); v.vol.gain.value=joogP.joogVol/100;
+  v.ampEnv.connect(v.vol); v.vol.connect(ana);
+
+  return v;
+}
+
+function joogTriggerFilterEnv(v, freq, ctx, legato){
+  const now=ctx.currentTime;
+  const baseCutoff=joogCutoffForNote(freq);
+  const peakCutoff=Math.min(18000, baseCutoff+(joogP.contour/100)*(18000-baseCutoff));
+  const susCutoff=baseCutoff+(joogP.fSus/100)*(peakCutoff-baseCutoff);
+  const fA=Math.max(0.001,joogP.fAtk/1000), fD=Math.max(0.001,joogP.fDcy/1000);
+  [v.f1.frequency,v.f2.frequency].forEach(p=>{
+    p.cancelScheduledValues(now);
+    p.setValueAtTime(legato?p.value:baseCutoff, now);
+    p.linearRampToValueAtTime(peakCutoff, now+fA);
+    p.linearRampToValueAtTime(susCutoff, now+fA+fD);
+  });
+}
+
+function joogStart(freq){
+  joogStop();
+  const ctx=getCtx(), v=joogBuildVoice(freq);
+  [v.vco1,v.vco2,v.vco3,v.noise,v.lfo].forEach(n=>{if(n)try{n.start();}catch(_){}});
+
+  // Amp envelope
+  const now=ctx.currentTime;
+  const aA=Math.max(0.001,joogP.aAtk/1000), aD=Math.max(0.001,joogP.aDcy/1000);
+  v.ampEnv.gain.setValueAtTime(0,now);
+  v.ampEnv.gain.linearRampToValueAtTime(1,now+aA);
+  v.ampEnv.gain.linearRampToValueAtTime(joogP.aSus/100,now+aA+aD);
+
+  joogTriggerFilterEnv(v,freq,ctx,false);
+  joogVoice=v; joogLastFreq=freq;
+}
+
+function joogRelease(){
+  if(!joogVoice) return;
+  const v=joogVoice, ctx=getCtx(), now=ctx.currentTime;
+  const aR=Math.max(0.01,joogP.aRel/1000), fR=Math.max(0.01,joogP.fRel/1000);
+  v.ampEnv.gain.cancelScheduledValues(now);
+  v.ampEnv.gain.setValueAtTime(v.ampEnv.gain.value,now);
+  v.ampEnv.gain.linearRampToValueAtTime(0,now+aR);
+  [v.f1.frequency,v.f2.frequency].forEach(p=>{
+    p.cancelScheduledValues(now); p.setValueAtTime(p.value,now);
+    p.linearRampToValueAtTime(joogCutoffForNote(joogLastFreq||440),now+fR);
+  });
+  joogVoice=null;
+  const snap=v;
+  setTimeout(()=>{
+    [snap.vco1,snap.vco2,snap.vco3,snap.noise,snap.lfo].forEach(n=>{if(n)try{n.stop();}catch(_){}});
+    try{snap.vol.disconnect();}catch(_){}
+  },(aR+0.15)*1000);
+}
+
+function joogStop(){
+  if(!joogVoice) return;
+  const v=joogVoice; joogVoice=null;
+  [v.vco1,v.vco2,v.vco3,v.noise,v.lfo].forEach(n=>{if(n)try{n.stop();}catch(_){}});
+  try{v.vol.disconnect();}catch(_){}
+}
+
+function joogNoteOn(freq, noteKey){
+  if(joogVoice && joogLastFreq && joogP.glide>0){
+    // Legato + glide
+    const ctx=getCtx(), gt=joogP.glide/1000, now=ctx.currentTime;
+    [[joogVoice.vco1,joogP.v1Range,joogP.v1Tune,joogP.v1Fine],
+     [joogVoice.vco2,joogP.v2Range,joogP.v2Tune,joogP.v2Fine],
+     [joogVoice.vco3,joogP.v3Range,joogP.v3Tune,joogP.v3Fine]].forEach(([osc,r,t,f])=>{
+      if(osc) osc.frequency.exponentialRampToValueAtTime(Math.max(1,joogVcoFreq(freq,r,t,f)),now+gt);
+    });
+    joogTriggerFilterEnv(joogVoice,freq,ctx,true);
+  } else {
+    joogStart(freq);
+  }
+  joogLastFreq=freq; joogActiveKey=noteKey;
+  const panel=document.getElementById('panel-joog');
+  if(panel){
+    const noteNames=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    const midi=Math.round(69+12*Math.log2(freq/440));
+    const el=panel.querySelector('#joogNoteDisplay');
+    if(el) el.textContent=noteNames[((midi%12)+12)%12]+(Math.floor(midi/12)-1);
+  }
+}
+function joogNoteOff(noteKey){
+  if(joogActiveKey===noteKey){
+    joogRelease(); joogActiveKey=null;
+    const el=document.getElementById('joogNoteDisplay');
+    if(el) el.textContent='—';
+  }
+}
+
+function joogLiveUpdate(param, val){
+  if(!joogVoice) return;
+  const v=joogVoice, ctx=getCtx(), now=ctx.currentTime;
+  switch(param){
+    case 'mix1': if(v.g1) v.g1.gain.value=val/100; break;
+    case 'mix2': if(v.g2) v.g2.gain.value=val/100; break;
+    case 'mix3': if(v.g3) v.g3.gain.value=val/100; break;
+    case 'joogVol': if(v.vol) v.vol.gain.value=val/100; break;
+    case 'emphasis': {
+      const q=Math.max(0.5,val*0.16);
+      if(v.f1) v.f1.Q.value=q; if(v.f2) v.f2.Q.value=q*0.75; break;
+    }
+    case 'cutoff': case 'keyFollow': {
+      const cut=joogCutoffForNote(joogLastFreq||440);
+      if(v.f1){v.f1.frequency.cancelScheduledValues(now);v.f1.frequency.setValueAtTime(cut,now);}
+      if(v.f2){v.f2.frequency.cancelScheduledValues(now);v.f2.frequency.setValueAtTime(cut,now);}
+      break;
+    }
+    case 'lfoRate': if(v.lfo) v.lfo.frequency.value=val; break;
+    case 'lfoDepth':
+      if(v.lfoGain){
+        if(joogP.lfoTarget==='pitch') v.lfoGain.gain.value=val*2;
+        else if(joogP.lfoTarget==='filter'&&v.lfoFiltGain) v.lfoFiltGain.gain.value=val*60;
+        else v.lfoGain.gain.value=val*0.006;
+      }
+      break;
+  }
+}
+
+const JOOG_KW=28, JOOG_SCALE=JOOG_KW/36;
+function buildJoogPiano(oct){
+  const piano=document.getElementById('joog-piano'); if(!piano) return;
+  piano.innerHTML='';
+  const NUM=2;
+  for(let o=0;o<NUM;o++){
+    const base=(oct+o+1)*12;
+    WHITE_SEMIS.forEach(semi=>{
+      const midi=base+semi, key=document.createElement('div');
+      key.className='white-key'; key.dataset.midi=midi; key.style.width=JOOG_KW+'px';
+      if(semi===0){const lbl=document.createElement('div');lbl.className='key-label';lbl.textContent=`C${oct+o}`;key.appendChild(lbl);}
+      addJoogKeyEvents(key,`jk_${midi}`,midiToFreqKb(midi)); piano.appendChild(key);
+    });
+  }
+  for(let o=0;o<NUM;o++){
+    const base=(oct+o+1)*12, octLeft=o*JOOG_KW*7;
+    BK_DEFS.forEach(({semi,left})=>{
+      const midi=base+semi, key=document.createElement('div');
+      key.className='black-key'; key.dataset.midi=midi; key.style.width='17px';
+      key.style.left=(octLeft+left*JOOG_SCALE)+'px';
+      addJoogKeyEvents(key,`jk_${midi}`,midiToFreqKb(midi)); piano.appendChild(key);
+    });
+  }
+}
+function addJoogKeyEvents(el,noteKey,freq){
+  const on=()=>{el.classList.add('active'); joogNoteOn(freq,noteKey);};
+  const off=()=>{el.classList.remove('active'); joogNoteOff(noteKey);};
+  el.addEventListener('mousedown',e=>{e.preventDefault();on();});
+  el.addEventListener('mouseenter',e=>{if(e.buttons===1)on();});
+  el.addEventListener('mouseup',off); el.addEventListener('mouseleave',off);
+  el.addEventListener('touchstart',e=>{e.preventDefault();on();},{passive:false});
+  el.addEventListener('touchend',off); el.addEventListener('touchcancel',off);
+}
+
+function initJoog(){
+  const panel=document.getElementById('panel-joog'); if(!panel) return;
+  const WAVES=[['Saw','sawtooth'],['Tri','triangle'],['Sqr','square'],['Sin','sine']];
+  const RLBLS=["Lo","32'","16'","8'","4'","2'"]; const RVALS=[-3,-2,-1,0,1,2];
+
+  function waveRowHTML(vco,def){
+    return `<div class="joog-wave-row" data-vco="${vco}">`+
+      WAVES.map(([l,w])=>`<button class="joog-wb${w===def?' active':''}" data-wave="${w}">${l}</button>`).join('')+`</div>`;
+  }
+  function rangeRowHTML(vco,def){
+    return `<div class="joog-range-row" data-vco="${vco}">`+
+      RLBLS.map((r,i)=>`<button class="joog-rb${RVALS[i]===def?' active':''}" data-range="${RVALS[i]}">${r}</button>`).join('')+`</div>`;
+  }
+
+  panel.innerHTML=`<div class="joog-panel">
+<div class="joog-header">
+  <span class="joog-header-title">JARVIS JOOG</span>
+  <span class="joog-header-sub">Moog-inspired monosynth · 3 VCOs · ladder filter · dual envelope · glide</span>
+</div>
+<div class="joog-body">
+  <div class="joog-sec">
+    <div class="joog-sec-title">Oscillators</div>
+    <div class="joog-vco-row">
+      <div class="joog-vco">
+        <div class="joog-vco-name">VCO 1</div>
+        ${waveRowHTML(1,'sawtooth')} ${rangeRowHTML(1,0)}
+        <div class="knob-row">${knobHTML('Tune','v1Tune',-12,12,0,'semi',false)}${knobHTML('Fine','v1Fine',-100,100,0,'cents',false)}</div>
+      </div>
+      <div class="joog-vco">
+        <div class="joog-vco-name">VCO 2</div>
+        ${waveRowHTML(2,'sawtooth')} ${rangeRowHTML(2,0)}
+        <div class="knob-row">${knobHTML('Tune','v2Tune',-12,12,-7,'semi',false)}${knobHTML('Fine','v2Fine',-100,100,0,'cents',false)}</div>
+      </div>
+      <div class="joog-vco">
+        <div class="joog-vco-name">VCO 3 / LFO</div>
+        ${waveRowHTML(3,'triangle')} ${rangeRowHTML(3,0)}
+        <div class="knob-row">${knobHTML('Tune','v3Tune',-12,12,0,'semi',false)}${knobHTML('Fine','v3Fine',-100,100,0,'cents',false)}</div>
+        <label class="joog-switch"><input type="checkbox" id="joogV3Lfo"> LFO Mode</label>
+        <div id="joogLfoCtrl" style="display:none;margin-top:4px">
+          <div class="knob-row">${knobHTML('Rate','lfoRate',0.1,20,5,'lfo',true)}${knobHTML('Depth','lfoDepth',0,100,20,'pct',false)}</div>
+          <div class="joog-lfo-targets">
+            <button class="joog-ltb active" data-ltarget="pitch">Pitch</button>
+            <button class="joog-ltb" data-ltarget="filter">Filt</button>
+            <button class="joog-ltb" data-ltarget="amp">Amp</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="joog-sec">
+    <div class="joog-sec-title">Mixer</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+      ${knobHTML('VCO 1','mix1',0,100,100,'pct',false)}
+      ${knobHTML('VCO 2','mix2',0,100,50,'pct',false)}
+      ${knobHTML('VCO 3','mix3',0,100,0,'pct',false)}
+      ${knobHTML('Noise','mixNoise',0,100,0,'pct',false)}
+    </div>
+  </div>
+  <div class="joog-sec">
+    <div class="joog-sec-title">Ladder Filter</div>
+    <div class="knob-row">
+      ${knobHTML('Cutoff','cutoff',40,18000,3000,'hz',true)}
+      ${knobHTML('Emph','emphasis',0,100,0,'pct',false)}
+      ${knobHTML('Contour','contour',0,100,50,'pct',false)}
+      ${knobHTML('Key Fol','keyFollow',0,100,50,'pct',false)}
+    </div>
+  </div>
+  <div class="joog-sec">
+    <div class="joog-sec-title">Filter Env</div>
+    <div class="knob-row">
+      ${knobHTML('Atk','fAtk',1,5000,10,'ms',true)}
+      ${knobHTML('Dcy','fDcy',1,5000,200,'ms',true)}
+      ${knobHTML('Sus','fSus',0,100,50,'pct',false)}
+      ${knobHTML('Rel','fRel',1,5000,300,'ms',true)}
+    </div>
+  </div>
+  <div class="joog-sec">
+    <div class="joog-sec-title">Amp Env</div>
+    <div class="knob-row">
+      ${knobHTML('Atk','aAtk',1,5000,5,'ms',true)}
+      ${knobHTML('Dcy','aDcy',1,5000,100,'ms',true)}
+      ${knobHTML('Sus','aSus',0,100,80,'pct',false)}
+      ${knobHTML('Rel','aRel',1,5000,300,'ms',true)}
+    </div>
+  </div>
+  <div class="joog-sec">
+    <div class="joog-sec-title">Output</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      ${knobHTML('Volume','joogVol',0,100,80,'pct',false)}
+    </div>
+  </div>
+</div>
+<div class="joog-keys-wrap">
+  <div class="joog-kb-controls">
+    <button class="btn sm" id="joogOctDown">▼</button>
+    <span style="color:var(--cyan);min-width:20px;text-align:center" id="joogOctDisplay">${joogOct}</span>
+    <button class="btn sm" id="joogOctUp">▲</button>
+    <span style="color:var(--text-muted);font-size:9px;letter-spacing:1px">OCT</span>
+    <span style="color:var(--border)">│</span>
+    <span style="color:var(--text-muted);font-size:10px">Glide</span>
+    <input type="range" id="joogGlideSlider" min="0" max="2000" value="0" style="width:90px;accent-color:var(--cyan)">
+    <span id="joogGlideVal" style="color:var(--cyan);font-size:11px;min-width:40px">0 ms</span>
+    <span style="color:var(--border)">│</span>
+    <span id="joogNoteDisplay" style="color:var(--pink);font-size:14px;font-weight:bold;min-width:40px;text-shadow:0 0 8px var(--pink)">—</span>
+  </div>
+  <div id="joog-piano"></div>
+</div>
+</div>`;
+
+  // Knobs
+  panel.querySelectorAll('.knob').forEach(el=>initKnob(el,v=>{joogP[el.dataset.param]=v; joogLiveUpdate(el.dataset.param,v);}));
+
+  // Wave buttons
+  panel.querySelectorAll('.joog-wave-row').forEach(row=>{
+    const vco=row.dataset.vco;
+    row.querySelectorAll('.joog-wb').forEach(btn=>btn.addEventListener('click',()=>{
+      row.querySelectorAll('.joog-wb').forEach(b=>b.classList.toggle('active',b===btn));
+      joogP[`v${vco}Wave`]=btn.dataset.wave;
+      if(joogVoice&&joogVoice[`vco${vco}`]) joogVoice[`vco${vco}`].type=btn.dataset.wave;
+    }));
+  });
+
+  // Range buttons
+  panel.querySelectorAll('.joog-range-row').forEach(row=>{
+    const vco=row.dataset.vco;
+    row.querySelectorAll('.joog-rb').forEach(btn=>btn.addEventListener('click',()=>{
+      row.querySelectorAll('.joog-rb').forEach(b=>b.classList.toggle('active',b===btn));
+      joogP[`v${vco}Range`]=+btn.dataset.range;
+    }));
+  });
+
+  // VCO 3 LFO toggle
+  panel.querySelector('#joogV3Lfo').addEventListener('change',e=>{
+    joogP.v3Lfo=e.target.checked;
+    panel.querySelector('#joogLfoCtrl').style.display=e.target.checked?'block':'none';
+  });
+
+  // LFO targets
+  panel.querySelectorAll('.joog-ltb').forEach(btn=>btn.addEventListener('click',()=>{
+    panel.querySelectorAll('.joog-ltb').forEach(b=>b.classList.toggle('active',b===btn));
+    joogP.lfoTarget=btn.dataset.ltarget;
+  }));
+
+  // Octave
+  panel.querySelector('#joogOctDown').addEventListener('click',()=>{
+    if(joogOct>0){joogOct--;panel.querySelector('#joogOctDisplay').textContent=joogOct;buildJoogPiano(joogOct);}
+  });
+  panel.querySelector('#joogOctUp').addEventListener('click',()=>{
+    if(joogOct<6){joogOct++;panel.querySelector('#joogOctDisplay').textContent=joogOct;buildJoogPiano(joogOct);}
+  });
+
+  // Glide slider
+  panel.querySelector('#joogGlideSlider').addEventListener('input',e=>{
+    joogP.glide=+e.target.value;
+    panel.querySelector('#joogGlideVal').textContent=e.target.value+' ms';
+  });
+
+  buildJoogPiano(joogOct);
+}
 
 // ═════════════════════════════════════════
 // INIT
@@ -2023,6 +2517,7 @@ initBeatMachine();
 initTuner();
 initToneGen();
 initKeyboard();
+initJoog();
 </script>
 </body>
 </html>
