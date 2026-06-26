@@ -150,6 +150,7 @@
     }
     select:focus, input[type="text"]:focus { outline: none; border-color: var(--pink); }
     input[type="range"] { accent-color: var(--pink); cursor: pointer; width: 120px; }
+    .select-sm { font-size: 11px; padding: 4px 8px; }
     .bpm-display {
       font-size: 18px; font-weight: 700; color: var(--pink);
       min-width: 44px; text-align: center; text-shadow: 0 0 10px var(--glow-pink);
@@ -440,6 +441,51 @@
       color: var(--purple); box-shadow: 0 0 6px var(--glow-purple);
     }
     .tone-card .synth-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+    /* ─── Piano keyboard ─── */
+    .piano-wrap {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 16px 24px; margin-bottom: 14px;
+      overflow-x: auto;
+    }
+    .piano { position: relative; height: 130px; width: max-content; user-select: none; }
+    .white-key {
+      width: 36px; height: 122px;
+      background: linear-gradient(to bottom, #ddd0ff 0%, #f8f4ff 100%);
+      border: 1px solid #3a0060; border-top: none; border-radius: 0 0 5px 5px;
+      cursor: pointer; display: inline-block; position: relative;
+      transition: background 0.04s, box-shadow 0.04s;
+    }
+    .white-key + .white-key { margin-left: -1px; }
+    .white-key:hover { background: linear-gradient(to bottom, #c8a0ff 0%, #e8d8ff 100%); }
+    .white-key.active { background: linear-gradient(to bottom, var(--cyan) 0%, #b0f4ff 100%); box-shadow: 0 4px 14px var(--glow-cyan); }
+    .key-label { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #8060a0; pointer-events: none; }
+    .black-key {
+      width: 24px; height: 78px;
+      background: linear-gradient(to bottom, #1e0038 0%, #08000f 100%);
+      border: 1px solid #000; border-top: none; border-radius: 0 0 4px 4px;
+      cursor: pointer; position: absolute; top: 0; z-index: 1;
+      transition: background 0.04s, box-shadow 0.04s;
+    }
+    .black-key:hover { background: linear-gradient(to bottom, var(--purple) 0%, #1a003a 100%); }
+    .black-key.active { background: linear-gradient(to bottom, var(--pink) 0%, #6a0020 100%); box-shadow: 0 4px 12px var(--glow-pink); }
+
+    /* ─── Looper ─── */
+    .looper-section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px;
+    }
+    .looper-section h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--green); margin-bottom: 12px; text-shadow: 0 0 8px rgba(5,255,161,0.4); }
+    .looper-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    #lpRecBtn.recording { background: rgba(255,34,68,0.2); border-color: #ff2244; color: #ff4466; animation: rec-pulse 1s ease-in-out infinite; }
+    @keyframes rec-pulse { 0%,100%{ box-shadow: 0 0 6px rgba(255,34,68,0.3); } 50%{ box-shadow: 0 0 20px rgba(255,34,68,0.7); } }
+    .loop-viz { background: #030008; border-radius: 4px; overflow: hidden; }
+    #loopCanvas { display: block; width: 100%; height: 72px; }
+    .kb-hint { font-size: 10px; color: var(--text-muted); margin-top: 10px; line-height: 1.8; }
+    .kb-hint kbd {
+      display: inline-block; background: var(--surface-up); border: 1px solid var(--border);
+      border-radius: 3px; padding: 0 4px; font: inherit; font-size: 9px; color: var(--purple);
+    }
   </style>
 </head>
 <body>
@@ -450,6 +496,7 @@
     <button class="tab-btn active" data-tab="beat">Beat Machine</button>
     <button class="tab-btn" data-tab="tuner">Tuner</button>
     <button class="tab-btn" data-tab="tone">Tone Gen</button>
+    <button class="tab-btn" data-tab="keys">Keys</button>
   </div>
 </header>
 
@@ -565,6 +612,59 @@
     </div>
 
   </div><!-- /panel-tone -->
+
+  <!-- ═══ KEYBOARD + LOOPER ═══ -->
+  <div class="panel" id="panel-keys">
+    <div class="ctrl-row keys-toolbar">
+      <div class="ctrl-group">
+        <span class="ctrl-label">Tone</span>
+        <select id="kbToneSelect" class="select-sm"></select>
+      </div>
+      <div class="separator"></div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">Keys Oct</span>
+        <button class="btn sm" id="kbOctDown">−</button>
+        <span id="kbOctDisplay" style="color:var(--cyan);min-width:22px;text-align:center">3</span>
+        <button class="btn sm" id="kbOctUp">+</button>
+      </div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">Velocity</span>
+        <input type="range" id="kbVelSlider" min="0" max="100" value="80" style="width:80px;accent-color:var(--pink)">
+        <span id="kbVelVal" style="color:var(--pink);min-width:28px">80</span>
+      </div>
+      <div class="ctrl-group" style="margin-left:auto">
+        <span id="midiStatus" style="color:var(--text-muted);font-size:10px"></span>
+      </div>
+    </div>
+
+    <div class="piano-wrap">
+      <div class="piano" id="piano"></div>
+    </div>
+
+    <div class="looper-section">
+      <h3>Looper</h3>
+      <div class="looper-controls">
+        <button class="btn danger" id="lpRecBtn">● Rec</button>
+        <button class="btn primary" id="lpPlayBtn">▶ Play</button>
+        <button class="btn" id="lpStopBtn">■ Stop</button>
+        <button class="btn" id="lpClearBtn">✕ Clear</button>
+        <div class="separator"></div>
+        <span class="ctrl-label">Bars</span>
+        <select id="lpBarsSelect" class="select-sm">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="4">4</option>
+          <option value="8">8</option>
+        </select>
+        <span id="lpStatus" style="color:var(--text-muted);font-size:11px;margin-left:8px"></span>
+      </div>
+      <div class="loop-viz"><canvas id="loopCanvas"></canvas></div>
+      <div class="kb-hint">
+        <kbd>Z</kbd>C &nbsp;<kbd>S</kbd>C# &nbsp;<kbd>X</kbd>D &nbsp;<kbd>D</kbd>D# &nbsp;<kbd>C</kbd>E &nbsp;<kbd>V</kbd>F &nbsp;<kbd>G</kbd>F# &nbsp;<kbd>B</kbd>G &nbsp;<kbd>H</kbd>G# &nbsp;<kbd>N</kbd>A &nbsp;<kbd>J</kbd>A# &nbsp;<kbd>M</kbd>B &nbsp;|&nbsp;
+        <kbd>Q–U</kbd> one octave up &nbsp;|&nbsp; Uses BPM from Beat Machine
+      </div>
+    </div>
+  </div><!-- /panel-keys -->
 
 </main>
 
@@ -1178,6 +1278,7 @@ function buildToneCard(ts, idx){
     const i=toneInstances.indexOf(ts); if(i>=0) toneInstances.splice(i,1);
     card.remove();
     document.querySelectorAll('.tone-card-name').forEach((el,j)=>el.textContent=`Tone ${j+1}`);
+    updateKbToneSelect();
   });
 
   card.querySelectorAll('.wave-btn').forEach(btn=>btn.addEventListener('click',()=>{
@@ -1238,12 +1339,445 @@ function buildToneCard(ts, idx){
 function addTone(){
   const ts=makeToneState(); toneInstances.push(ts);
   document.getElementById('tgTones').appendChild(buildToneCard(ts,toneInstances.length-1));
+  updateKbToneSelect();
 }
 
 function initToneGen(){
   document.getElementById('tgAddTone').addEventListener('click',addTone);
   addTone();
   setTimeout(clearScope,100);
+}
+
+// ═════════════════════════════════════════
+// KEYBOARD + LOOPER
+// ═════════════════════════════════════════
+
+// --- Polyphonic voice pool ---
+const activeVoices = new Map(); // noteKey → voice node bundle
+
+function startVoice(ts, freq, noteKey) {
+  if (activeVoices.has(noteKey)) releaseVoice(noteKey);
+  const ctx = getCtx(), ana = getMasterAnalyser();
+
+  const osc = ctx.createOscillator();
+  osc.type = ts.waveform;
+  osc.frequency.value = freq * Math.pow(2, ts.octave);
+  osc.detune.value = ts.detune;
+
+  const osc2 = ctx.createOscillator();
+  osc2.type = ts.osc2Wave;
+  osc2.frequency.value = freq * Math.pow(2, ts.octave + ts.osc2Octave);
+  osc2.detune.value = ts.osc2Detune;
+  const osc2Lv = ctx.createGain();
+  osc2Lv.gain.value = ts.osc2Level / 100;
+
+  const oscMix = ctx.createGain();
+  osc.connect(oscMix);
+  osc2.connect(osc2Lv); osc2Lv.connect(oscMix);
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = ts.filterType;
+  filter.frequency.value = ts.filterCutoff;
+  filter.Q.value = ts.filterQ;
+  oscMix.connect(filter);
+
+  const distNode = ctx.createWaveShaper();
+  distNode.curve = makeDistCurve(ts.distDrive, ts.distType);
+  distNode.oversample = '4x';
+  const distDry = ctx.createGain(); distDry.gain.value = 1 - ts.distMix / 100;
+  const distWet = ctx.createGain(); distWet.gain.value = ts.distMix / 100;
+  const distOut = ctx.createGain();
+  filter.connect(distDry); filter.connect(distNode);
+  distNode.connect(distWet);
+  distDry.connect(distOut); distWet.connect(distOut);
+
+  const envGain = ctx.createGain();
+  distOut.connect(envGain);
+  const volGain = ctx.createGain();
+  volGain.gain.value = ts.volume * (kbVelocity / 100);
+  envGain.connect(volGain); volGain.connect(ana);
+
+  const now = ctx.currentTime;
+  envGain.gain.setValueAtTime(0, now);
+  envGain.gain.linearRampToValueAtTime(1, now + Math.max(0.001, ts.attack));
+  envGain.gain.linearRampToValueAtTime(ts.sustain, now + ts.attack + Math.max(0.001, ts.decay));
+
+  osc.start(); osc2.start();
+  activeVoices.set(noteKey, { osc, osc2, envGain, volGain, ts });
+}
+
+function releaseVoice(noteKey) {
+  const voice = activeVoices.get(noteKey);
+  if (!voice) return;
+  activeVoices.delete(noteKey);
+  const ctx = getCtx(), now = ctx.currentTime, ts = voice.ts;
+  voice.envGain.gain.cancelScheduledValues(now);
+  voice.envGain.gain.setValueAtTime(voice.envGain.gain.value, now);
+  voice.envGain.gain.linearRampToValueAtTime(0, now + Math.max(0.01, ts.release));
+  setTimeout(() => {
+    try { voice.osc.stop(); voice.osc2.stop(); } catch (_) {}
+    try { voice.volGain.disconnect(); } catch (_) {}
+  }, (ts.release + 0.1) * 1000);
+}
+
+// --- Keyboard state ---
+let kbBaseOctave = 3;
+let kbVelocity = 80;
+let kbToneIndex = 0;
+let kbTabActive = false;
+
+function getKbTone() {
+  return toneInstances[kbToneIndex] || toneInstances[0] || makeToneState();
+}
+
+// --- Piano key layout ---
+// 3 octaves C3–B5, white key width 36px
+const WK_W = 36;
+const NUM_KB_OCTS = 3;
+const KB_START_OCT = 3; // C3 = MIDI 48
+// Black key positions within one octave (left offset from octave start, semitone)
+const BK_DEFS = [
+  {semi:1,  left: WK_W * 1 - 12},  // C#
+  {semi:3,  left: WK_W * 2 - 12},  // D#
+  {semi:6,  left: WK_W * 4 - 12},  // F#
+  {semi:8,  left: WK_W * 5 - 12},  // G#
+  {semi:10, left: WK_W * 6 - 12},  // A#
+];
+const WHITE_SEMIS = [0, 2, 4, 5, 7, 9, 11]; // C D E F G A B
+
+function midiToFreqKb(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+
+function addKeyEvents(el, noteKey, freq) {
+  const on = () => {
+    el.classList.add('active');
+    startVoice(getKbTone(), freq, noteKey);
+    looperNoteOn(freq, noteKey);
+  };
+  const off = () => {
+    el.classList.remove('active');
+    releaseVoice(noteKey);
+    looperNoteOff(noteKey);
+  };
+  el.addEventListener('mousedown',  e => { e.preventDefault(); on(); });
+  el.addEventListener('mouseenter', e => { if (e.buttons === 1) on(); });
+  el.addEventListener('mouseup',    off);
+  el.addEventListener('mouseleave', off);
+  el.addEventListener('touchstart', e => { e.preventDefault(); on(); }, { passive: false });
+  el.addEventListener('touchend',   off);
+  el.addEventListener('touchcancel',off);
+}
+
+function buildPiano() {
+  const piano = document.getElementById('piano');
+  piano.innerHTML = '';
+  // White keys first (flex row)
+  for (let oct = 0; oct < NUM_KB_OCTS; oct++) {
+    const base = (KB_START_OCT + oct + 1) * 12; // C3=MIDI48: (3+1)*12=48
+    WHITE_SEMIS.forEach((semi, wi) => {
+      const midi = base + semi;
+      const key = document.createElement('div');
+      key.className = 'white-key';
+      key.dataset.midi = midi;
+      if (semi === 0) {
+        const lbl = document.createElement('div');
+        lbl.className = 'key-label';
+        lbl.textContent = `C${KB_START_OCT + oct}`;
+        key.appendChild(lbl);
+      }
+      addKeyEvents(key, `wk${midi}`, midiToFreqKb(midi));
+      piano.appendChild(key);
+    });
+  }
+  // Black keys (absolute positioned)
+  for (let oct = 0; oct < NUM_KB_OCTS; oct++) {
+    const base = (KB_START_OCT + oct + 1) * 12;
+    const octLeft = oct * WK_W * 7;
+    BK_DEFS.forEach(({ semi, left }) => {
+      const midi = base + semi;
+      const key = document.createElement('div');
+      key.className = 'black-key';
+      key.dataset.midi = midi;
+      key.style.left = (octLeft + left) + 'px';
+      addKeyEvents(key, `bk${midi}`, midiToFreqKb(midi));
+      piano.appendChild(key);
+    });
+  }
+}
+
+// --- QWERTY keyboard mapping ---
+// Lower row: Z=C, S=C#, X=D, D=D#, C=E, V=F, G=F#, B=G, H=G#, N=A, J=A#, M=B
+// Upper row: Q=C+1, 2=C#+1, W=D+1, 3=D#+1, E=E+1, R=F+1, 5=F#+1, T=G+1, 6=G#+1, Y=A+1, 7=A#+1, U=B+1
+const QWERTY_SEMIS = {
+  'z':0,'s':1,'x':2,'d':3,'c':4,'v':5,'g':6,'b':7,'h':8,'n':9,'j':10,'m':11,
+  'q':12,'2':13,'w':14,'3':15,'e':16,'r':17,'5':18,'t':19,'6':20,'y':21,'7':22,'u':23
+};
+const heldQwerty = new Set();
+
+function qwertyNoteOn(key) {
+  const semi = QWERTY_SEMIS[key];
+  if (semi === undefined || heldQwerty.has(key)) return;
+  heldQwerty.add(key);
+  const midi = (kbBaseOctave + 1) * 12 + semi;
+  const freq = midiToFreqKb(midi);
+  const noteKey = `kb_${key}`;
+  document.querySelector(`[data-midi="${midi}"]`)?.classList.add('active');
+  startVoice(getKbTone(), freq, noteKey);
+  looperNoteOn(freq, noteKey);
+}
+
+function qwertyNoteOff(key) {
+  const semi = QWERTY_SEMIS[key];
+  if (semi === undefined) return;
+  heldQwerty.delete(key);
+  const midi = (kbBaseOctave + 1) * 12 + semi;
+  const noteKey = `kb_${key}`;
+  document.querySelector(`[data-midi="${midi}"]`)?.classList.remove('active');
+  releaseVoice(noteKey);
+  looperNoteOff(noteKey);
+}
+
+function initQWERTY() {
+  window.addEventListener('keydown', e => {
+    if (!kbTabActive) return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.repeat) return;
+    qwertyNoteOn(e.key.toLowerCase());
+  });
+  window.addEventListener('keyup', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    qwertyNoteOff(e.key.toLowerCase());
+  });
+}
+
+// --- Web MIDI ---
+function initMIDI() {
+  if (!navigator.requestMIDIAccess) return;
+  navigator.requestMIDIAccess().then(access => {
+    function wire() {
+      access.inputs.forEach(inp => {
+        inp.onmidimessage = ev => {
+          const [status, note, vel] = ev.data;
+          const type = status & 0xF0;
+          const freq = midiToFreqKb(note);
+          const noteKey = `midi_${note}`;
+          if (type === 0x90 && vel > 0) {
+            startVoice(getKbTone(), freq, noteKey);
+            looperNoteOn(freq, noteKey);
+            document.querySelector(`[data-midi="${note}"]`)?.classList.add('active');
+          } else if (type === 0x80 || (type === 0x90 && vel === 0)) {
+            releaseVoice(noteKey);
+            looperNoteOff(noteKey);
+            document.querySelector(`[data-midi="${note}"]`)?.classList.remove('active');
+          }
+        };
+      });
+      const el = document.getElementById('midiStatus');
+      if (el) el.textContent = access.inputs.size > 0 ? `MIDI: ${access.inputs.size} device(s) ✓` : '';
+    }
+    wire();
+    access.onstatechange = wire;
+  }).catch(() => {});
+}
+
+// --- Looper ---
+let loopState = 'idle'; // 'idle' | 'recording' | 'playing'
+let loopEvents = [];
+let loopLength = 4000; // ms, default 2 bars @120bpm
+let loopRecStart = 0;
+let loopPlayStart = 0;
+let loopTimers = [];
+let loopVizRAF = null;
+
+function looperNoteOn(freq, noteKey) {
+  if (loopState !== 'recording') return;
+  loopEvents.push({ relTime: performance.now() - loopRecStart, freq, noteKey, type: 'on' });
+}
+
+function looperNoteOff(noteKey) {
+  if (loopState !== 'recording') return;
+  loopEvents.push({ relTime: performance.now() - loopRecStart, noteKey, type: 'off' });
+}
+
+function lpGetBarMs() {
+  const bars = +(document.getElementById('lpBarsSelect')?.value || 2);
+  return (60 / bpm) * 4 * bars * 1000;
+}
+
+function lpClearTimers() {
+  loopTimers.forEach(clearTimeout);
+  loopTimers = [];
+}
+
+function lpReleaseAllLoopVoices() {
+  for (const k of [...activeVoices.keys()]) {
+    if (k.startsWith('loop_')) releaseVoice(k);
+  }
+}
+
+function loopRecord() {
+  if (loopState === 'playing') loopStop();
+  loopEvents = [];
+  loopState = 'recording';
+  loopRecStart = performance.now();
+  document.getElementById('lpRecBtn').classList.add('recording');
+  document.getElementById('lpStatus').textContent = 'Recording…';
+  drawLoopViz();
+}
+
+function loopPlay() {
+  if (loopState === 'recording') {
+    // Close loop: auto-off any still-held notes, trim to loop length
+    const now = performance.now();
+    const heldNotes = new Map();
+    loopEvents.forEach(e => {
+      if (e.type === 'on') heldNotes.set(e.noteKey, e);
+      else heldNotes.delete(e.noteKey);
+    });
+    heldNotes.forEach((_, k) => loopEvents.push({ relTime: now - loopRecStart, noteKey: k, type: 'off' }));
+    loopLength = lpGetBarMs();
+    loopEvents = loopEvents.filter(e => e.relTime < loopLength);
+    loopState = 'idle';
+    document.getElementById('lpRecBtn').classList.remove('recording');
+  }
+  if (loopEvents.length === 0) {
+    document.getElementById('lpStatus').textContent = 'Nothing recorded';
+    return;
+  }
+  loopState = 'playing';
+  document.getElementById('lpStatus').textContent = 'Looping…';
+  scheduleLoop();
+  drawLoopViz();
+}
+
+function scheduleLoop() {
+  if (loopState !== 'playing') return;
+  lpClearTimers();
+  loopPlayStart = performance.now();
+  loopEvents.forEach(ev => {
+    const t = setTimeout(() => {
+      if (loopState !== 'playing') return;
+      const ts = getKbTone();
+      if (ev.type === 'on') startVoice(ts, ev.freq, `loop_${ev.noteKey}`);
+      else releaseVoice(`loop_${ev.noteKey}`);
+    }, ev.relTime);
+    loopTimers.push(t);
+  });
+  // End-of-loop: release stragglers + restart
+  const endT = setTimeout(() => {
+    lpReleaseAllLoopVoices();
+    scheduleLoop();
+  }, loopLength);
+  loopTimers.push(endT);
+}
+
+function loopStop() {
+  lpClearTimers();
+  lpReleaseAllLoopVoices();
+  loopState = 'idle';
+  document.getElementById('lpRecBtn').classList.remove('recording');
+  document.getElementById('lpStatus').textContent = loopEvents.length > 0 ? 'Stopped' : '';
+  if (loopVizRAF) { cancelAnimationFrame(loopVizRAF); loopVizRAF = null; }
+  drawLoopViz();
+}
+
+function loopClear() {
+  loopStop();
+  loopEvents = [];
+  document.getElementById('lpStatus').textContent = '';
+  drawLoopViz();
+}
+
+function drawLoopViz() {
+  const canvas = document.getElementById('loopCanvas');
+  if (!canvas) return;
+  const W = canvas.offsetWidth || 600;
+  canvas.width = W; canvas.height = 72;
+  const ctx2 = canvas.getContext('2d');
+  const H = 72;
+  ctx2.clearRect(0, 0, W, H);
+  ctx2.fillStyle = '#030008';
+  ctx2.fillRect(0, 0, W, H);
+
+  // Beat grid
+  const barMs = lpGetBarMs();
+  const bars = +(document.getElementById('lpBarsSelect')?.value || 2);
+  const beats = bars * 4;
+  ctx2.strokeStyle = 'rgba(58,0,90,0.5)';
+  ctx2.lineWidth = 1;
+  for (let i = 1; i < beats; i++) {
+    const x = (i / beats) * W;
+    ctx2.beginPath(); ctx2.moveTo(x, 0); ctx2.lineTo(x, H);
+    ctx2.globalAlpha = i % 4 === 0 ? 0.9 : 0.35;
+    ctx2.stroke();
+  }
+  ctx2.globalAlpha = 1;
+
+  // Recording progress bar
+  if (loopState === 'recording') {
+    const elapsed = performance.now() - loopRecStart;
+    const prog = Math.min(1, elapsed / barMs);
+    ctx2.fillStyle = 'rgba(255,34,68,0.12)';
+    ctx2.fillRect(0, 0, W * prog, H);
+    ctx2.fillStyle = '#ff2244';
+    ctx2.fillRect(W * prog - 1, 0, 2, H);
+  }
+
+  // Note blips (cyan dots, y = pitch mapped midi 36–96)
+  if (loopLength > 0 && loopEvents.length > 0) {
+    loopEvents.forEach(ev => {
+      if (ev.type !== 'on' || !ev.freq) return;
+      const x = (ev.relTime / loopLength) * W;
+      const noteNum = Math.round(69 + 12 * Math.log2(ev.freq / 440));
+      const y = H - ((noteNum - 36) / 60) * (H - 6) - 3;
+      ctx2.fillStyle = 'rgba(1,205,254,0.85)';
+      ctx2.fillRect(Math.round(x) - 1, Math.max(2, Math.min(H - 5, Math.round(y))), 3, 5);
+    });
+  }
+
+  // Playhead
+  if (loopState === 'playing' && loopLength > 0) {
+    const elapsed = performance.now() - loopPlayStart;
+    const prog = (elapsed % loopLength) / loopLength;
+    ctx2.fillStyle = 'rgba(255,113,206,0.9)';
+    ctx2.fillRect(Math.round(prog * W) - 1, 0, 2, H);
+  }
+
+  if (loopState === 'recording' || loopState === 'playing') {
+    loopVizRAF = requestAnimationFrame(drawLoopViz);
+  }
+}
+
+// --- Tone selector sync ---
+function updateKbToneSelect() {
+  const sel = document.getElementById('kbToneSelect');
+  if (!sel) return;
+  const prev = +sel.value;
+  sel.innerHTML = toneInstances.map((_, i) => `<option value="${i}">Tone ${i + 1}</option>`).join('');
+  sel.value = (prev < toneInstances.length) ? prev : 0;
+  kbToneIndex = +sel.value;
+}
+
+function initKeyboard() {
+  buildPiano();
+  updateKbToneSelect();
+  initQWERTY();
+  initMIDI();
+
+  document.getElementById('kbToneSelect').addEventListener('change', e => { kbToneIndex = +e.target.value; });
+  document.getElementById('kbOctDown').addEventListener('click', () => {
+    if (kbBaseOctave > 0) { kbBaseOctave--; document.getElementById('kbOctDisplay').textContent = kbBaseOctave; }
+  });
+  document.getElementById('kbOctUp').addEventListener('click', () => {
+    if (kbBaseOctave < 6) { kbBaseOctave++; document.getElementById('kbOctDisplay').textContent = kbBaseOctave; }
+  });
+  document.getElementById('kbVelSlider').addEventListener('input', e => {
+    kbVelocity = +e.target.value;
+    document.getElementById('kbVelVal').textContent = e.target.value;
+  });
+  document.getElementById('lpRecBtn').addEventListener('click', loopRecord);
+  document.getElementById('lpPlayBtn').addEventListener('click', loopPlay);
+  document.getElementById('lpStopBtn').addEventListener('click', loopStop);
+  document.getElementById('lpClearBtn').addEventListener('click', loopClear);
+  setTimeout(drawLoopViz, 200);
 }
 
 // ═════════════════════════════════════════
@@ -1256,6 +1790,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
     if(tab!=='tuner') stopAllTones();
     if(tab!=='tone') toneInstances.forEach(toneStop);
+    kbTabActive = (tab==='keys');
+    if(tab==='keys') setTimeout(drawLoopViz,50);
   });
 });
 
@@ -1265,6 +1801,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 initBeatMachine();
 initTuner();
 initToneGen();
+initKeyboard();
 </script>
 </body>
 </html>
