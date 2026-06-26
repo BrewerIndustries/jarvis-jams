@@ -1,0 +1,10 @@
+{
+  "id": "jarvis-jams",
+  "name": "Jarvis Jams",
+  "category": "standalone",
+  "status": { "prod": "live", "dev": "live" },
+  "deploy": {
+    "prod": { "url": "https://jarvis-jams.dabrewer.dev/" },
+    "dev": { "url": "https://jarvis-jams.dabrewer.dev/dev/" }
+  }
+}
