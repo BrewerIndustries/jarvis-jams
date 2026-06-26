@@ -386,6 +386,39 @@
       background: var(--cyan); color: #0d0015;
       box-shadow: 0 0 24px var(--glow-cyan);
     }
+
+    /* ─── Tone cards ─── */
+    .tone-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 12px;
+    }
+    .tone-card-hdr {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; background: var(--surface-up);
+      border-bottom: 1px solid var(--border);
+    }
+    .tone-card-name {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--cyan); text-shadow: 0 0 8px var(--glow-cyan); margin-right: auto;
+    }
+    .tone-play-btn { background: rgba(255,113,206,0.1); border-color: var(--pink); color: var(--pink); }
+    .tone-play-btn:hover { background: var(--pink); color: #0d0015; box-shadow: 0 0 14px var(--glow-pink); }
+    .tone-play-btn.playing {
+      background: rgba(1,205,254,0.12) !important; border-color: var(--cyan) !important;
+      color: var(--cyan) !important; box-shadow: 0 0 12px var(--glow-cyan) !important;
+    }
+    .tone-card-body { padding: 12px; }
+    .tone-card .synth-module { background: rgba(0,0,0,0.2); }
+
+    /* ─── Knob inline edit ─── */
+    .knob-val { cursor: text; }
+    .knob-val:hover { color: var(--pink); }
+    .knob-edit {
+      width: 46px; font: inherit; font-size: 10px; font-weight: 600;
+      background: var(--surface); border: 1px solid var(--pink);
+      color: var(--cyan); border-radius: 3px; text-align: center;
+      padding: 1px 2px; outline: none;
+    }
   </style>
 </head>
 <body>
@@ -499,138 +532,15 @@
   <!-- ═══ TONE GENERATOR ═══ -->
   <div class="panel" id="panel-tone">
 
-    <div class="synth-grid">
-
-      <!-- OSCILLATOR -->
-      <div class="synth-module">
-        <h3>Oscillator</h3>
-        <div class="wave-selector" id="waveSelector">
-          <div class="wave-btn active" data-wave="sine">
-            <svg viewBox="0 0 44 22" fill="none" stroke-width="2" stroke-linecap="round">
-              <path d="M2,11 C6,11 6,3 11,3 C16,3 16,19 21,19 C26,19 26,3 31,3 C36,3 36,11 42,11"/>
-            </svg>
-            <span>Sine</span>
-          </div>
-          <div class="wave-btn" data-wave="square">
-            <svg viewBox="0 0 44 22" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2,11 L2,3 L13,3 L13,19 L24,19 L24,3 L35,3 L35,11"/>
-            </svg>
-            <span>Square</span>
-          </div>
-          <div class="wave-btn" data-wave="sawtooth">
-            <svg viewBox="0 0 44 22" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2,19 L14,3 L14,19 L26,3 L26,19 L38,3"/>
-            </svg>
-            <span>Saw</span>
-          </div>
-          <div class="wave-btn" data-wave="triangle">
-            <svg viewBox="0 0 44 22" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2,11 L11,3 L22,19 L33,3 L42,11"/>
-            </svg>
-            <span>Triangle</span>
-          </div>
-        </div>
-        <div class="knob-row">
-          <div class="knob" id="kFreq" data-min="40" data-max="3000" data-value="440" data-log="true" data-fmt="hz">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Freq</div>
-            <div class="knob-val">440Hz</div>
-          </div>
-          <div class="knob" id="kDetune" data-min="-100" data-max="100" data-value="0" data-fmt="cents">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Detune</div>
-            <div class="knob-val">+0¢</div>
-          </div>
-          <div class="knob" id="kVol" data-min="0" data-max="100" data-value="70" data-fmt="pct">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Volume</div>
-            <div class="knob-val">70%</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ENVELOPE -->
-      <div class="synth-module">
-        <h3>Envelope</h3>
-        <div class="knob-row">
-          <div class="knob" id="kAtk" data-min="1" data-max="2000" data-value="10" data-log="true" data-fmt="ms">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Attack</div>
-            <div class="knob-val">10ms</div>
-          </div>
-          <div class="knob" id="kDcy" data-min="1" data-max="2000" data-value="100" data-log="true" data-fmt="ms">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Decay</div>
-            <div class="knob-val">100ms</div>
-          </div>
-          <div class="knob" id="kSus" data-min="0" data-max="100" data-value="70" data-fmt="pct">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Sustain</div>
-            <div class="knob-val">70%</div>
-          </div>
-          <div class="knob" id="kRel" data-min="10" data-max="3000" data-value="300" data-log="true" data-fmt="ms">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Release</div>
-            <div class="knob-val">300ms</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- FILTER -->
-      <div class="synth-module">
-        <h3>Filter</h3>
-        <div class="filter-type" id="filterType">
-          <button class="ftype-btn active" data-ftype="lowpass">LP</button>
-          <button class="ftype-btn" data-ftype="highpass">HP</button>
-          <button class="ftype-btn" data-ftype="bandpass">BP</button>
-          <button class="ftype-btn" data-ftype="notch">Notch</button>
-        </div>
-        <div class="knob-row">
-          <div class="knob" id="kCutoff" data-min="40" data-max="18000" data-value="4000" data-log="true" data-fmt="hz">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Cutoff</div>
-            <div class="knob-val">4kHz</div>
-          </div>
-          <div class="knob" id="kReso" data-min="0.1" data-max="20" data-value="1" data-log="true" data-fmt="q">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Reso</div>
-            <div class="knob-val">1.0</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- LFO -->
-      <div class="synth-module">
-        <h3>LFO</h3>
-        <div class="lfo-target" id="lfoTarget">
-          <button class="ltarget-btn active" data-target="pitch">Pitch</button>
-          <button class="ltarget-btn" data-target="filter">Filter</button>
-          <button class="ltarget-btn" data-target="amp">Amp</button>
-        </div>
-        <div class="knob-row">
-          <div class="knob" id="kLfoRate" data-min="0.1" data-max="20" data-value="5" data-log="true" data-fmt="lfo">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Rate</div>
-            <div class="knob-val">5.0Hz</div>
-          </div>
-          <div class="knob" id="kLfoDepth" data-min="0" data-max="100" data-value="0" data-fmt="pct">
-            <div class="knob-ring"><div class="knob-indicator"></div></div>
-            <div class="knob-lbl">Depth</div>
-            <div class="knob-val">0%</div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /synth-grid -->
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn cyan" id="tgAddTone">+ Add Tone</button>
+    </div>
+    <div id="tgTones"></div>
 
     <!-- SCOPE -->
     <div class="scope-wrap">
       <h3>Oscilloscope</h3>
       <canvas id="tgScope"></canvas>
-    </div>
-
-    <div class="tg-play-row">
-      <button id="tgPlayBtn">▶ Play</button>
     </div>
 
   </div><!-- /panel-tone -->
@@ -857,6 +767,14 @@ function initTuner(){
 // ═════════════════════════════════════════
 // KNOB COMPONENT
 // ═════════════════════════════════════════
+function parseKnobInput(s, fmt, min, max){
+  s=s.trim().toLowerCase();
+  let v=parseFloat(s.replace(/[^\d.\-]/g,''));
+  if(isNaN(v)) return null;
+  if(fmt==='hz' && s.endsWith('k')) v*=1000;
+  return Math.min(max,Math.max(min,v));
+}
+
 function initKnob(el, onChange) {
   const ring = el.querySelector('.knob-ring');
   const ind  = el.querySelector('.knob-indicator');
@@ -905,180 +823,290 @@ function initKnob(el, onChange) {
   window.addEventListener('touchend', onEnd);
   ring.addEventListener('dblclick', () => set(def));
 
+  val.addEventListener('click', e => {
+    if(dragging) return;
+    const inp=document.createElement('input');
+    inp.type='text'; inp.className='knob-edit';
+    inp.value=cur.toFixed(fmt==='pct'||fmt==='ms'||fmt==='cents'?0:fmt==='q'?2:2);
+    val.replaceWith(inp); inp.focus(); inp.select();
+    const commit=()=>{ const v=parseKnobInput(inp.value,fmt,min,max); inp.replaceWith(val); if(v!==null) set(v); };
+    inp.addEventListener('blur',commit);
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();commit();} if(e.key==='Escape') inp.replaceWith(val); });
+    inp.addEventListener('mousedown',e=>e.stopPropagation());
+  });
+
   return { get: () => cur, set };
 }
 
 // ═════════════════════════════════════════
 // TONE GENERATOR
 // ═════════════════════════════════════════
-const tg = {
-  waveform: 'sine', frequency: 440, volume: 0.7, detune: 0,
-  attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.3,
-  filterType: 'lowpass', filterCutoff: 4000, filterQ: 1,
-  lfoRate: 5, lfoDepth: 0, lfoTarget: 'pitch',
-  osc: null, envGain: null, filter: null, lfo: null, lfoGain: null, analyser: null,
-  playing: false, scopeRAF: null
-};
+const toneInstances = [];
+let masterAnalyser = null, scopeRAF = null;
 
-function tgStart(){
-  tgStop();
-  const ctx = getCtx();
-  tg.osc     = ctx.createOscillator();
-  tg.filter  = ctx.createBiquadFilter();
-  tg.envGain = ctx.createGain();
-  tg.analyser= ctx.createAnalyser();
-  tg.analyser.fftSize = 1024;
-  tg.lfo     = ctx.createOscillator();
-  tg.lfoGain = ctx.createGain();
-
-  tg.osc.type = tg.waveform;
-  tg.osc.frequency.value = tg.frequency;
-  tg.osc.detune.value = tg.detune;
-
-  tg.filter.type = tg.filterType;
-  tg.filter.frequency.value = tg.filterCutoff;
-  tg.filter.Q.value = tg.filterQ;
-
-  tg.lfo.frequency.value = tg.lfoRate;
-  tg.lfoGain.gain.value = 0; // depth applied below
-
-  tg.lfo.connect(tg.lfoGain);
-  applyLFOTarget();
-
-  const now = ctx.currentTime;
-  const peak = tg.volume;
-  const sus  = peak * tg.sustain;
-  tg.envGain.gain.setValueAtTime(0, now);
-  tg.envGain.gain.linearRampToValueAtTime(peak, now + tg.attack);
-  tg.envGain.gain.linearRampToValueAtTime(sus, now + tg.attack + tg.decay);
-
-  tg.osc.connect(tg.filter);
-  tg.filter.connect(tg.envGain);
-  tg.envGain.connect(tg.analyser);
-  tg.analyser.connect(ctx.destination);
-
-  tg.osc.start(); tg.lfo.start();
-  tg.playing = true;
-  document.getElementById('tgPlayBtn').textContent = '■ Stop';
-  document.getElementById('tgPlayBtn').classList.add('playing');
-  drawScope();
+function getMasterAnalyser(){
+  if(!masterAnalyser){
+    const ctx=getCtx();
+    masterAnalyser=ctx.createAnalyser();
+    masterAnalyser.fftSize=1024;
+    masterAnalyser.connect(ctx.destination);
+  }
+  return masterAnalyser;
 }
 
-function tgStop(){
-  if(!tg.osc) return;
-  const ctx = getCtx(), now = ctx.currentTime;
-  tg.envGain.gain.cancelScheduledValues(now);
-  tg.envGain.gain.setValueAtTime(tg.envGain.gain.value, now);
-  tg.envGain.gain.linearRampToValueAtTime(0, now + tg.release);
-  const t = tg.release + 0.05;
-  setTimeout(()=>{ try{tg.osc.stop();tg.lfo.stop();}catch{}; tg.analyser?.disconnect(); }, t*1000);
-  tg.osc=null; tg.lfo=null; tg.playing=false;
-  cancelAnimationFrame(tg.scopeRAF); tg.scopeRAF=null;
-  clearScope();
-  document.getElementById('tgPlayBtn').textContent = '▶ Play';
-  document.getElementById('tgPlayBtn').classList.remove('playing');
+function makeToneState(){
+  return {
+    waveform:'sine', frequency:440, volume:0.7, detune:0,
+    attack:0.01, decay:0.1, sustain:0.7, release:0.3,
+    filterType:'lowpass', filterCutoff:4000, filterQ:1,
+    lfoRate:5, lfoDepth:0, lfoTarget:'pitch',
+    osc:null, envGain:null, volGain:null, filter:null, lfo:null, lfoGain:null,
+    playing:false, _btn:null
+  };
 }
 
-function applyLFOTarget(){
-  if(!tg.lfoGain) return;
-  tg.lfoGain.disconnect();
-  const depth = tg.lfoDepth / 100;
-  if(tg.lfoTarget === 'pitch'){
-    tg.lfoGain.gain.value = depth * 200; // cents
-    if(tg.osc) tg.lfoGain.connect(tg.osc.detune);
-  } else if(tg.lfoTarget === 'filter'){
-    tg.lfoGain.gain.value = depth * tg.filterCutoff * 0.8;
-    if(tg.filter) tg.lfoGain.connect(tg.filter.frequency);
+function toneStart(ts){
+  toneStop(ts);
+  const ctx=getCtx(), ana=getMasterAnalyser();
+  ts.osc=ctx.createOscillator();
+  ts.filter=ctx.createBiquadFilter();
+  ts.envGain=ctx.createGain();
+  ts.volGain=ctx.createGain();
+  ts.lfo=ctx.createOscillator();
+  ts.lfoGain=ctx.createGain();
+
+  ts.osc.type=ts.waveform;
+  ts.osc.frequency.value=ts.frequency;
+  ts.osc.detune.value=ts.detune;
+  ts.filter.type=ts.filterType;
+  ts.filter.frequency.value=ts.filterCutoff;
+  ts.filter.Q.value=ts.filterQ;
+  ts.volGain.gain.value=ts.volume;
+  ts.lfo.frequency.value=ts.lfoRate;
+  ts.lfoGain.gain.value=0;
+
+  ts.lfo.connect(ts.lfoGain);
+  toneApplyLFO(ts);
+
+  const now=ctx.currentTime;
+  ts.envGain.gain.setValueAtTime(0,now);
+  ts.envGain.gain.linearRampToValueAtTime(1,now+ts.attack);
+  ts.envGain.gain.linearRampToValueAtTime(ts.sustain,now+ts.attack+ts.decay);
+
+  ts.osc.connect(ts.filter);
+  ts.filter.connect(ts.envGain);
+  ts.envGain.connect(ts.volGain);
+  ts.volGain.connect(ana);
+
+  ts.osc.start(); ts.lfo.start();
+  ts.playing=true;
+  if(ts._btn){ ts._btn.textContent='■ Stop'; ts._btn.classList.add('playing'); }
+  if(!scopeRAF) drawScope();
+}
+
+function toneStop(ts){
+  if(!ts.osc) return;
+  const ctx=getCtx(), now=ctx.currentTime;
+  ts.envGain.gain.cancelScheduledValues(now);
+  ts.envGain.gain.setValueAtTime(ts.envGain.gain.value,now);
+  ts.envGain.gain.linearRampToValueAtTime(0,now+ts.release);
+  const osc=ts.osc, lfo=ts.lfo, vg=ts.volGain, rel=ts.release;
+  setTimeout(()=>{ try{osc.stop();lfo.stop();}catch{}; try{vg.disconnect();}catch{}; },( rel+0.05)*1000);
+  ts.osc=null; ts.lfo=null; ts.playing=false;
+  if(ts._btn){ ts._btn.textContent='▶ Play'; ts._btn.classList.remove('playing'); }
+  if(!toneInstances.some(t=>t.playing)){ cancelAnimationFrame(scopeRAF); scopeRAF=null; clearScope(); }
+}
+
+function toneApplyLFO(ts){
+  if(!ts.lfoGain) return;
+  try{ ts.lfoGain.disconnect(); }catch{}
+  const depth=ts.lfoDepth/100;
+  if(ts.lfoTarget==='pitch'){
+    ts.lfoGain.gain.value=depth*200;
+    if(ts.osc) ts.lfoGain.connect(ts.osc.detune);
+  } else if(ts.lfoTarget==='filter'){
+    ts.lfoGain.gain.value=depth*ts.filterCutoff*0.8;
+    if(ts.filter) ts.lfoGain.connect(ts.filter.frequency);
   } else {
-    tg.lfoGain.gain.value = depth * 0.5;
-    if(tg.envGain) tg.lfoGain.connect(tg.envGain.gain);
+    ts.lfoGain.gain.value=depth*0.5;
+    if(ts.envGain) ts.lfoGain.connect(ts.envGain.gain);
   }
 }
 
-function tgUpdate(){
-  if(!tg.osc) return;
-  tg.osc.type = tg.waveform;
-  tg.osc.frequency.value = tg.frequency;
-  tg.osc.detune.value = tg.detune;
-  tg.filter.type = tg.filterType;
-  tg.filter.frequency.value = tg.filterCutoff;
-  tg.filter.Q.value = tg.filterQ;
-  tg.lfo.frequency.value = tg.lfoRate;
-  applyLFOTarget();
+function toneUpdate(ts){
+  if(!ts.osc) return;
+  ts.osc.type=ts.waveform;
+  ts.osc.frequency.value=ts.frequency;
+  ts.osc.detune.value=ts.detune;
+  ts.filter.type=ts.filterType;
+  ts.filter.frequency.value=ts.filterCutoff;
+  ts.filter.Q.value=ts.filterQ;
+  ts.lfo.frequency.value=ts.lfoRate;
+  toneApplyLFO(ts);
 }
 
 // Scope
 function drawScope(){
-  const canvas = document.getElementById('tgScope');
-  const ctx2d = canvas.getContext('2d');
-  const W = canvas.width = canvas.offsetWidth;
-  const H = canvas.height;
-  if(!tg.analyser){ clearScope(); return; }
-  const data = new Float32Array(tg.analyser.fftSize);
-  tg.analyser.getFloatTimeDomainData(data);
+  const canvas=document.getElementById('tgScope');
+  if(!canvas||!masterAnalyser) return;
+  const ctx2d=canvas.getContext('2d');
+  const W=canvas.width=canvas.offsetWidth, H=canvas.height;
+  const data=new Float32Array(masterAnalyser.fftSize);
+  masterAnalyser.getFloatTimeDomainData(data);
   ctx2d.clearRect(0,0,W,H);
-  // glow pass
-  ctx2d.shadowBlur = 10; ctx2d.shadowColor = '#01cdfe';
-  ctx2d.strokeStyle = 'rgba(1,205,254,0.5)'; ctx2d.lineWidth = 2;
+  ctx2d.shadowBlur=10; ctx2d.shadowColor='#01cdfe';
+  ctx2d.strokeStyle='rgba(1,205,254,0.5)'; ctx2d.lineWidth=2;
   ctx2d.beginPath();
-  data.forEach((v,i)=>{ const x=i/data.length*W, y=(1-(v+1)/2)*H; i===0?ctx2d.moveTo(x,y):ctx2d.lineTo(x,y); });
+  data.forEach((v,i)=>{ const x=i/data.length*W,y=(1-(v+1)/2)*H; i===0?ctx2d.moveTo(x,y):ctx2d.lineTo(x,y); });
   ctx2d.stroke();
-  // bright pass
-  ctx2d.shadowBlur = 0;
-  ctx2d.strokeStyle = '#01cdfe'; ctx2d.lineWidth = 1.5;
+  ctx2d.shadowBlur=0; ctx2d.strokeStyle='#01cdfe'; ctx2d.lineWidth=1.5;
   ctx2d.beginPath();
-  data.forEach((v,i)=>{ const x=i/data.length*W, y=(1-(v+1)/2)*H; i===0?ctx2d.moveTo(x,y):ctx2d.lineTo(x,y); });
+  data.forEach((v,i)=>{ const x=i/data.length*W,y=(1-(v+1)/2)*H; i===0?ctx2d.moveTo(x,y):ctx2d.lineTo(x,y); });
   ctx2d.stroke();
-  if(tg.playing) tg.scopeRAF = requestAnimationFrame(drawScope);
+  if(toneInstances.some(t=>t.playing)) scopeRAF=requestAnimationFrame(drawScope);
 }
 function clearScope(){
-  const canvas=document.getElementById('tgScope');
+  const canvas=document.getElementById('tgScope'); if(!canvas) return;
   const ctx2d=canvas.getContext('2d');
   canvas.width=canvas.offsetWidth;
   ctx2d.clearRect(0,0,canvas.width,canvas.height);
-  // draw flat line
   ctx2d.strokeStyle='rgba(1,205,254,0.15)'; ctx2d.lineWidth=1;
   ctx2d.beginPath(); ctx2d.moveTo(0,canvas.height/2); ctx2d.lineTo(canvas.width,canvas.height/2); ctx2d.stroke();
 }
 
+// ─── Card builder ───
+const WAVE_SVGS={
+  sine:`<path d="M2,11 C6,11 6,3 11,3 C16,3 16,19 21,19 C26,19 26,3 31,3 C36,3 36,11 42,11"/>`,
+  square:`<path d="M2,11 L2,3 L13,3 L13,19 L24,19 L24,3 L35,3 L35,11"/>`,
+  sawtooth:`<path d="M2,19 L14,3 L14,19 L26,3 L26,19 L38,3"/>`,
+  triangle:`<path d="M2,11 L11,3 L22,19 L33,3 L42,11"/>`,
+};
+const WAVE_LABELS={sine:'Sine',square:'Square',sawtooth:'Saw',triangle:'Triangle'};
+const FTYPES=[['lowpass','LP'],['highpass','HP'],['bandpass','BP'],['notch','Notch']];
+
+function knobHTML(label,param,min,max,value,fmt,log){
+  return `<div class="knob" data-param="${param}" data-min="${min}" data-max="${max}" data-value="${value}" data-fmt="${fmt}"${log?' data-log="true"':''}>
+    <div class="knob-ring"><div class="knob-indicator"></div></div>
+    <div class="knob-lbl">${label}</div>
+    <div class="knob-val"></div>
+  </div>`;
+}
+
+function buildToneCard(ts, idx){
+  const card=document.createElement('div');
+  card.className='tone-card';
+  card.innerHTML=`
+    <div class="tone-card-hdr">
+      <span class="tone-card-name">Tone ${idx+1}</span>
+      <button class="btn sm tone-play-btn">▶ Play</button>
+      ${idx>0?'<button class="btn sm danger tone-rm-btn">✕ Remove</button>':''}
+    </div>
+    <div class="tone-card-body">
+      <div class="synth-grid">
+        <div class="synth-module">
+          <h3>Oscillator</h3>
+          <div class="wave-selector">
+            ${Object.entries(WAVE_SVGS).map(([w,p])=>`
+            <div class="wave-btn${w===ts.waveform?' active':''}" data-wave="${w}">
+              <svg viewBox="0 0 44 22" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>
+              <span>${WAVE_LABELS[w]}</span>
+            </div>`).join('')}
+          </div>
+          <div class="knob-row">
+            ${knobHTML('Freq','frequency',40,3000,ts.frequency,'hz',true)}
+            ${knobHTML('Detune','detune',-100,100,ts.detune,'cents',false)}
+            ${knobHTML('Volume','volume',0,100,ts.volume*100,'pct',false)}
+          </div>
+        </div>
+        <div class="synth-module">
+          <h3>Envelope</h3>
+          <div class="knob-row">
+            ${knobHTML('Attack','attack',1,2000,ts.attack*1000,'ms',true)}
+            ${knobHTML('Decay','decay',1,2000,ts.decay*1000,'ms',true)}
+            ${knobHTML('Sustain','sustain',0,100,ts.sustain*100,'pct',false)}
+            ${knobHTML('Release','release',10,3000,ts.release*1000,'ms',true)}
+          </div>
+        </div>
+        <div class="synth-module">
+          <h3>Filter</h3>
+          <div class="filter-type">
+            ${FTYPES.map(([t,l])=>`<button class="ftype-btn${t===ts.filterType?' active':''}" data-ftype="${t}">${l}</button>`).join('')}
+          </div>
+          <div class="knob-row">
+            ${knobHTML('Cutoff','filterCutoff',40,18000,ts.filterCutoff,'hz',true)}
+            ${knobHTML('Reso','filterQ',0.1,20,ts.filterQ,'q',true)}
+          </div>
+        </div>
+        <div class="synth-module">
+          <h3>LFO</h3>
+          <div class="lfo-target">
+            ${['pitch','filter','amp'].map(t=>`<button class="ltarget-btn${t===ts.lfoTarget?' active':''}" data-target="${t}">${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}
+          </div>
+          <div class="knob-row">
+            ${knobHTML('Rate','lfoRate',0.1,20,ts.lfoRate,'lfo',true)}
+            ${knobHTML('Depth','lfoDepth',0,100,ts.lfoDepth,'pct',false)}
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  ts._btn=card.querySelector('.tone-play-btn');
+  ts._btn.addEventListener('click',()=>{ ts.playing?toneStop(ts):toneStart(ts); });
+
+  const rmBtn=card.querySelector('.tone-rm-btn');
+  if(rmBtn) rmBtn.addEventListener('click',()=>{
+    toneStop(ts);
+    const i=toneInstances.indexOf(ts); if(i>=0) toneInstances.splice(i,1);
+    card.remove();
+    document.querySelectorAll('.tone-card-name').forEach((el,j)=>el.textContent=`Tone ${j+1}`);
+  });
+
+  card.querySelectorAll('.wave-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    card.querySelectorAll('.wave-btn').forEach(b=>b.classList.toggle('active',b===btn));
+    ts.waveform=btn.dataset.wave; toneUpdate(ts);
+  }));
+  card.querySelectorAll('.ftype-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    card.querySelectorAll('.ftype-btn').forEach(b=>b.classList.toggle('active',b===btn));
+    ts.filterType=btn.dataset.ftype; toneUpdate(ts);
+  }));
+  card.querySelectorAll('.ltarget-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    card.querySelectorAll('.ltarget-btn').forEach(b=>b.classList.toggle('active',b===btn));
+    ts.lfoTarget=btn.dataset.target; toneApplyLFO(ts);
+  }));
+
+  card.querySelectorAll('.knob').forEach(el=>{
+    const p=el.dataset.param;
+    initKnob(el,v=>{
+      switch(p){
+        case 'frequency':    ts.frequency=v; toneUpdate(ts); break;
+        case 'detune':       ts.detune=v; toneUpdate(ts); break;
+        case 'volume':       ts.volume=v/100; if(ts.volGain) ts.volGain.gain.value=ts.volume; break;
+        case 'attack':       ts.attack=v/1000; break;
+        case 'decay':        ts.decay=v/1000; break;
+        case 'sustain':      ts.sustain=v/100; break;
+        case 'release':      ts.release=v/1000; break;
+        case 'filterCutoff': ts.filterCutoff=v; toneUpdate(ts); break;
+        case 'filterQ':      ts.filterQ=v; toneUpdate(ts); break;
+        case 'lfoRate':      ts.lfoRate=v; toneUpdate(ts); break;
+        case 'lfoDepth':     ts.lfoDepth=v; toneApplyLFO(ts); break;
+      }
+    });
+  });
+
+  return card;
+}
+
+function addTone(){
+  const ts=makeToneState();
+  toneInstances.push(ts);
+  const card=buildToneCard(ts, toneInstances.length-1);
+  document.getElementById('tgTones').appendChild(card);
+}
+
 function initToneGen(){
-  // Wave selector
-  document.querySelectorAll('.wave-btn').forEach(btn => {
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('.wave-btn').forEach(b=>b.classList.toggle('active',b===btn));
-      tg.waveform = btn.dataset.wave; tgUpdate();
-    });
-  });
-  // Filter type
-  document.querySelectorAll('.ftype-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('.ftype-btn').forEach(b=>b.classList.toggle('active',b===btn));
-      tg.filterType=btn.dataset.ftype; tgUpdate();
-    });
-  });
-  // LFO target
-  document.querySelectorAll('.ltarget-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('.ltarget-btn').forEach(b=>b.classList.toggle('active',b===btn));
-      tg.lfoTarget=btn.dataset.target; applyLFOTarget();
-    });
-  });
-  // Knobs
-  initKnob(document.getElementById('kFreq'),    v=>{ tg.frequency=v; tgUpdate(); });
-  initKnob(document.getElementById('kDetune'),  v=>{ tg.detune=v; tgUpdate(); });
-  initKnob(document.getElementById('kVol'),     v=>{ tg.volume=v/100; });
-  initKnob(document.getElementById('kAtk'),     v=>{ tg.attack=v/1000; });
-  initKnob(document.getElementById('kDcy'),     v=>{ tg.decay=v/1000; });
-  initKnob(document.getElementById('kSus'),     v=>{ tg.sustain=v/100; });
-  initKnob(document.getElementById('kRel'),     v=>{ tg.release=v/1000; });
-  initKnob(document.getElementById('kCutoff'),  v=>{ tg.filterCutoff=v; tgUpdate(); });
-  initKnob(document.getElementById('kReso'),    v=>{ tg.filterQ=v; tgUpdate(); });
-  initKnob(document.getElementById('kLfoRate'), v=>{ tg.lfoRate=v; tgUpdate(); });
-  initKnob(document.getElementById('kLfoDepth'),v=>{ tg.lfoDepth=v; applyLFOTarget(); });
-  // Play button
-  document.getElementById('tgPlayBtn').addEventListener('click',()=>{ if(tg.playing)tgStop();else tgStart(); });
-  // Init flat scope line
-  setTimeout(clearScope, 100);
+  document.getElementById('tgAddTone').addEventListener('click', addTone);
+  addTone();
+  setTimeout(clearScope,100);
 }
 
 // ═════════════════════════════════════════
@@ -1090,7 +1118,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
     if(tab!=='tuner') stopAllTones();
-    if(tab!=='tone') tgStop();
+    if(tab!=='tone') toneInstances.forEach(toneStop);
   });
 });
 
