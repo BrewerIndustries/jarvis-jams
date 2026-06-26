@@ -470,6 +470,11 @@
           <div class="tone-opt" data-mode="guitar" id="toneGuitar">♩ Guitar</div>
         </div>
       </div>
+      <div class="separator"></div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">Sustain</span>
+        <div class="tone-opt" id="sustainToggle">Hold</div>
+      </div>
       <div style="margin-left:auto;color:var(--text-muted);font-size:11px">
         Click a string to play · click again to stop
       </div>
@@ -810,10 +815,23 @@ function midiToFreq(m){ return 440*Math.pow(2,(m-69)/12); }
 function midiToNote(m){ return NOTE_NAMES[m%12]+(Math.floor(m/12)-1); }
 function noteOctToMidi(n,o){ return (o+1)*12+n; }
 const PRESETS={ 'Standard':[40,45,50,55,59,64],'Drop D':[38,45,50,55,59,64],'Open G':[38,43,50,55,59,62],'Open D':[38,45,50,54,57,62],'DADGAD':[38,45,50,55,57,62],'Drop C':[36,43,48,53,57,62],'Half-step down':[39,44,49,54,58,63],'Full-step down':[38,43,48,53,57,62] };
-let tunerMidis=[...PRESETS['Standard']], toneMode='sine', activeTones=Array(6).fill(null), savedTunings={};
+let tunerMidis=[...PRESETS['Standard']], toneMode='sine', tunerSustain=false, activeTones=Array(6).fill(null), savedTunings={};
 function loadSavedTunings(){ try{savedTunings=JSON.parse(localStorage.getItem('jj-tunings'))||{};}catch{savedTunings={};} }
 function persistTunings(){ localStorage.setItem('jj-tunings',JSON.stringify(savedTunings)); }
-function startTone(i){ stopTone(i); const ctx=getCtx(),freq=midiToFreq(tunerMidis[i]); const mg=ctx.createGain(); mg.gain.setValueAtTime(0.5,ctx.currentTime); mg.gain.setTargetAtTime(0,ctx.currentTime+1.5,1.2); mg.connect(ctx.destination); const oscs=[]; if(toneMode==='guitar'){[1,2,3,4,5].forEach((h,i2)=>{if(freq*h>20000)return;const g=ctx.createGain();g.gain.value=[1,.5,.25,.12,.06][i2];const o=ctx.createOscillator();o.frequency.value=freq*h;o.connect(g);g.connect(mg);o.start();oscs.push(o);});}else{const o=ctx.createOscillator();o.type='sine';o.frequency.value=freq;o.connect(mg);o.start();oscs.push(o);} const stopAt=ctx.currentTime+6; activeTones[i]={oscs,masterGain:mg,stopAt}; document.getElementById('str-'+i)?.classList.add('playing'); setTimeout(()=>{if(activeTones[i]?.stopAt===stopAt)stopTone(i);},6100); }
+function startTone(i){
+  for(let j=0;j<6;j++) if(j!==i) stopTone(j);
+  stopTone(i);
+  const ctx=getCtx(),freq=midiToFreq(tunerMidis[i]);
+  const mg=ctx.createGain(); mg.gain.setValueAtTime(0.5,ctx.currentTime);
+  if(!tunerSustain) mg.gain.setTargetAtTime(0,ctx.currentTime+1.5,1.2);
+  mg.connect(ctx.destination);
+  const oscs=[];
+  if(toneMode==='guitar'){[1,2,3,4,5].forEach((h,i2)=>{if(freq*h>20000)return;const g=ctx.createGain();g.gain.value=[1,.5,.25,.12,.06][i2];const o=ctx.createOscillator();o.frequency.value=freq*h;o.connect(g);g.connect(mg);o.start();oscs.push(o);});}else{const o=ctx.createOscillator();o.type='sine';o.frequency.value=freq;o.connect(mg);o.start();oscs.push(o);}
+  const stopAt=tunerSustain?null:ctx.currentTime+6;
+  activeTones[i]={oscs,masterGain:mg,stopAt};
+  document.getElementById('str-'+i)?.classList.add('playing');
+  if(!tunerSustain) setTimeout(()=>{if(activeTones[i]?.stopAt===stopAt)stopTone(i);},6100);
+}
 function stopTone(i){ const t=activeTones[i]; if(!t)return; const ctx=getCtx(); t.masterGain.gain.cancelScheduledValues(ctx.currentTime); t.masterGain.gain.setTargetAtTime(0,ctx.currentTime,0.03); setTimeout(()=>{t.oscs.forEach(o=>{try{o.stop();}catch{}});t.masterGain.disconnect();},200); activeTones[i]=null; document.getElementById('str-'+i)?.classList.remove('playing'); }
 function stopAllTones(){ for(let i=0;i<6;i++)stopTone(i); }
 function renderStrings(){ const row=document.getElementById('stringsRow'); row.innerHTML=''; tunerMidis.forEach((m,i)=>{ const freq=midiToFreq(m),note=NOTE_NAMES[m%12],oct=Math.floor(m/12)-1; const card=document.createElement('div'); card.className='string-card'+(activeTones[i]?' playing':''); card.id='str-'+i; card.innerHTML=`<div class="string-num">String ${6-i}</div><div class="string-note">${note}</div><div class="string-hz">${freq.toFixed(2)} Hz</div><div class="play-indicator">♪</div>`; card.addEventListener('click',()=>{ if(activeTones[i])stopTone(i);else startTone(i); }); row.appendChild(card); }); }
@@ -823,7 +841,15 @@ function initTuner(){
   loadSavedTunings();
   const pSel=document.getElementById('presetSelect'); Object.keys(PRESETS).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;pSel.appendChild(o);}); pSel.addEventListener('change',()=>{tunerMidis=[...PRESETS[pSel.value]];stopAllTones();renderStrings();renderCustomStrings();});
   renderStrings(); renderCustomStrings(); renderSavedTunings();
-  document.querySelectorAll('.tone-opt').forEach(el=>{ el.addEventListener('click',()=>{ toneMode=el.dataset.mode; document.querySelectorAll('.tone-opt').forEach(e=>e.classList.toggle('active',e===el)); stopAllTones(); }); });
+  document.querySelectorAll('.tone-opt[data-mode]').forEach(el=>{ el.addEventListener('click',()=>{ toneMode=el.dataset.mode; document.querySelectorAll('.tone-opt[data-mode]').forEach(e=>e.classList.toggle('active',e===el)); stopAllTones(); }); });
+  document.getElementById('sustainToggle').addEventListener('click',()=>{
+    tunerSustain=!tunerSustain;
+    document.getElementById('sustainToggle').classList.toggle('active',tunerSustain);
+    if(!tunerSustain){
+      const ctx=getCtx();
+      for(let i=0;i<6;i++){const t=activeTones[i];if(t&&t.stopAt===null){t.masterGain.gain.setTargetAtTime(0,ctx.currentTime+1.5,1.2);const st=ctx.currentTime+6;t.stopAt=st;setTimeout(()=>{if(activeTones[i]?.stopAt===st)stopTone(i);},6100);}}
+    }
+  });
   document.getElementById('saveTuningBtn').addEventListener('click',()=>{ const name=document.getElementById('tuningNameInput').value.trim(); if(!name){alert('Enter a name.');return;} savedTunings[name]=[...tunerMidis]; persistTunings(); renderSavedTunings(); document.getElementById('tuningNameInput').value=''; });
   document.getElementById('exportTuningBtn').addEventListener('click',()=>{ const name=document.getElementById('tuningNameInput').value.trim()||'My Tuning'; const data={name,strings:tunerMidis.map(m=>({midi:m,note:midiToNote(m),freq:+midiToFreq(m).toFixed(2)}))}; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); Object.assign(document.createElement('a'),{href:url,download:name+'.json'}).click(); setTimeout(()=>URL.revokeObjectURL(url),5000); });
 }
