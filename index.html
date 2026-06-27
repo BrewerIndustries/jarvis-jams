@@ -368,10 +368,20 @@
       font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
       color: var(--cyan); margin-bottom: 10px; text-shadow: 0 0 8px var(--glow-cyan);
     }
-    #tgScope {
-      display: block; width: 100%; height: 80px;
-      background: #050010; border-radius: 4px;
+    .joog-patches-section {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 0;
     }
+    .joog-patches-hdr {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .joog-patches-hdr span {
+      color:var(--green); font-size:11px; text-transform:uppercase; letter-spacing:.1em;
+      text-shadow:0 0 8px rgba(5,255,161,0.4);
+    }
+    #tgPatches { max-height:320px; overflow-y:auto; }
 
     /* ─── Tone gen play button ─── */
     .tg-play-row { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 8px 0; }
@@ -558,10 +568,6 @@
     .mod-palette-sep:first-child { border-top: none; margin-top: 0; }
     .mod-palette-item { padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; border: 1px solid var(--border); background: var(--surface); transition: background 0.1s, border-color 0.1s; }
     .mod-palette-item:hover { background: var(--surface-up); border-color: var(--pink); }
-    /* All board */
-    #allBoard .patch-card { margin-bottom: 12px; }
-    #allPatchGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media (max-width: 800px) { #allPatchGrid { grid-template-columns: 1fr; } }
 
     /* ─── JARVIS JOOG ─── */
     .joog-panel { display:flex; flex-direction:column; }
@@ -659,10 +665,8 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="beat">Beat Machine</button>
     <button class="tab-btn" data-tab="tuner">Tuner</button>
-    <button class="tab-btn" data-tab="tone">Tone Gen</button>
     <button class="tab-btn" data-tab="keys">Keys</button>
     <button class="tab-btn" data-tab="joog">Joog</button>
-    <button class="tab-btn" data-tab="all">All</button>
   </div>
 </header>
 
@@ -764,21 +768,6 @@
   </div>
 
   <!-- ═══ TONE GENERATOR ═══ -->
-  <div class="panel" id="panel-tone">
-
-    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-      <button class="btn cyan" id="tgAddTone">+ New Patch</button>
-    </div>
-    <div id="tgPatches"></div>
-
-    <!-- SCOPE -->
-    <div class="scope-wrap">
-      <h3>Oscilloscope</h3>
-      <canvas id="tgScope"></canvas>
-    </div>
-
-  </div><!-- /panel-tone -->
-
   <!-- ═══ KEYBOARD + LOOPER ═══ -->
   <div class="panel" id="panel-keys">
     <div class="ctrl-row keys-toolbar">
@@ -835,9 +824,6 @@
   <!-- ═══ ALL ═══ -->
   <div class="panel" id="panel-joog"></div><!-- /panel-joog -->
 
-  <div class="panel" id="panel-all">
-    <div id="allBoard"></div>
-  </div><!-- /panel-all -->
 
 </main>
 
@@ -1136,7 +1122,7 @@ function initKnob(el, onChange) {
 // MODULAR SYNTH ENGINE
 // ═════════════════════════════════════════
 const patchInstances = [];
-let masterAnalyser = null, scopeRAF = null;
+let masterAnalyser = null;
 
 function getMasterAnalyser(){
   if(!masterAnalyser){
@@ -1313,7 +1299,6 @@ function patchBuildGraph(patch){
     envRef.gainNode.gain.linearRampToValueAtTime(ep.sustain/100,now+ep.attack/1000+Math.max(0.001,ep.decay/1000));
   }
   patch.playing=true; patch._envNodes=envRef;
-  if(!scopeRAF) drawScope();
 }
 function patchStart(patch){
   if(patch.playing) patchStop(patch);
@@ -1332,7 +1317,6 @@ function patchStop(patch){
   } else {cleanupPatchNodes(patch);}
   patch._envNodes=null;
   if(patch._btn){patch._btn.textContent='▶ Play'; patch._btn.classList.remove('playing');}
-  if(!patchInstances.some(p=>p.playing)){cancelAnimationFrame(scopeRAF); scopeRAF=null; clearScope();}
 }
 function cleanupPatchNodes(patch){
   (patch._allNodes||[]).forEach(n=>{try{n.cleanup&&n.cleanup();}catch(_){}});
@@ -1598,52 +1582,11 @@ function buildPatchCard(patch,idx){
 }
 
 // "All" board — moves existing patch card DOM nodes into a 2-col grid
-function buildAllBoard(){
-  const board=document.getElementById('allBoard'); if(!board) return;
-  board.innerHTML=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
-    <span style="color:var(--green);font-size:11px;text-transform:uppercase;letter-spacing:.1em">All Patches</span>
-    <span style="flex:1"></span>
-    <button class="btn sm cyan" id="allAddPatch">+ New Patch</button>
-    <button class="btn sm danger" id="allStopAll">■ Stop All</button>
-  </div><div id="allPatchGrid"></div>`;
-  document.getElementById('allAddPatch').addEventListener('click',()=>{addPatch(); buildAllBoard();});
-  document.getElementById('allStopAll').addEventListener('click',stopAllPatches);
-  const grid=document.getElementById('allPatchGrid');
-  patchInstances.forEach(p=>{if(p._card) grid.appendChild(p._card);});
-}
-function restorePatchCards(){
-  const c=document.getElementById('tgPatches'); if(!c) return;
-  patchInstances.forEach(p=>{if(p._card) c.appendChild(p._card);});
-}
-
-// Scope
-function drawScope(){
-  const canvas=document.getElementById('tgScope');
-  if(!canvas||!masterAnalyser) return;
-  const c=canvas.getContext('2d'),W=canvas.width=canvas.offsetWidth,H=canvas.height;
-  const data=new Float32Array(masterAnalyser.fftSize); masterAnalyser.getFloatTimeDomainData(data);
-  c.clearRect(0,0,W,H); c.shadowBlur=10; c.shadowColor='#01cdfe'; c.strokeStyle='rgba(1,205,254,0.5)'; c.lineWidth=2;
-  c.beginPath(); data.forEach((v,i)=>{const x=i/data.length*W,y=(1-(v+1)/2)*H; i===0?c.moveTo(x,y):c.lineTo(x,y);}); c.stroke();
-  c.shadowBlur=0; c.strokeStyle='#01cdfe'; c.lineWidth=1.5;
-  c.beginPath(); data.forEach((v,i)=>{const x=i/data.length*W,y=(1-(v+1)/2)*H; i===0?c.moveTo(x,y):c.lineTo(x,y);}); c.stroke();
-  if(patchInstances.some(p=>p.playing)) scopeRAF=requestAnimationFrame(drawScope);
-}
-function clearScope(){
-  const canvas=document.getElementById('tgScope'); if(!canvas) return;
-  const c=canvas.getContext('2d'); canvas.width=canvas.offsetWidth; c.clearRect(0,0,canvas.width,canvas.height);
-  c.strokeStyle='rgba(1,205,254,0.15)'; c.lineWidth=1;
-  c.beginPath(); c.moveTo(0,canvas.height/2); c.lineTo(canvas.width,canvas.height/2); c.stroke();
-}
 
 function addPatch(){
   const patch=makePatch(); patchInstances.push(patch);
   const c=document.getElementById('tgPatches'); if(c) c.appendChild(buildPatchCard(patch,patchInstances.length-1));
   updateKbToneSelect();
-}
-function initToneGen(){
-  document.getElementById('tgAddTone').addEventListener('click',addPatch);
-  addPatch();
-  setTimeout(clearScope,100);
 }
 
 
@@ -2122,10 +2065,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
     if(tab!=='tuner') stopAllTones();
-    if(tab!=='tone' && tab!=='all') stopAllPatches();
-    if(tab!=='joog') joogStop();
-    restorePatchCards();
-    if(tab==='all') buildAllBoard();
+    if(tab!=='joog') { stopAllPatches(); joogStop(); }
     kbTabActive = (tab==='keys');
     joogTabActive = (tab==='joog');
     if(tab==='joog') setTimeout(startJoogScope, 80);
@@ -2525,7 +2465,17 @@ function initJoog(){
       RLBLS.map((r,i)=>`<button class="joog-rb${RVALS[i]===def?' active':''}" data-range="${RVALS[i]}">${r}</button>`).join('')+`</div>`;
   }
 
-  panel.innerHTML=`<div class="joog-panel">
+  panel.innerHTML=`<div class="joog-patches-section">
+  <div class="joog-patches-hdr">
+    <span>Patches</span>
+    <div style="display:flex;gap:8px">
+      <button class="btn sm danger" id="allStopAll">■ Stop All</button>
+      <button class="btn sm cyan" id="tgAddTone">+ New Patch</button>
+    </div>
+  </div>
+  <div id="tgPatches"></div>
+</div>
+<div class="joog-panel">
 <div class="joog-header">
   <span class="joog-header-title">JARVIS JOOG</span>
   <span class="joog-header-sub">Moog-inspired monosynth · 3 VCOs · ladder filter · dual envelope · glide</span>
@@ -2631,6 +2581,11 @@ function initJoog(){
 </div>
 </div>`;
 
+  // Patches section
+  panel.querySelector('#tgAddTone').addEventListener('click', addPatch);
+  panel.querySelector('#allStopAll').addEventListener('click', stopAllPatches);
+  addPatch();
+
   // Knobs
   panel.querySelectorAll('.knob').forEach(el=>initKnob(el,v=>{joogP[el.dataset.param]=v; joogLiveUpdate(el.dataset.param,v);}));
 
@@ -2687,7 +2642,6 @@ function initJoog(){
 // ═════════════════════════════════════════
 initBeatMachine();
 initTuner();
-initToneGen();
 initKeyboard();
 initJoog();
 </script>
