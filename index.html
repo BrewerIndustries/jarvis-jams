@@ -569,43 +569,102 @@
     .mod-palette-item { padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; border: 1px solid var(--border); background: var(--surface); transition: background 0.1s, border-color 0.1s; }
     .mod-palette-item:hover { background: var(--surface-up); border-color: var(--pink); }
 
-    /* ─── JARVIS JOOG ─── */
-    /* === Mavis Panel === */
+    /* ─── JARVIS JOOG — Mavis-faithful layout ─── */
     .joog-panel { display:flex; flex-direction:column; background:#0a0018; }
     .joog-header {
       display:flex; align-items:center; justify-content:space-between;
-      padding:8px 16px; background:linear-gradient(90deg,#0f0020,#1e0040);
+      padding:6px 14px; background:linear-gradient(90deg,#0f0020,#1e0040);
       border-bottom:2px solid var(--pink);
     }
-    .joog-header-title { color:var(--pink); font-size:15px; letter-spacing:5px; text-shadow:0 0 12px var(--pink); font-weight:700; }
-    .joog-header-sub { color:var(--text-muted); font-size:9px; letter-spacing:1.5px; }
+    .joog-header-title { color:var(--pink); font-size:13px; letter-spacing:5px; text-shadow:0 0 12px var(--pink); font-weight:700; }
+    .joog-header-sub { color:var(--text-muted); font-size:8px; letter-spacing:1px; }
+    /* Main area: patch-left + controls-right */
+    .joog-main-area { display:flex; flex-direction:row; }
+    /* ── Patch Bay (left column) ── */
+    .joog-patchbay {
+      width:158px; flex-shrink:0; background:#050010;
+      border-right:2px solid var(--border);
+      display:flex; flex-direction:column;
+    }
+    .joog-patch-header {
+      display:flex; padding:5px 6px 4px;
+      border-bottom:1px solid var(--border);
+      background:#08001a;
+    }
+    .joog-patch-col-hdr {
+      flex:1; text-align:center; font-size:8px; letter-spacing:2px;
+      text-transform:uppercase; font-weight:700;
+    }
+    .joog-patch-col-hdr.in { color:var(--cyan); }
+    .joog-patch-col-hdr.out { color:var(--pink); }
+    .joog-patch-cols { display:flex; flex:1; }
+    .joog-patch-col {
+      flex:1; display:flex; flex-direction:column;
+      padding:4px 3px; gap:2px;
+    }
+    .joog-patch-col.in-col { border-right:1px solid var(--border); }
+    /* Jack elements — compact vertical list */
+    .joog-jack {
+      display:flex; align-items:center; gap:4px; cursor:pointer;
+      padding:2px 3px; border-radius:3px; transition:background 0.1s;
+    }
+    .joog-jack:hover { background:rgba(255,255,255,0.06); }
+    .joog-jack.selected { background:rgba(255,255,255,0.12); }
+    .joog-jack-circle {
+      width:13px; height:13px; border-radius:50%; flex-shrink:0;
+      box-sizing:border-box; position:relative;
+    }
+    .joog-jack.out .joog-jack-circle { border:none; }
+    .joog-jack.in .joog-jack-circle { background:transparent; border:2px solid currentColor; }
+    .joog-jack.in .joog-jack-circle::after {
+      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:4px; height:4px; border-radius:50%; background:currentColor; opacity:0.5;
+    }
+    .joog-jack.in.patched .joog-jack-circle { background:currentColor; }
+    .joog-jack.in.patched .joog-jack-circle::after { display:none; }
+    .joog-jack-label { font-size:8px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:56px; }
+    .joog-jack.selected .joog-jack-label { color:#fff; }
+    .joog-patch-hint {
+      font-size:7px; color:var(--text-muted); padding:4px 6px;
+      border-top:1px solid var(--border); text-align:center; line-height:1.4;
+      opacity:0.6;
+    }
+    /* ── Controls area (right of patch bay) ── */
+    .joog-controls { flex:1; display:flex; flex-direction:column; min-width:0; }
+    /* Top knob row: FOLD / VCO / VCF / VCA */
     .joog-body { display:flex; overflow-x:auto; background:#080014; border-bottom:1px solid var(--border); }
-    .joog-sec { border-right:1px solid var(--border); padding:10px 12px; flex-shrink:0; min-width:0; }
+    .joog-sec { border-right:1px solid var(--border); padding:8px 10px; flex-shrink:0; }
     .joog-sec:last-child { border-right:none; }
     .joog-sec-title {
       font-size:8px; letter-spacing:2px; text-transform:uppercase;
-      color:var(--cyan); text-align:center; margin-bottom:8px;
-      border-bottom:1px solid rgba(1,205,254,0.2); padding-bottom:5px;
+      color:var(--cyan); text-align:center; margin-bottom:6px;
+      border-bottom:1px solid rgba(1,205,254,0.2); padding-bottom:4px;
     }
+    /* Second knob row: LFO / EG (below top row) */
+    .joog-lower-body {
+      display:flex; background:#06000f; border-bottom:1px solid var(--border); overflow-x:auto;
+    }
+    /* Horizontal knob rows within a section */
+    .joog-knob-row { display:flex; gap:4px; align-items:flex-start; flex-wrap:nowrap; }
     /* crossfader sliders */
-    .joog-xfader-wrap { display:flex; flex-direction:column; align-items:center; gap:2px; margin:4px 0; }
-    .joog-xfader-labels { display:flex; justify-content:space-between; width:100%; font-size:8px; color:var(--text-muted); }
+    .joog-xfader-wrap { display:flex; flex-direction:column; align-items:center; gap:2px; margin:2px 0; min-width:70px; }
+    .joog-xfader-labels { display:flex; justify-content:space-between; width:100%; font-size:7px; color:var(--text-muted); }
     .joog-xfader {
       width:100%; accent-color:var(--pink);
       cursor:pointer; -webkit-appearance:none; height:14px;
       background:transparent;
     }
-    .joog-xfader::-webkit-slider-thumb { -webkit-appearance:none; width:12px; height:20px; background:var(--pink); border-radius:3px; cursor:pointer; }
-    .joog-xfader::-webkit-slider-runnable-track { height:6px; background:var(--surface); border-radius:3px; border:1px solid var(--border); }
+    .joog-xfader::-webkit-slider-thumb { -webkit-appearance:none; width:10px; height:18px; background:var(--pink); border-radius:2px; cursor:pointer; }
+    .joog-xfader::-webkit-slider-runnable-track { height:5px; background:var(--surface); border-radius:3px; border:1px solid var(--border); }
     /* VCA switch */
-    .joog-vca-switch { display:flex; gap:4px; margin-top:6px; }
+    .joog-vca-switch { display:flex; gap:4px; margin-top:5px; }
     .joog-vsw {
       flex:1; padding:3px 5px; font-size:9px; font-family:inherit;
       background:var(--surface); border:1px solid var(--border); color:var(--text-muted);
       border-radius:3px; cursor:pointer; text-align:center;
     }
     .joog-vsw.active { background:var(--pink); color:#000; border-color:var(--pink); box-shadow:0 0 8px var(--glow-pink); }
-    /* Scope + tuner (keep existing) */
+    /* Scope + tuner */
     .joog-scope-tuner {
       display:flex; gap:10px; align-items:stretch;
       padding:8px 14px; background:#040009; border-top:1px solid var(--border);
@@ -613,74 +672,43 @@
     .joog-scope-wrap { flex:1; min-width:0; }
     #joogScope { width:100%; height:80px; display:block; border-radius:4px; border:1px solid rgba(185,103,255,0.2); background:#02000a; }
     .joog-tuner {
-      width:140px; flex-shrink:0; background:#080012; border:1px solid var(--border);
-      border-radius:6px; padding:8px 10px; display:flex; flex-direction:column; align-items:center; gap:4px;
+      width:130px; flex-shrink:0; background:#080012; border:1px solid var(--border);
+      border-radius:6px; padding:7px 8px; display:flex; flex-direction:column; align-items:center; gap:4px;
     }
-    .joog-tuner-note { color:var(--pink); font-size:28px; font-weight:bold; line-height:1; text-shadow:0 0 12px var(--pink); min-width:50px; text-align:center; }
+    .joog-tuner-note { color:var(--pink); font-size:26px; font-weight:bold; line-height:1; text-shadow:0 0 12px var(--pink); min-width:50px; text-align:center; }
     .joog-tuner-freq { color:var(--text-muted); font-size:9px; letter-spacing:1px; }
-    .joog-tuner-cents-wrap { position:relative; width:120px; height:14px; background:var(--surface); border-radius:7px; overflow:hidden; }
+    .joog-tuner-cents-wrap { position:relative; width:110px; height:14px; background:var(--surface); border-radius:7px; overflow:hidden; }
     .joog-tuner-cents-bar { position:absolute; top:2px; height:10px; width:6px; border-radius:3px; background:var(--green); transition:left 0.05s; left:calc(50% - 3px); }
     .joog-tuner-cents-bar.sharp { background:var(--pink); }
     .joog-tuner-cents-bar.flat { background:var(--cyan); }
     .joog-tuner-cents-label { color:var(--text-muted); font-size:9px; }
-    /* Patch Bay */
-    .joog-patchbay {
-      padding:10px 14px; background:#060010; border-top:1px solid var(--border);
-    }
-    .joog-patchbay-title {
-      font-size:8px; letter-spacing:2px; text-transform:uppercase;
-      color:var(--purple); margin-bottom:8px; border-bottom:1px solid rgba(185,103,255,0.2); padding-bottom:4px;
-    }
-    .joog-patchbay-grid { display:flex; gap:8px; flex-wrap:wrap; }
-    .joog-patchbay-group { display:flex; flex-direction:column; gap:4px; min-width:72px; }
-    .joog-patchbay-group-title { font-size:7px; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); text-align:center; }
-    .joog-jack-row { display:flex; flex-direction:column; gap:3px; }
-    .joog-jack {
-      display:flex; align-items:center; gap:5px; cursor:pointer;
-      padding:2px 4px; border-radius:3px; transition:background 0.1s;
-    }
-    .joog-jack:hover { background:rgba(255,255,255,0.05); }
-    .joog-jack.selected { background:rgba(255,255,255,0.1); }
-    .joog-jack-circle {
-      width:14px; height:14px; border-radius:50%; flex-shrink:0;
-      box-sizing:border-box; position:relative;
-    }
-    .joog-jack.out .joog-jack-circle { border:none; }
-    .joog-jack.in .joog-jack-circle { background:transparent; border:2px solid currentColor; }
-    .joog-jack.in .joog-jack-circle::after {
-      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      width:5px; height:5px; border-radius:50%; background:currentColor; opacity:0.45;
-    }
-    .joog-jack.in.patched .joog-jack-circle { background:currentColor; }
-    .joog-jack.in.patched .joog-jack-circle::after { display:none; }
-    .joog-jack-label { font-size:9px; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap; }
-    .joog-jack.selected .joog-jack-label { color:#fff; }
-    /* Mavis rubber-pad keyboard */
+    /* Mavis rubber-pad keyboard — compact square pads */
     .joog-keys-wrap {
-      display:flex; flex-direction:column; align-items:center;
-      padding:10px 16px 14px; gap:8px; background:#040009;
+      display:flex; flex-direction:row; align-items:center;
+      padding:8px 12px; gap:14px; background:#040009; flex-wrap:wrap;
     }
-    .joog-kb-controls { display:flex; align-items:center; gap:10px; font-size:11px; flex-wrap:wrap; }
-    .joog-mavis-piano { display:flex; flex-direction:column; gap:4px; user-select:none; }
-    .joog-key-row { display:flex; gap:4px; }
+    .joog-kb-controls { display:flex; align-items:center; gap:8px; font-size:11px; flex-wrap:wrap; }
+    .joog-kb-knobs { display:flex; gap:4px; align-items:flex-start; }
+    .joog-mavis-piano { display:flex; flex-direction:column; gap:3px; user-select:none; }
+    .joog-key-row { display:flex; gap:3px; }
     .joog-key-nat {
-      width:44px; height:52px; border-radius:5px;
+      width:30px; height:40px; border-radius:4px;
       border:1px solid rgba(255,255,255,0.12);
       background:linear-gradient(180deg,#1e0038,#130025);
-      color:var(--text-muted); font-size:9px; font-family:inherit;
+      color:var(--text-muted); font-size:8px; font-family:inherit;
       cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
-      padding-bottom:6px; user-select:none;
+      padding-bottom:4px; user-select:none;
       box-shadow:inset 0 -3px 0 rgba(0,0,0,0.6),0 2px 4px rgba(0,0,0,0.5);
       transition:background 0.06s,box-shadow 0.06s,transform 0.04s;
       -webkit-tap-highlight-color:transparent;
     }
     .joog-key-nat:hover { background:linear-gradient(180deg,#2a004a,#1e0038); border-color:rgba(255,255,255,0.2); }
-    .joog-key-nat.active { background:var(--pink); color:#000; border-color:var(--pink); box-shadow:0 0 16px var(--glow-pink),inset 0 1px 0 rgba(255,255,255,0.4); transform:translateY(1px); }
+    .joog-key-nat.active { background:var(--pink); color:#000; border-color:var(--pink); box-shadow:0 0 14px var(--glow-pink),inset 0 1px 0 rgba(255,255,255,0.4); transform:translateY(1px); }
     .joog-key-sharp {
-      width:44px; height:38px; border-radius:4px;
+      width:30px; height:26px; border-radius:3px;
       border:1px solid rgba(255,255,255,0.07);
       background:linear-gradient(180deg,#08000f,#040009);
-      color:rgba(255,255,255,0.3); font-size:8px; font-family:inherit;
+      color:rgba(255,255,255,0.25); font-size:7px; font-family:inherit;
       cursor:pointer; display:flex; align-items:center; justify-content:center;
       user-select:none;
       box-shadow:inset 0 -2px 0 rgba(0,0,0,0.7),0 1px 3px rgba(0,0,0,0.6);
@@ -688,8 +716,8 @@
       -webkit-tap-highlight-color:transparent;
     }
     .joog-key-sharp:hover { background:linear-gradient(180deg,#140025,#08000f); border-color:rgba(255,255,255,0.12); }
-    .joog-key-sharp.active { background:var(--purple); color:#fff; border-color:var(--purple); box-shadow:0 0 12px var(--glow-purple),inset 0 1px 0 rgba(255,255,255,0.2); transform:translateY(1px); }
-    .joog-key-gap { width:44px; height:38px; background:transparent; border:none; pointer-events:none; box-shadow:none; }
+    .joog-key-sharp.active { background:var(--purple); color:#fff; border-color:var(--purple); box-shadow:0 0 10px var(--glow-purple),inset 0 1px 0 rgba(255,255,255,0.2); transform:translateY(1px); }
+    .joog-key-gap { width:30px; height:26px; background:transparent; border:none; pointer-events:none; box-shadow:none; }
   </style>
 </head>
 <body>
@@ -2408,9 +2436,9 @@ function joogPatch(inputId, outputId){
 }
 
 function renderPatchBay(){
-  const container=document.getElementById('joogPatchGrid'); if(!container) return;
+  const panel=document.getElementById('panel-joog'); if(!panel) return;
   JACK_DEFS.forEach(j=>{
-    const el=container.querySelector(`[data-jack="${j.id}"]`); if(!el) return;
+    const el=panel.querySelector(`[data-jack="${j.id}"]`); if(!el) return;
     const circle=el.querySelector('.joog-jack-circle');
     const isSelected=(j.t==='out'&&joogSelectedJack===j.id);
     el.classList.toggle('selected',isSelected);
@@ -2421,57 +2449,46 @@ function renderPatchBay(){
       circle.style.borderColor=color;
       el.classList.toggle('patched',!!joogPatches[j.id]);
     } else {
-      circle.style.background=joogSelectedJack===j.id?j.color:j.color+'aa';
-      circle.style.boxShadow=joogSelectedJack===j.id?`0 0 8px ${j.color},0 0 16px ${j.color}50`:'none';
+      circle.style.background=isSelected?j.color:j.color+'aa';
+      circle.style.boxShadow=isSelected?`0 0 8px ${j.color},0 0 14px ${j.color}50`:'none';
     }
   });
 }
 
-function buildPatchBay(){
-  const grid=document.getElementById('joogPatchGrid'); if(!grid) return;
-  const groups=[
-    {title:'VCO', ids:['vco_out','fold_out','1voct_in','vcofm_in','vcopwm_in','foldin_in']},
-    {title:'VCF / EG', ids:['eg_out','vcfcv_in','vcacv_in']},
-    {title:'LFO / S+H', ids:['lfo_out','lforate_in','sh_out','sh_in','shgate_in']},
-    {title:'KBD / VCA', ids:['kbcv_out','vca_out','gate_in']},
-    {title:'UTIL', ids:['attn_out','mult1_out','mult2_out','onetwo_out','attn_in','one_in','two_in','mult_in']},
-  ];
-  const byId=Object.fromEntries(JACK_DEFS.map(j=>[j.id,j]));
-  grid.innerHTML='';
-  groups.forEach(g=>{
-    const grpEl=document.createElement('div'); grpEl.className='joog-patchbay-group';
-    grpEl.innerHTML=`<div class="joog-patchbay-group-title">${g.title}</div>`;
-    const rowEl=document.createElement('div'); rowEl.className='joog-jack-row';
-    g.ids.forEach(id=>{
-      const j=byId[id]; if(!j) return;
-      const el=document.createElement('div');
-      el.className=`joog-jack ${j.t}`; el.dataset.jack=id;
-      const patchedTo=joogPatches[id]||j.norm;
-      const color=j.t==='out'?j.color:(patchedTo?JACK_COLOR[patchedTo]||j.color:'#333');
-      el.style.color=color;
-      const circleStyle=j.t==='out'
-        ?`background:${j.color}aa;`
-        :`border:2px solid ${color};`;
-      el.innerHTML=`<div class="joog-jack-circle" style="${circleStyle}"></div><span class="joog-jack-label">${j.label}</span>`;
-      if(j.t==='in'&&joogPatches[id]) el.classList.add('patched');
-      el.addEventListener('click',()=>{
-        if(j.t==='out'){
-          joogSelectJack(id);
-        } else {
-          if(joogSelectedJack){
-            joogPatch(id,joogSelectedJack);
-            joogSelectedJack=null;
-          } else if(joogPatches[id]){
-            joogPatch(id,null);
-          }
-          renderPatchBay();
-        }
-      });
-      rowEl.appendChild(el);
-    });
-    grpEl.appendChild(rowEl);
-    grid.appendChild(grpEl);
+function makeJack(j){
+  const patchedTo=joogPatches[j.id]||j.norm;
+  const color=j.t==='out'?j.color:(patchedTo?JACK_COLOR[patchedTo]||j.color:'#333');
+  const el=document.createElement('div');
+  el.className=`joog-jack ${j.t}`; el.dataset.jack=j.id;
+  el.style.color=color;
+  const circStyle=j.t==='out'?`background:${j.color}aa;`:`border:2px solid ${color};`;
+  el.innerHTML=`<div class="joog-jack-circle" style="${circStyle}"></div><span class="joog-jack-label">${j.label}</span>`;
+  if(j.t==='in'&&joogPatches[j.id]) el.classList.add('patched');
+  el.addEventListener('click',()=>{
+    if(j.t==='out'){
+      joogSelectJack(j.id);
+    } else {
+      if(joogSelectedJack){ joogPatch(j.id,joogSelectedJack); joogSelectedJack=null; }
+      else if(joogPatches[j.id]){ joogPatch(j.id,null); }
+      else return;
+      renderPatchBay();
+    }
   });
+  return el;
+}
+
+function buildPatchBay(){
+  const inCol=document.getElementById('joogInCol');
+  const outCol=document.getElementById('joogOutCol');
+  if(!inCol||!outCol) return;
+  // IN column order (top→bottom): keyboard/pitch first, then modulation, then utilities
+  const inOrder=['1voct_in','gate_in','vcofm_in','vcopwm_in','vcfcv_in','vcacv_in','lforate_in','foldin_in','sh_in','shgate_in','attn_in','one_in','two_in','mult_in'];
+  // OUT column order
+  const outOrder=['kbcv_out','vca_out','vco_out','fold_out','eg_out','lfo_out','sh_out','attn_out','mult1_out','mult2_out','onetwo_out'];
+  const byId=Object.fromEntries(JACK_DEFS.map(j=>[j.id,j]));
+  inCol.innerHTML=''; outCol.innerHTML='';
+  inOrder.forEach(id=>{ const j=byId[id]; if(j) inCol.appendChild(makeJack(j)); });
+  outOrder.forEach(id=>{ const j=byId[id]; if(j) outCol.appendChild(makeJack(j)); });
   renderPatchBay();
 }
 
@@ -2636,108 +2653,153 @@ function initJoog(){
 <div class="joog-panel">
 <div class="joog-header">
   <span class="joog-header-title">JARVIS JOOG</span>
-  <span class="joog-header-sub">Moog Mavis-style monosynth · wavefolder · 4-pole ladder · S+H · patch bay</span>
-</div>
-<div class="joog-body">
-
-  <!-- VCO -->
-  <div class="joog-sec">
-    <div class="joog-sec-title">VCO</div>
-    ${knobHTML('Pitch','pitch',-24,24,0,'semi',false)}
-    <div class="joog-xfader-wrap" style="margin-top:6px;width:90px">
-      <div class="joog-xfader-labels"><span>SAW</span><span>PULSE</span></div>
-      <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0" data-param="waveMix">
-    </div>
-    ${knobHTML('P.Width','pulseWidth',0,100,50,'pct',false)}
-    <div style="border-top:1px solid var(--border);margin:6px 0;padding-top:6px">
-      <div style="font-size:8px;color:var(--text-muted);text-align:center;margin-bottom:4px;letter-spacing:1px">PITCH MOD</div>
-      <div class="joog-xfader-wrap" style="width:90px">
-        <div class="joog-xfader-labels"><span>EG</span><span>LFO</span></div>
-        <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0.5" data-param="pitchModMix">
-      </div>
-      ${knobHTML('Amount','pitchModAmt',0,100,0,'pct',false)}
-    </div>
-    <div style="border-top:1px solid var(--border);margin:6px 0;padding-top:6px">
-      <div style="font-size:8px;color:var(--text-muted);text-align:center;margin-bottom:4px;letter-spacing:1px">PWM MOD</div>
-      <div class="joog-xfader-wrap" style="width:90px">
-        <div class="joog-xfader-labels"><span>EG</span><span>LFO</span></div>
-        <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0.5" data-param="pwmModMix">
-      </div>
-      ${knobHTML('Amount','pwmModAmt',0,100,0,'pct',false)}
-    </div>
-  </div>
-
-  <!-- WAVEFOLDER -->
-  <div class="joog-sec">
-    <div class="joog-sec-title">Wavefold</div>
-    ${knobHTML('Fold','foldAmt',0,100,0,'pct',false)}
-  </div>
-
-  <!-- VCF -->
-  <div class="joog-sec">
-    <div class="joog-sec-title">VCF</div>
-    ${knobHTML('Cutoff','cutoff',40,18000,3000,'hz',true)}
-    ${knobHTML('Resonance','resonance',0,100,0,'pct',false)}
-    <div style="border-top:1px solid var(--border);margin:6px 0;padding-top:6px">
-      <div style="font-size:8px;color:var(--text-muted);text-align:center;margin-bottom:4px;letter-spacing:1px">VCF MOD</div>
-      <div class="joog-xfader-wrap" style="width:90px">
-        <div class="joog-xfader-labels"><span>EG</span><span>LFO</span></div>
-        <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0.5" data-param="vcfModMix">
-      </div>
-      ${knobHTML('Amount','vcfModAmt',0,100,50,'pct',false)}
-    </div>
-  </div>
-
-  <!-- EG -->
-  <div class="joog-sec">
-    <div class="joog-sec-title">EG</div>
-    <div class="knob-row">
-      ${knobHTML('Atk','attack',1,5000,10,'ms',true)}
-      ${knobHTML('Dcy','decay',1,5000,200,'ms',true)}
-    </div>
-    <div class="knob-row">
-      ${knobHTML('Sus','sustain',0,100,70,'pct',false)}
-      ${knobHTML('Rel','release',1,5000,300,'ms',true)}
-    </div>
-  </div>
-
-  <!-- LFO -->
-  <div class="joog-sec">
-    <div class="joog-sec-title">LFO</div>
-    ${knobHTML('Rate','lfoRate',0.1,550,5,'hz',true)}
-    <div class="joog-xfader-wrap" style="margin-top:6px;width:80px">
-      <div class="joog-xfader-labels"><span>TRI</span><span>SQR</span></div>
-      <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0" data-param="lfoWaveMix">
-    </div>
-  </div>
-
-  <!-- VCA + KB + UTIL -->
-  <div class="joog-sec">
-    <div class="joog-sec-title">VCA</div>
-    ${knobHTML('Volume','volume',0,100,80,'pct',false)}
-    <div class="joog-vca-switch">
-      <button class="joog-vsw active" data-mode="eg">EG</button>
-      <button class="joog-vsw" data-mode="on">ON</button>
-    </div>
-    <div style="border-top:1px solid var(--border);margin:8px 0;padding-top:8px">
-      <div class="joog-sec-title" style="margin-bottom:6px">Keyboard</div>
-      ${knobHTML('Glide','glide',0,2000,0,'ms',true)}
-      ${knobHTML('KB Scale','kbScale',50,200,100,'pct',false)}
-    </div>
-    <div style="border-top:1px solid var(--border);margin:8px 0;padding-top:8px">
-      <div class="joog-sec-title" style="margin-bottom:6px">Utility</div>
-      ${knobHTML('Attn','attn',0,100,50,'pct',false)}
-      ${knobHTML('One Lvl','oneLvl',0,100,50,'pct',false)}
-    </div>
-  </div>
-
+  <span class="joog-header-sub">Moog Mavis-style · wavefolder · 4-pole ladder · 24-jack patch bay</span>
 </div>
 
-<!-- PATCH BAY -->
-<div class="joog-patchbay">
-  <div class="joog-patchbay-title">Patch Bay — click an output to select, then click an input to connect · click a patched input to remove</div>
-  <div class="joog-patchbay-grid" id="joogPatchGrid"></div>
-</div>
+<!-- MAIN AREA: patch left + controls right -->
+<div class="joog-main-area">
+
+  <!-- PATCH BAY (left) -->
+  <div class="joog-patchbay">
+    <div class="joog-patch-header">
+      <span class="joog-patch-col-hdr in">IN</span>
+      <span class="joog-patch-col-hdr out">OUT</span>
+    </div>
+    <div class="joog-patch-cols">
+      <div class="joog-patch-col in-col" id="joogInCol"></div>
+      <div class="joog-patch-col" id="joogOutCol"></div>
+    </div>
+    <div class="joog-patch-hint">Click OUT to select · click IN to patch · click patched IN to remove</div>
+  </div>
+
+  <!-- CONTROLS (right) -->
+  <div class="joog-controls">
+
+    <!-- TOP ROW: FOLD / VCO / VCF / VCA -->
+    <div class="joog-body">
+
+      <!-- FOLD + UTIL -->
+      <div class="joog-sec">
+        <div class="joog-sec-title">FOLD / UTIL</div>
+        ${knobHTML('Fold','foldAmt',0,100,0,'pct',false)}
+        ${knobHTML('One Lvl','oneLvl',0,100,50,'pct',false)}
+        ${knobHTML('Attn','attn',0,100,50,'pct',false)}
+      </div>
+
+      <!-- VCO -->
+      <div class="joog-sec">
+        <div class="joog-sec-title">VCO</div>
+        <div class="joog-knob-row">
+          ${knobHTML('Pitch','pitch',-24,24,0,'semi',false)}
+          <div>
+            <div class="joog-xfader-wrap" style="width:80px;margin-top:14px">
+              <div class="joog-xfader-labels"><span>SAW</span><span>PULSE</span></div>
+              <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0" data-param="waveMix">
+            </div>
+            <div style="font-size:7px;color:var(--text-muted);text-align:center;letter-spacing:1px;margin-top:2px">VCO WAVE</div>
+          </div>
+          ${knobHTML('P.Width','pulseWidth',0,100,50,'pct',false)}
+        </div>
+        <div style="border-top:1px solid var(--border);margin:6px 0 4px;"></div>
+        <div class="joog-knob-row">
+          <div>
+            <div class="joog-xfader-wrap" style="width:72px">
+              <div class="joog-xfader-labels"><span>EG</span><span>LFO</span></div>
+              <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0.5" data-param="pitchModMix">
+            </div>
+            <div style="font-size:7px;color:var(--text-muted);text-align:center;letter-spacing:1px;margin-top:2px">VCO MOD MIX</div>
+          </div>
+          ${knobHTML('Pitch Mod','pitchModAmt',0,100,0,'pct',false)}
+          ${knobHTML('PWM Amt','pwmModAmt',0,100,0,'pct',false)}
+        </div>
+      </div>
+
+      <!-- VCF -->
+      <div class="joog-sec">
+        <div class="joog-sec-title">VCF</div>
+        <div class="joog-knob-row">
+          ${knobHTML('Cutoff','cutoff',40,18000,3000,'hz',true)}
+          ${knobHTML('Resonance','resonance',0,100,0,'pct',false)}
+        </div>
+        <div style="border-top:1px solid var(--border);margin:6px 0 4px;"></div>
+        <div class="joog-knob-row">
+          <div>
+            <div class="joog-xfader-wrap" style="width:72px">
+              <div class="joog-xfader-labels"><span>EG</span><span>LFO</span></div>
+              <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0.5" data-param="vcfModMix">
+            </div>
+            <div style="font-size:7px;color:var(--text-muted);text-align:center;letter-spacing:1px;margin-top:2px">VCF MOD MIX</div>
+          </div>
+          ${knobHTML('VCF Mod','vcfModAmt',0,100,50,'pct',false)}
+        </div>
+      </div>
+
+      <!-- VCA -->
+      <div class="joog-sec">
+        <div class="joog-sec-title">VCA</div>
+        ${knobHTML('Volume','volume',0,100,80,'pct',false)}
+        <div style="font-size:7px;color:var(--text-muted);text-align:center;margin:4px 0 2px;letter-spacing:1px">VCA MODE</div>
+        <div class="joog-vca-switch">
+          <button class="joog-vsw" data-mode="on">ON</button>
+          <button class="joog-vsw active" data-mode="eg">EG</button>
+        </div>
+      </div>
+
+    </div><!-- /joog-body -->
+
+    <!-- LOWER ROW: LFO / EG -->
+    <div class="joog-lower-body">
+
+      <!-- LFO -->
+      <div class="joog-sec">
+        <div class="joog-sec-title">LFO</div>
+        <div class="joog-knob-row">
+          ${knobHTML('Rate','lfoRate',0.1,550,5,'hz',true)}
+          <div>
+            <div class="joog-xfader-wrap" style="width:72px;margin-top:14px">
+              <div class="joog-xfader-labels"><span>TRI</span><span>SQR</span></div>
+              <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0" data-param="lfoWaveMix">
+            </div>
+            <div style="font-size:7px;color:var(--text-muted);text-align:center;letter-spacing:1px;margin-top:2px">LFO WAVE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EG -->
+      <div class="joog-sec">
+        <div class="joog-sec-title">EG</div>
+        <div class="joog-knob-row">
+          ${knobHTML('Attack','attack',1,5000,10,'ms',true)}
+          ${knobHTML('Decay','decay',1,5000,200,'ms',true)}
+          ${knobHTML('Sustain','sustain',0,100,70,'pct',false)}
+          ${knobHTML('Release','release',1,5000,300,'ms',true)}
+        </div>
+      </div>
+
+    </div><!-- /joog-lower-body -->
+
+    <!-- KEYBOARD -->
+    <div class="joog-keys-wrap">
+      <div class="joog-kb-knobs">
+        ${knobHTML('KB Scale','kbScale',50,200,100,'pct',false)}
+        ${knobHTML('Glide','glide',0,2000,0,'ms',true)}
+      </div>
+      <div>
+        <div class="joog-kb-controls" style="margin-bottom:4px">
+          <button class="btn sm" id="joogOctDown">▼</button>
+          <span style="color:var(--cyan);min-width:20px;text-align:center" id="joogOctDisplay">${joogOct}</span>
+          <button class="btn sm" id="joogOctUp">▲</button>
+          <span style="color:var(--text-muted);font-size:8px;letter-spacing:1px">OCT</span>
+          <span style="color:var(--border)">│</span>
+          <span id="joogNoteDisplay" style="color:var(--pink);font-size:13px;font-weight:bold;min-width:50px;text-shadow:0 0 8px var(--pink)">—</span>
+        </div>
+        <div id="joog-piano"></div>
+      </div>
+    </div><!-- /joog-keys-wrap -->
+
+  </div><!-- /joog-controls -->
+
+</div><!-- /joog-main-area -->
 
 <!-- SCOPE + TUNER -->
 <div class="joog-scope-tuner">
@@ -2752,18 +2814,6 @@ function initJoog(){
   </div>
 </div>
 
-<!-- KEYBOARD -->
-<div class="joog-keys-wrap">
-  <div class="joog-kb-controls">
-    <button class="btn sm" id="joogOctDown">▼</button>
-    <span style="color:var(--cyan);min-width:20px;text-align:center" id="joogOctDisplay">${joogOct}</span>
-    <button class="btn sm" id="joogOctUp">▲</button>
-    <span style="color:var(--text-muted);font-size:9px;letter-spacing:1px">OCT</span>
-    <span style="color:var(--border)">│</span>
-    <span id="joogNoteDisplay" style="color:var(--pink);font-size:14px;font-weight:bold;min-width:60px;text-shadow:0 0 8px var(--pink)">—</span>
-  </div>
-  <div id="joog-piano"></div>
-</div>
 </div>`;
 
   // Patches section
