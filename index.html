@@ -2357,7 +2357,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(tab!=='joog') { stopAllPatches(); joogStop(); }
     kbTabActive = (tab==='keys');
     joogTabActive = (tab==='joog');
-    if(tab==='joog') setTimeout(startJoogScope, 80);
+    if(tab==='joog'){
+      setTimeout(startJoogScope, 80);
+      if(joogP.vcaMode==='on' && !joogVoice) setTimeout(()=>joogStart(joogFreqFromMidi(60)),100);
+    }
     else stopJoogScope();
     if(tab==='keys') setTimeout(drawLoopViz,50);
   });
@@ -2561,6 +2564,7 @@ function joogStart(freq){
 
 function joogRelease(){
   if(!joogVoice) return;
+  if(joogP.vcaMode==='on') return; // drone mode: gate-up ignored, voice stays alive
   const v=joogVoice, ctx=getCtx(), now=ctx.currentTime;
   const aR=Math.max(0.01,joogP.release/1000);
   if(joogP.vcaMode==='eg'){
@@ -2590,10 +2594,12 @@ function joogStop(){
 
 function joogNoteOn(freq,noteKey){
   const gt=joogP.glide/1000, ctx=getCtx(), now=ctx.currentTime;
-  if(joogVoice&&joogLastFreq&&joogP.glide>0&&joogVoice.osc_saw){
+  if(joogVoice && joogVoice.osc_saw && (joogP.vcaMode==='on' || (joogLastFreq && joogP.glide>0))){
     const targetFreq=joogVcoFreqFromPitch(freq);
     [joogVoice.osc_saw,joogVoice.osc_sqr].forEach(osc=>{
-      if(osc) osc.frequency.exponentialRampToValueAtTime(Math.max(1,targetFreq),now+gt);
+      if(!osc) return;
+      if(gt>0) osc.frequency.exponentialRampToValueAtTime(Math.max(1,targetFreq),now+gt);
+      else osc.frequency.setValueAtTime(Math.max(1,targetFreq),now);
     });
     joogTriggerEG(joogVoice,true);
   } else {
@@ -3094,6 +3100,8 @@ function initJoog(){
     if(joogVoice){
       if(joogP.vcaMode==='on') joogVoice.ampEnv.gain.value=1;
       else joogVoice.ampEnv.gain.value=0;
+    } else if(joogP.vcaMode==='on'){
+      joogStart(joogFreqFromMidi(60)); // auto-drone at C4 when switching to ON with no active voice
     }
   }));
 
