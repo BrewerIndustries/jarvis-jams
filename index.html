@@ -1501,6 +1501,7 @@ function patchBuildGraph(patch){
     if(m.type==='filter') filterRef=m.nodes;
     if(m.type==='lfo') lfoMod={p:m.params,filterRef};
   });
+  patch._outputNode = signal;
   signal.connect(ana);
   if(lfoMod&&lfoMod.filterRef?.filterNode){
     const lfo=ctx.createOscillator(),lg=ctx.createGain();
@@ -2303,6 +2304,16 @@ function updateKbToneSelect() {
   sel.innerHTML = patchInstances.map((p, i) => `<option value="${i}">${p.name || `Patch ${i + 1}`}</option>`).join('');
   sel.value = (prev < patchInstances.length) ? prev : 0;
   kbToneIndex = +sel.value;
+  updateJoogSrcSelect();
+}
+function updateJoogSrcSelect() {
+  const sel = document.getElementById('joogSrcSelect');
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="-1">VCO (int)</option>' +
+    patchInstances.map((p,i) => `<option value="${i}">${p.name || `Patch ${i+1}`}</option>`).join('');
+  sel.value = (prev !== '-1' && +prev < patchInstances.length) ? prev : (joogExtPatchIdx >= 0 ? joogExtPatchIdx : '-1');
+  joogExtPatchIdx = +sel.value;
 }
 
 function initKeyboard() {
@@ -2398,6 +2409,7 @@ const joogPatches = {}; // inputId → outputId
 let joogSelectedJack = null; // currently selected output id
 
 let joogVoice = null;
+let joogExtPatchIdx = -1; // -1 = internal VCO, else index into patchInstances
 let joogTabActive = false;
 let joogLastFreq = null;
 let joogActiveKey = null;
@@ -2435,18 +2447,28 @@ function joogBuildVoice(freq){
   const ctx=getCtx(), ana=getMasterAnalyser();
   const v={};
   const now=ctx.currentTime;
-  const baseFreq=joogVcoFreqFromPitch(freq);
+  const extPatch = joogExtPatchIdx >= 0 ? patchInstances[joogExtPatchIdx] : null;
+  const isExt = !!(extPatch?._outputNode);
 
-  // === VCO (saw + square crossfade for SAW/PULSE blend) ===
-  v.osc_saw=ctx.createOscillator(); v.osc_saw.type='sawtooth';
-  v.osc_sqr=ctx.createOscillator(); v.osc_sqr.type='square';
-  v.osc_saw.frequency.value=baseFreq;
-  v.osc_sqr.frequency.value=baseFreq;
-  v.g_saw=ctx.createGain(); v.g_saw.gain.value=1-joogP.waveMix;
-  v.g_sqr=ctx.createGain(); v.g_sqr.gain.value=joogP.waveMix;
-  v.vco_bus=ctx.createGain(); v.vco_bus.gain.value=1;
-  v.osc_saw.connect(v.g_saw); v.g_saw.connect(v.vco_bus);
-  v.osc_sqr.connect(v.g_sqr); v.g_sqr.connect(v.vco_bus);
+  if(isExt){
+    // === External patch as VCO source ===
+    if(!extPatch.playing) patchStart(extPatch);
+    v._extSrc = extPatch._outputNode;
+    v.vco_bus=ctx.createGain(); v.vco_bus.gain.value=0.85;
+    v._extSrc.connect(v.vco_bus);
+  } else {
+    // === Internal VCO (saw + square crossfade for SAW/PULSE blend) ===
+    const baseFreq=joogVcoFreqFromPitch(freq);
+    v.osc_saw=ctx.createOscillator(); v.osc_saw.type='sawtooth';
+    v.osc_sqr=ctx.createOscillator(); v.osc_sqr.type='square';
+    v.osc_saw.frequency.value=baseFreq;
+    v.osc_sqr.frequency.value=baseFreq;
+    v.g_saw=ctx.createGain(); v.g_saw.gain.value=1-joogP.waveMix;
+    v.g_sqr=ctx.createGain(); v.g_sqr.gain.value=joogP.waveMix;
+    v.vco_bus=ctx.createGain(); v.vco_bus.gain.value=1;
+    v.osc_saw.connect(v.g_saw); v.g_saw.connect(v.vco_bus);
+    v.osc_sqr.connect(v.g_sqr); v.g_sqr.connect(v.vco_bus);
+  }
 
   // === EG — ConstantSourceNode ramped by ADSR ===
   v.egSrc=ctx.createConstantSource(); v.egSrc.offset.value=0; v.egSrc.start();
@@ -2462,13 +2484,15 @@ function joogBuildVoice(freq){
   v.lfo_tri.connect(v.g_lfo_tri); v.g_lfo_tri.connect(v.lfo_bus);
   v.lfo_sqr.connect(v.g_lfo_sqr); v.g_lfo_sqr.connect(v.lfo_bus);
 
-  // === Pitch modulation → VCO detune (cents) ===
-  const pitchCents=joogP.pitchModAmt*2; // 0-200 cents max range
-  v.pitch_eg=ctx.createGain(); v.pitch_eg.gain.value=(1-joogP.pitchModMix)*pitchCents;
-  v.pitch_lfo=ctx.createGain(); v.pitch_lfo.gain.value=joogP.pitchModMix*pitchCents;
-  v.egSrc.connect(v.pitch_eg); v.lfo_bus.connect(v.pitch_lfo);
-  v.pitch_eg.connect(v.osc_saw.detune); v.pitch_eg.connect(v.osc_sqr.detune);
-  v.pitch_lfo.connect(v.osc_saw.detune); v.pitch_lfo.connect(v.osc_sqr.detune);
+  // === Pitch modulation → VCO detune (internal mode only) ===
+  if(!isExt){
+    const pitchCents=joogP.pitchModAmt*2; // 0-200 cents max range
+    v.pitch_eg=ctx.createGain(); v.pitch_eg.gain.value=(1-joogP.pitchModMix)*pitchCents;
+    v.pitch_lfo=ctx.createGain(); v.pitch_lfo.gain.value=joogP.pitchModMix*pitchCents;
+    v.egSrc.connect(v.pitch_eg); v.lfo_bus.connect(v.pitch_lfo);
+    v.pitch_eg.connect(v.osc_saw.detune); v.pitch_eg.connect(v.osc_sqr.detune);
+    v.pitch_lfo.connect(v.osc_saw.detune); v.pitch_lfo.connect(v.osc_sqr.detune);
+  }
 
   // === Wavefolder ===
   v.folder=ctx.createWaveShaper();
@@ -2546,6 +2570,7 @@ function joogRelease(){
   const snap=v;
   setTimeout(()=>{
     [snap.osc_saw,snap.osc_sqr,snap.lfo_tri,snap.lfo_sqr,snap.egSrc].forEach(n=>{if(n)try{n.stop();}catch(_){}});
+    if(snap._extSrc) try{snap._extSrc.disconnect(snap.vco_bus);}catch(_){}
     try{snap.vol.disconnect();}catch(_){}
   },(aR+0.15)*1000);
 }
@@ -2554,12 +2579,13 @@ function joogStop(){
   if(!joogVoice) return;
   const v=joogVoice; joogVoice=null;
   [v.osc_saw,v.osc_sqr,v.lfo_tri,v.lfo_sqr,v.egSrc].forEach(n=>{if(n)try{n.stop();}catch(_){}});
+  if(v._extSrc) try{v._extSrc.disconnect(v.vco_bus);}catch(_){}
   try{v.vol.disconnect();}catch(_){}
 }
 
 function joogNoteOn(freq,noteKey){
   const gt=joogP.glide/1000, ctx=getCtx(), now=ctx.currentTime;
-  if(joogVoice&&joogLastFreq&&joogP.glide>0){
+  if(joogVoice&&joogLastFreq&&joogP.glide>0&&joogVoice.osc_saw){
     const targetFreq=joogVcoFreqFromPitch(freq);
     [joogVoice.osc_saw,joogVoice.osc_sqr].forEach(osc=>{
       if(osc) osc.frequency.exponentialRampToValueAtTime(Math.max(1,targetFreq),now+gt);
@@ -2899,7 +2925,12 @@ function initJoog(){
 
       <!-- VCO -->
       <div class="joog-sec">
-        <div class="joog-sec-title">VCO</div>
+        <div class="joog-sec-title" style="display:flex;align-items:center;gap:6px;">
+          VCO
+          <select id="joogSrcSelect" style="font-size:9px;padding:1px 3px;background:var(--surface);color:var(--cyan);border:1px solid var(--border);border-radius:3px;cursor:pointer;max-width:90px;">
+            <option value="-1">VCO (int)</option>
+          </select>
+        </div>
         <div class="joog-knob-row">
           ${knobHTML('Pitch','pitch',-24,24,0,'semi',false)}
           <div>
@@ -3042,6 +3073,14 @@ function initJoog(){
     const p=el.dataset.param; const v=parseFloat(el.value);
     joogP[p]=v; joogLiveUpdate(p,v);
   }));
+
+  // VCO source selector
+  document.getElementById('joogSrcSelect').addEventListener('change', e=>{
+    const prev=joogExtPatchIdx;
+    joogExtPatchIdx=+e.target.value;
+    if(joogExtPatchIdx!==prev && joogVoice) { joogStop(); }
+  });
+  updateJoogSrcSelect();
 
   // VCA mode switch
   panel.querySelectorAll('.joog-vsw').forEach(btn=>btn.addEventListener('click',()=>{
