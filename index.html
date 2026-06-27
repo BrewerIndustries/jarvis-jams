@@ -1526,13 +1526,18 @@ function patchStart(patch){
 function patchStop(patch){
   if(!patch.playing&&!patch._allNodes?.length) return;
   patch.playing=false;
+  // Capture old nodes NOW so a concurrent patchStart can't overwrite _allNodes
+  // before the timeout fires and clean up the wrong (new) nodes.
+  const staleNodes=patch._allNodes||[];
+  patch._allNodes=[]; patch.modules.forEach(m=>{m.nodes=null;});
+  const doClean=()=>staleNodes.forEach(n=>{try{n.cleanup&&n.cleanup();}catch(_){}});
   if(patch._envNodes){
     const ctx=getCtx(),now=ctx.currentTime,ep=patch._envNodes.mod.params,rel=Math.max(10,ep.release);
     patch._envNodes.gainNode.gain.cancelScheduledValues(now);
     patch._envNodes.gainNode.gain.setValueAtTime(patch._envNodes.gainNode.gain.value,now);
     patch._envNodes.gainNode.gain.linearRampToValueAtTime(0,now+rel/1000);
-    setTimeout(()=>cleanupPatchNodes(patch),rel+150);
-  } else {cleanupPatchNodes(patch);}
+    setTimeout(doClean,rel+150);
+  } else {doClean();}
   patch._envNodes=null;
   if(patch._btn){patch._btn.textContent='▶ Play'; patch._btn.classList.remove('playing');}
 }
