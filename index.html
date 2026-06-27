@@ -604,9 +604,52 @@
       padding:10px 16px 14px; gap:8px; background:#040009;
     }
     .joog-kb-controls { display:flex; align-items:center; gap:10px; font-size:11px; flex-wrap:wrap; }
-    #joog-piano { position:relative; display:flex; height:90px; user-select:none; }
-    #joog-piano .white-key { width:28px; }
-    #joog-piano .black-key { width:17px; height:56px; }
+    .joog-scope-tuner {
+      display:flex; gap:10px; align-items:stretch;
+      padding:8px 14px; background:#040009; border-top:1px solid var(--border);
+    }
+    .joog-scope-wrap { flex:1; min-width:0; }
+    #joogScope { width:100%; height:80px; display:block; border-radius:4px; border:1px solid rgba(185,103,255,0.2); background:#02000a; }
+    .joog-tuner {
+      width:140px; flex-shrink:0; background:#080012; border:1px solid var(--border);
+      border-radius:6px; padding:8px 10px; display:flex; flex-direction:column; align-items:center; gap:4px;
+    }
+    .joog-tuner-note { color:var(--pink); font-size:28px; font-weight:bold; line-height:1; text-shadow:0 0 12px var(--pink); min-width:50px; text-align:center; }
+    .joog-tuner-freq { color:var(--text-muted); font-size:9px; letter-spacing:1px; }
+    .joog-tuner-cents-wrap { position:relative; width:120px; height:14px; background:var(--surface); border-radius:7px; overflow:hidden; }
+    .joog-tuner-cents-bar { position:absolute; top:2px; height:10px; width:6px; border-radius:3px; background:var(--green); transition:left 0.05s; left:calc(50% - 3px); }
+    .joog-tuner-cents-bar.sharp { background:var(--pink); }
+    .joog-tuner-cents-bar.flat { background:var(--cyan); }
+    .joog-tuner-cents-label { color:var(--text-muted); font-size:9px; }
+    .joog-mavis-piano { display:flex; flex-direction:column; gap:3px; user-select:none; }
+    .joog-key-row { display:flex; gap:3px; }
+    .joog-key-nat {
+      width:40px; height:50px; border-radius:4px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:linear-gradient(180deg,#1e0038,#130025);
+      color:var(--text-muted); font-size:9px; font-family:inherit;
+      cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+      padding-bottom:5px; user-select:none;
+      box-shadow:inset 0 -3px 0 rgba(0,0,0,0.6),0 2px 4px rgba(0,0,0,0.5);
+      transition:background 0.06s,box-shadow 0.06s,transform 0.04s;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .joog-key-nat:hover { background:linear-gradient(180deg,#2a004a,#1e0038); border-color:rgba(255,255,255,0.2); }
+    .joog-key-nat.active { background:var(--pink); color:#000; border-color:var(--pink); box-shadow:0 0 16px var(--glow-pink),inset 0 1px 0 rgba(255,255,255,0.4); transform:translateY(1px); }
+    .joog-key-sharp {
+      width:40px; height:36px; border-radius:3px;
+      border:1px solid rgba(255,255,255,0.07);
+      background:linear-gradient(180deg,#08000f,#040009);
+      color:rgba(255,255,255,0.3); font-size:8px; font-family:inherit;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      user-select:none;
+      box-shadow:inset 0 -2px 0 rgba(0,0,0,0.7),0 1px 3px rgba(0,0,0,0.6);
+      transition:background 0.06s,box-shadow 0.06s,transform 0.04s;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .joog-key-sharp:hover { background:linear-gradient(180deg,#140025,#08000f); border-color:rgba(255,255,255,0.12); }
+    .joog-key-sharp.active { background:var(--purple); color:#fff; border-color:var(--purple); box-shadow:0 0 12px var(--glow-purple),inset 0 1px 0 rgba(255,255,255,0.2); transform:translateY(1px); }
+    .joog-key-gap { width:40px; height:36px; background:transparent; border:none; pointer-events:none; box-shadow:none; }
   </style>
 </head>
 <body>
@@ -2085,6 +2128,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(tab==='all') buildAllBoard();
     kbTabActive = (tab==='keys');
     joogTabActive = (tab==='joog');
+    if(tab==='joog') setTimeout(startJoogScope, 80);
+    else stopJoogScope();
     if(tab==='keys') setTimeout(drawLoopViz,50);
   });
 });
@@ -2316,29 +2361,145 @@ function joogLiveUpdate(param, val){
   }
 }
 
-const JOOG_KW=28, JOOG_SCALE=JOOG_KW/36;
+// ── Joog scope + tuner ──────────────────────────────────────────────
+let joogScopeRAF = null;
+
+function detectJoogPitch(buf, sr){
+  let rms=0; for(let i=0;i<buf.length;i++) rms+=buf[i]*buf[i]; rms=Math.sqrt(rms/buf.length);
+  if(rms<0.003) return -1;
+  let r1=0; for(let i=0;i<buf.length/2;i++){ if(Math.abs(buf[i])<0.2){r1=i;break;} }
+  const sl=buf.slice(r1), len=sl.length;
+  const c=new Float32Array(len);
+  for(let i=0;i<len;i++) for(let j=0;j<len-i;j++) c[i]+=sl[j]*sl[j+i];
+  let d=0; while(d<c.length-2 && c[d]>c[d+1]) d++;
+  let maxv=-1,maxp=-1; for(let i=d;i<c.length;i++) if(c[i]>maxv){maxv=c[i];maxp=i;}
+  if(maxp<2) return -1;
+  const refined=maxp+(c[maxp+1]-c[maxp-1])/(2*(2*c[maxp]-c[maxp-1]-c[maxp+1]));
+  return sr/refined;
+}
+
+function updateJoogTuner(freq){
+  const panel=document.getElementById('panel-joog'); if(!panel||freq<=0) return;
+  const NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const midi=12*Math.log2(freq/440)+69;
+  const midiR=Math.round(midi);
+  const cents=Math.round((midi-midiR)*100);
+  const note=NAMES[((midiR%12)+12)%12];
+  const oct=Math.floor(midiR/12)-1;
+  const el=id=>panel.querySelector('#'+id);
+  if(el('joogTunerNote')) el('joogTunerNote').textContent=note+oct;
+  if(el('joogTunerFreq')) el('joogTunerFreq').textContent=freq.toFixed(1)+' Hz';
+  if(el('joogTunerCents')) el('joogTunerCents').textContent=(cents>=0?'+':'')+cents+' ¢';
+  const bar=el('joogTunerBar');
+  if(bar){
+    const pct=Math.max(0,Math.min(100,(cents+50)));
+    bar.style.left=pct+'%'; bar.style.marginLeft='-3px';
+    bar.className='joog-tuner-cents-bar'+(cents>5?' sharp':cents<-5?' flat':'');
+  }
+}
+
+function drawJoogScope(){
+  if(!joogTabActive){ joogScopeRAF=null; return; }
+  const canvas=document.getElementById('joogScope');
+  const ana=getMasterAnalyser();
+  if(!canvas||!ana){ joogScopeRAF=requestAnimationFrame(drawJoogScope); return; }
+  const W=canvas.offsetWidth||300;
+  if(canvas.width!==W) canvas.width=W;
+  canvas.height=80;
+  const ctx2d=canvas.getContext('2d'), H=80;
+  const data=new Float32Array(ana.fftSize);
+  ana.getFloatTimeDomainData(data);
+  ctx2d.clearRect(0,0,W,H);
+  ctx2d.strokeStyle='rgba(185,103,255,0.08)'; ctx2d.lineWidth=1;
+  [0.25,0.5,0.75].forEach(f=>{
+    ctx2d.beginPath(); ctx2d.moveTo(0,f*H); ctx2d.lineTo(W,f*H); ctx2d.stroke();
+  });
+  // glow pass
+  ctx2d.save(); ctx2d.shadowBlur=10; ctx2d.shadowColor='#ff71ce';
+  ctx2d.strokeStyle='rgba(255,113,206,0.35)'; ctx2d.lineWidth=2;
+  ctx2d.beginPath();
+  for(let i=0;i<data.length;i++){
+    const x=i/data.length*W, y=(1-(data[i]+1)/2)*H;
+    i===0?ctx2d.moveTo(x,y):ctx2d.lineTo(x,y);
+  }
+  ctx2d.stroke(); ctx2d.restore();
+  // sharp pass
+  ctx2d.strokeStyle='#ff71ce'; ctx2d.lineWidth=1;
+  ctx2d.beginPath();
+  for(let i=0;i<data.length;i++){
+    const x=i/data.length*W, y=(1-(data[i]+1)/2)*H;
+    i===0?ctx2d.moveTo(x,y):ctx2d.lineTo(x,y);
+  }
+  ctx2d.stroke();
+  const pf=detectJoogPitch(data,ana.context.sampleRate);
+  if(pf>0) updateJoogTuner(pf);
+  joogScopeRAF=requestAnimationFrame(drawJoogScope);
+}
+
+function startJoogScope(){
+  if(!joogScopeRAF) joogScopeRAF=requestAnimationFrame(drawJoogScope);
+}
+
+function stopJoogScope(){
+  if(joogScopeRAF){ cancelAnimationFrame(joogScopeRAF); joogScopeRAF=null; }
+  const canvas=document.getElementById('joogScope'); if(!canvas) return;
+  const ctx2d=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth||300; canvas.height=80;
+  ctx2d.clearRect(0,0,canvas.width,80);
+  ctx2d.strokeStyle='rgba(185,103,255,0.08)'; ctx2d.lineWidth=1;
+  [0.25,0.5,0.75].forEach(f=>{
+    ctx2d.beginPath(); ctx2d.moveTo(0,f*80); ctx2d.lineTo(canvas.width,f*80); ctx2d.stroke();
+  });
+  const panel=document.getElementById('panel-joog'); if(!panel) return;
+  const el=id=>panel.querySelector('#'+id);
+  if(el('joogTunerNote')) el('joogTunerNote').textContent='—';
+  if(el('joogTunerFreq')) el('joogTunerFreq').textContent='';
+  if(el('joogTunerCents')) el('joogTunerCents').textContent='';
+  const bar=el('joogTunerBar'); if(bar){ bar.style.left='calc(50% - 3px)'; bar.style.marginLeft=''; bar.className='joog-tuner-cents-bar'; }
+}
+
+// ── Mavis-style Joog keyboard ────────────────────────────────────────
+const JOOG_SHARP_SEMIS=[1,3,null,6,8,10,null]; // C# D# gap F# G# A# gap
+const JOOG_NAT_SEMIS=[0,2,4,5,7,9,11];         // C D E F G A B
+const JOOG_NOTE_NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
 function buildJoogPiano(oct){
   const piano=document.getElementById('joog-piano'); if(!piano) return;
+  piano.className='joog-mavis-piano';
   piano.innerHTML='';
   const NUM=2;
+  const sharpRow=document.createElement('div'); sharpRow.className='joog-key-row';
+  const natRow=document.createElement('div');   natRow.className='joog-key-row';
+
   for(let o=0;o<NUM;o++){
+    if(o>0){
+      const sp1=document.createElement('div'); sp1.style.width='6px'; sp1.style.flexShrink='0';
+      const sp2=document.createElement('div'); sp2.style.width='6px'; sp2.style.flexShrink='0';
+      sharpRow.appendChild(sp1); natRow.appendChild(sp2);
+    }
     const base=(oct+o+1)*12;
-    WHITE_SEMIS.forEach(semi=>{
-      const midi=base+semi, key=document.createElement('div');
-      key.className='white-key'; key.dataset.midi=midi; key.style.width=JOOG_KW+'px';
-      if(semi===0){const lbl=document.createElement('div');lbl.className='key-label';lbl.textContent=`C${oct+o}`;key.appendChild(lbl);}
-      addJoogKeyEvents(key,`jk_${midi}`,midiToFreqKb(midi)); piano.appendChild(key);
+    JOOG_SHARP_SEMIS.forEach(semi=>{
+      const div=document.createElement('div');
+      if(semi===null){
+        div.className='joog-key-gap';
+      } else {
+        const midi=base+semi;
+        div.className='joog-key-sharp'; div.dataset.midi=midi;
+        div.textContent=JOOG_NOTE_NAMES[semi];
+        addJoogKeyEvents(div,`jk_${midi}`,midiToFreqKb(midi));
+      }
+      sharpRow.appendChild(div);
+    });
+    JOOG_NAT_SEMIS.forEach(semi=>{
+      const midi=base+semi, div=document.createElement('div');
+      div.className='joog-key-nat'; div.dataset.midi=midi;
+      div.innerHTML=`${JOOG_NOTE_NAMES[semi]}<br><span style="font-size:7px;opacity:0.35">${oct+o}</span>`;
+      addJoogKeyEvents(div,`jk_${midi}`,midiToFreqKb(midi));
+      natRow.appendChild(div);
     });
   }
-  for(let o=0;o<NUM;o++){
-    const base=(oct+o+1)*12, octLeft=o*JOOG_KW*7;
-    BK_DEFS.forEach(({semi,left})=>{
-      const midi=base+semi, key=document.createElement('div');
-      key.className='black-key'; key.dataset.midi=midi; key.style.width='17px';
-      key.style.left=(octLeft+left*JOOG_SCALE)+'px';
-      addJoogKeyEvents(key,`jk_${midi}`,midiToFreqKb(midi)); piano.appendChild(key);
-    });
-  }
+  piano.appendChild(sharpRow);
+  piano.appendChild(natRow);
 }
 function addJoogKeyEvents(el,noteKey,freq){
   const on=()=>{el.classList.add('active'); joogNoteOn(freq,noteKey);};
@@ -2440,6 +2601,17 @@ function initJoog(){
     <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
       ${knobHTML('Volume','joogVol',0,100,80,'pct',false)}
     </div>
+  </div>
+</div>
+<div class="joog-scope-tuner">
+  <div class="joog-scope-wrap"><canvas id="joogScope"></canvas></div>
+  <div class="joog-tuner">
+    <div id="joogTunerNote" class="joog-tuner-note">—</div>
+    <div id="joogTunerFreq" class="joog-tuner-freq"></div>
+    <div class="joog-tuner-cents-wrap">
+      <div id="joogTunerBar" class="joog-tuner-cents-bar"></div>
+    </div>
+    <div id="joogTunerCents" class="joog-tuner-cents-label"></div>
   </div>
 </div>
 <div class="joog-keys-wrap">
