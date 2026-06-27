@@ -2286,7 +2286,7 @@ function joogTriggerEG(v, legato){
 function joogStart(freq){
   joogStop();
   const ctx=getCtx(), v=joogBuildVoice(freq);
-  [v.osc_saw,v.osc_sqr,v.lfo_tri,v.lfo_sqr,v.egSrc].forEach(n=>{if(n)try{n.start();}catch(_){}});
+  [v.osc_saw,v.osc_sqr,v.lfo_tri,v.lfo_sqr].forEach(n=>{if(n)try{n.start();}catch(_){}});
   joogTriggerEG(v,false);
   joogVoice=v; joogLastFreq=freq;
 }
