@@ -667,6 +667,30 @@
     .joog-mix-labels { display:flex; justify-content:space-between; width:54px; font-size:6px; color:var(--text-muted); margin-top:1px; }
     .joog-lfo-led { position:absolute; top:3px; right:0px; width:5px; height:5px; border-radius:50%; background:#ff4444; box-shadow:0 0 5px #ff4444,0 0 10px #ff000080; animation:joogLedBlink 0.2s linear infinite; }
     @keyframes joogLedBlink { 0%,49%{opacity:1} 50%,100%{opacity:0.08} }
+    /* Abbreviation tooltips */
+    .jt { position:relative; cursor:help; border-bottom:1px dashed rgba(255,113,206,0.35); }
+    .jt::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #140025;
+      color: #d8b0ff;
+      border: 1px solid rgba(255,113,206,0.55);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 9px;
+      font-weight: normal;
+      text-transform: none;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .jt:hover::after { opacity: 1; }
     /* VCA switch */
     .joog-vca-switch { display:flex; gap:4px; margin-top:5px; }
     .joog-vsw {
@@ -2390,32 +2414,32 @@ const joogP = {
 };
 
 const JACK_DEFS = [
-  // id, type('in'/'out'), label, color, normalled-to-id or null
-  {id:'vco_out',   t:'out', label:'VCO OUT',   color:'#f0c040', norm:null},
-  {id:'fold_out',  t:'out', label:'FOLD OUT',  color:'#ff8c00', norm:null},
-  {id:'eg_out',    t:'out', label:'EG',         color:'#ff6b6b', norm:null},
-  {id:'lfo_out',   t:'out', label:'LFO',        color:'#05ffa1', norm:null},
-  {id:'kbcv_out',  t:'out', label:'KB CV',      color:'#74c0fc', norm:null},
-  {id:'sh_out',    t:'out', label:'S+H OUT',    color:'#a9e34b', norm:null},
-  {id:'vca_out',   t:'out', label:'/VCA',       color:'#ff71ce', norm:null},
-  {id:'attn_out',  t:'out', label:'ATTN',       color:'#b967ff', norm:null},
-  {id:'mult1_out', t:'out', label:'MULT 1',     color:'#cc99ff', norm:null},
-  {id:'mult2_out', t:'out', label:'MULT 2',     color:'#cc99ff', norm:null},
-  {id:'onetwo_out',t:'out', label:'ONE+TWO',    color:'#ffaa55', norm:null},
-  {id:'1voct_in',  t:'in',  label:'1V/OCT',     color:'#74c0fc', norm:'kbcv_out'},
-  {id:'vcofm_in',  t:'in',  label:'VCO FM',     color:'#f0c040', norm:null},
-  {id:'vcopwm_in', t:'in',  label:'VCO PWM',    color:'#f0c040', norm:null},
-  {id:'vcfcv_in',  t:'in',  label:'VCF CV',     color:'#00d4ff', norm:null},
-  {id:'vcacv_in',  t:'in',  label:'VCA CV',     color:'#ff6b6b', norm:'eg_out'},
-  {id:'gate_in',   t:'in',  label:'GATE',       color:'#74c0fc', norm:'kbd'},
-  {id:'sh_in',     t:'in',  label:'S+H',        color:'#f0c040', norm:'vco_out'},
-  {id:'shgate_in', t:'in',  label:'S+H GATE',   color:'#05ffa1', norm:'lfo_out'},
-  {id:'foldin_in', t:'in',  label:'FOLD IN',    color:'#f0c040', norm:'vco_out'},
-  {id:'lforate_in',t:'in',  label:'LFO RATE',   color:'#05ffa1', norm:null},
-  {id:'attn_in',   t:'in',  label:'ATTN IN',    color:'#b967ff', norm:null},
-  {id:'one_in',    t:'in',  label:'ONE',        color:'#868e96', norm:'minus5'},
-  {id:'two_in',    t:'in',  label:'TWO',        color:'#ffaa55', norm:null},
-  {id:'mult_in',   t:'in',  label:'MULT',       color:'#cc99ff', norm:null},
+  // id, type('in'/'out'), label, tip, color, normalled-to-id or null
+  {id:'vco_out',   t:'out', label:'VCO OUT',  tip:'VCO audio output',                              color:'#f0c040', norm:null},
+  {id:'fold_out',  t:'out', label:'FOLD OUT', tip:'Wavefolder audio output',                       color:'#ff8c00', norm:null},
+  {id:'eg_out',    t:'out', label:'EG',       tip:'Envelope Generator CV output (0–5 V)',          color:'#ff6b6b', norm:null},
+  {id:'lfo_out',   t:'out', label:'LFO',      tip:'Low Frequency Oscillator modulation output',    color:'#05ffa1', norm:null},
+  {id:'kbcv_out',  t:'out', label:'KB CV',    tip:'Keyboard pitch CV output (1 V/oct)',            color:'#74c0fc', norm:null},
+  {id:'sh_out',    t:'out', label:'S+H OUT',  tip:'Sample & Hold output',                          color:'#a9e34b', norm:null},
+  {id:'vca_out',   t:'out', label:'/VCA',     tip:'VCA main audio output',                         color:'#ff71ce', norm:null},
+  {id:'attn_out',  t:'out', label:'ATTN',     tip:'Attenuator output (scaled ATTN IN signal)',     color:'#b967ff', norm:null},
+  {id:'mult1_out', t:'out', label:'MULT 1',   tip:'Passive signal multiplier — output 1',          color:'#cc99ff', norm:null},
+  {id:'mult2_out', t:'out', label:'MULT 2',   tip:'Passive signal multiplier — output 2',          color:'#cc99ff', norm:null},
+  {id:'onetwo_out',t:'out', label:'ONE+TWO',  tip:'Utility mixer output (ONE + TWO summed)',       color:'#ffaa55', norm:null},
+  {id:'1voct_in',  t:'in',  label:'1V/OCT',  tip:'1 Volt per Octave pitch CV input (normalled → KB CV)', color:'#74c0fc', norm:'kbcv_out'},
+  {id:'vcofm_in',  t:'in',  label:'VCO FM',  tip:'VCO Frequency Modulation input',                color:'#f0c040', norm:null},
+  {id:'vcopwm_in', t:'in',  label:'VCO PWM', tip:'VCO Pulse Width Modulation input',              color:'#f0c040', norm:null},
+  {id:'vcfcv_in',  t:'in',  label:'VCF CV',  tip:'VCF cutoff Control Voltage input',              color:'#00d4ff', norm:null},
+  {id:'vcacv_in',  t:'in',  label:'VCA CV',  tip:'VCA Control Voltage input (normalled → EG)',    color:'#ff6b6b', norm:'eg_out'},
+  {id:'gate_in',   t:'in',  label:'GATE',    tip:'Gate/trigger input (normalled → keyboard)',      color:'#74c0fc', norm:'kbd'},
+  {id:'sh_in',     t:'in',  label:'S+H',     tip:'Sample & Hold signal input (normalled → VCO OUT)', color:'#f0c040', norm:'vco_out'},
+  {id:'shgate_in', t:'in',  label:'S+H GATE',tip:'Sample & Hold clock/trigger (normalled → LFO)',  color:'#05ffa1', norm:'lfo_out'},
+  {id:'foldin_in', t:'in',  label:'FOLD IN', tip:'Wavefolder audio input (normalled → VCO OUT)',  color:'#f0c040', norm:'vco_out'},
+  {id:'lforate_in',t:'in',  label:'LFO RATE',tip:'LFO Rate Control Voltage input',                color:'#05ffa1', norm:null},
+  {id:'attn_in',   t:'in',  label:'ATTN IN', tip:'Attenuator signal input',                       color:'#b967ff', norm:null},
+  {id:'one_in',    t:'in',  label:'ONE',     tip:'Utility mixer channel 1 (normalled → −5 V DC)', color:'#868e96', norm:'minus5'},
+  {id:'two_in',    t:'in',  label:'TWO',     tip:'Utility mixer channel 2',                       color:'#ffaa55', norm:null},
+  {id:'mult_in',   t:'in',  label:'MULT',    tip:'Passive signal splitter input',                 color:'#cc99ff', norm:null},
 ];
 
 const joogPatches = {}; // inputId → outputId
@@ -2720,7 +2744,7 @@ function makeJack(j){
   el.className=`joog-jack ${j.t}`; el.dataset.jack=j.id;
   el.style.color=color;
   const circStyle=j.t==='out'?`background:${j.color}aa;`:`border:2px solid ${color};`;
-  el.innerHTML=`<div class="joog-jack-circle" style="${circStyle}"></div><span class="joog-jack-label">${j.label}</span>`;
+  el.innerHTML=`<div class="joog-jack-circle" style="${circStyle}"></div><span class="joog-jack-label${j.tip?' jt':''}"${j.tip?` data-tip="${j.tip}"`:''}>${j.label}</span>`;
   if(j.t==='in'&&joogPatches[j.id]) el.classList.add('patched');
   el.addEventListener('click',()=>{
     if(j.t==='out'){
@@ -2895,6 +2919,8 @@ function stopJoogScope(){
   const bar=el('joogTunerBar'); if(bar){ bar.style.left='calc(50% - 3px)'; bar.style.marginLeft=''; bar.className='joog-tuner-cents-bar'; }
 }
 
+const jt = (a, tip) => `<span class="jt" data-tip="${tip}">${a}</span>`;
+
 function initJoog(){
   const panel=document.getElementById('panel-joog'); if(!panel) return;
 
@@ -2938,16 +2964,16 @@ function initJoog(){
 
       <!-- FOLD + UTIL -->
       <div class="joog-sec">
-        <div class="joog-sec-title">FOLD / UTIL</div>
+        <div class="joog-sec-title">${jt('FOLD','Wavefolder — folds the waveform back on itself for harmonic distortion')} / ${jt('UTIL','Utility section — attenuator + mixer')}</div>
         ${knobHTML('Fold','foldAmt',0,100,0,'pct',false)}
-        ${knobHTML('One Lvl','oneLvl',0,100,50,'pct',false)}
-        ${knobHTML('Attn','attn',0,100,50,'pct',false)}
+        ${knobHTML(jt('One Lvl','Level of the ONE utility mixer input'),'oneLvl',0,100,50,'pct',false)}
+        ${knobHTML(jt('Attn','Attenuator — scales the ATTN IN signal'),'attn',0,100,50,'pct',false)}
       </div>
 
       <!-- VCO -->
       <div class="joog-sec">
         <div class="joog-sec-title" style="display:flex;align-items:center;gap:6px;">
-          VCO
+          ${jt('VCO','Voltage Controlled Oscillator')}
           <select id="joogSrcSelect" style="font-size:9px;padding:1px 3px;background:var(--surface);color:var(--cyan);border:1px solid var(--border);border-radius:3px;cursor:pointer;max-width:90px;">
             <option value="-1">VCO (int)</option>
           </select>
@@ -2955,25 +2981,25 @@ function initJoog(){
         <div class="joog-knob-row">
           ${knobHTML('Pitch','pitch',-24,24,0,'semi',false)}
           <div>
-            ${knobHTML('Wave','waveMix',0,1,0,'num',false)}
-            <div class="joog-mix-labels"><span>SAW</span><span>PULSE</span></div>
+            ${knobHTML(jt('Wave','VCO waveform blend: 0 = SAW → 1 = PULSE'),'waveMix',0,1,0,'num',false)}
+            <div class="joog-mix-labels"><span class="jt" data-tip="Sawtooth waveform">SAW</span><span class="jt" data-tip="Pulse waveform (50% duty = square)">PULSE</span></div>
           </div>
-          ${knobHTML('P.Width','pulseWidth',0,100,50,'pct',false)}
+          ${knobHTML(jt('P.Width','Pulse Width — duty cycle of the oscillator pulse wave'),'pulseWidth',0,100,50,'pct',false)}
         </div>
         <div style="border-top:1px solid var(--border);margin:6px 0 4px;"></div>
         <div class="joog-knob-row">
           <div>
-            ${knobHTML('Mod Mix','pitchModMix',0,1,0.5,'num',false)}
-            <div class="joog-mix-labels"><span>EG</span><span>LFO</span></div>
+            ${knobHTML(jt('Mod Mix','Pitch modulation source: 0 = EG, 1 = LFO'),'pitchModMix',0,1,0.5,'num',false)}
+            <div class="joog-mix-labels"><span class="jt" data-tip="Envelope Generator">EG</span><span class="jt" data-tip="Low Frequency Oscillator">LFO</span></div>
           </div>
-          ${knobHTML('Pitch Mod','pitchModAmt',0,100,0,'pct',false)}
-          ${knobHTML('PWM Amt','pwmModAmt',0,100,0,'pct',false)}
+          ${knobHTML(jt('Pitch Mod','Pitch Modulation depth'),'pitchModAmt',0,100,0,'pct',false)}
+          ${knobHTML(jt('PWM Amt','Pulse Width Modulation depth'),'pwmModAmt',0,100,0,'pct',false)}
         </div>
       </div>
 
       <!-- VCF -->
       <div class="joog-sec">
-        <div class="joog-sec-title">VCF</div>
+        <div class="joog-sec-title">${jt('VCF','Voltage Controlled Filter — 4-pole ladder')}</div>
         <div class="joog-knob-row">
           ${knobHTML('Cutoff','cutoff',40,18000,3000,'hz',true)}
           ${knobHTML('Resonance','resonance',0,100,0,'pct',false)}
@@ -2981,21 +3007,21 @@ function initJoog(){
         <div style="border-top:1px solid var(--border);margin:6px 0 4px;"></div>
         <div class="joog-knob-row">
           <div>
-            ${knobHTML('Mod Mix','vcfModMix',0,1,0.5,'num',false)}
-            <div class="joog-mix-labels"><span>EG</span><span>LFO</span></div>
+            ${knobHTML(jt('Mod Mix','Filter modulation source: 0 = EG, 1 = LFO'),'vcfModMix',0,1,0.5,'num',false)}
+            <div class="joog-mix-labels"><span class="jt" data-tip="Envelope Generator">EG</span><span class="jt" data-tip="Low Frequency Oscillator">LFO</span></div>
           </div>
-          ${knobHTML('VCF Mod','vcfModAmt',0,100,50,'pct',false)}
+          ${knobHTML(jt('VCF Mod','VCF Modulation depth — how much the mod source moves the cutoff'),'vcfModAmt',0,100,50,'pct',false)}
         </div>
       </div>
 
       <!-- VCA -->
       <div class="joog-sec">
-        <div class="joog-sec-title">VCA</div>
+        <div class="joog-sec-title">${jt('VCA','Voltage Controlled Amplifier')}</div>
         ${knobHTML('Volume','volume',0,100,80,'pct',false)}
-        <div style="font-size:7px;color:var(--text-muted);text-align:center;margin:4px 0 2px;letter-spacing:1px">VCA MODE</div>
+        <div style="font-size:7px;color:var(--text-muted);text-align:center;margin:4px 0 2px;letter-spacing:1px">${jt('VCA','Voltage Controlled Amplifier')} MODE</div>
         <div class="joog-vca-switch">
-          <button class="joog-vsw" data-mode="on">ON</button>
-          <button class="joog-vsw active" data-mode="eg">EG</button>
+          <button class="joog-vsw jt" data-mode="on" data-tip="VCA always open — constant drone">ON</button>
+          <button class="joog-vsw active jt" data-mode="eg" data-tip="VCA controlled by Envelope Generator">EG</button>
         </div>
       </div>
 
@@ -3006,22 +3032,22 @@ function initJoog(){
 
       <!-- LFO -->
       <div class="joog-sec">
-        <div class="joog-sec-title">LFO</div>
+        <div class="joog-sec-title">${jt('LFO','Low Frequency Oscillator — modulation source')}</div>
         <div class="joog-knob-row">
           <div style="position:relative">
             ${knobHTML('Rate','lfoRate',0.1,550,5,'hz',true)}
             <div id="joogLfoLed" class="joog-lfo-led"></div>
           </div>
           <div>
-            ${knobHTML('Wave','lfoWaveMix',0,1,0,'num',false)}
-            <div class="joog-mix-labels"><span>TRI</span><span>SQR</span></div>
+            ${knobHTML(jt('Wave','LFO waveform blend: 0 = TRI → 1 = SQR'),'lfoWaveMix',0,1,0,'num',false)}
+            <div class="joog-mix-labels"><span class="jt" data-tip="Triangle waveform">TRI</span><span class="jt" data-tip="Square waveform">SQR</span></div>
           </div>
         </div>
       </div>
 
       <!-- EG -->
       <div class="joog-sec">
-        <div class="joog-sec-title">EG</div>
+        <div class="joog-sec-title">${jt('EG','Envelope Generator — ADSR contour for VCA and VCF')}</div>
         <div class="joog-knob-row">
           ${knobHTML('Attack','attack',1,5000,10,'ms',true)}
           ${knobHTML('Decay','decay',1,5000,200,'ms',true)}
@@ -3035,7 +3061,7 @@ function initJoog(){
     <!-- KEYBOARD -->
     <div class="joog-keys-wrap">
       <div class="joog-kb-knobs">
-        ${knobHTML('KB Scale','kbScale',50,200,100,'pct',false)}
+        ${knobHTML(jt('KB Scale','Keyboard Tracking Scale — how much key pitch modulates filter cutoff'),'kbScale',50,200,100,'pct',false)}
         ${knobHTML('Glide','glide',0,2000,0,'ms',true)}
       </div>
       <div>
@@ -3043,7 +3069,7 @@ function initJoog(){
           <button class="btn sm" id="joogOctDown">▼</button>
           <span style="color:var(--cyan);min-width:20px;text-align:center" id="joogOctDisplay">${joogOct}</span>
           <button class="btn sm" id="joogOctUp">▲</button>
-          <span style="color:var(--text-muted);font-size:8px;letter-spacing:1px">OCT</span>
+          <span class="jt" data-tip="Octave" style="color:var(--text-muted);font-size:8px;letter-spacing:1px">OCT</span>
           <span style="color:var(--border)">│</span>
           <span id="joogNoteDisplay" style="color:var(--pink);font-size:13px;font-weight:bold;min-width:50px;text-shadow:0 0 8px var(--pink)">—</span>
         </div>
