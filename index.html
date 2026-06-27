@@ -548,6 +548,14 @@
     .mod-body .wave-btn span { font-size: 8px; }
     .btn-row { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 6px; }
     .btn-row .ftype-btn { padding: 3px 6px; font-size: 9px; }
+    .dfam-steps { display: flex; gap: 2px; margin-bottom: 6px; }
+    .dfam-step-btn {
+      width: 20px; height: 20px; border-radius: 3px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text-muted); cursor: pointer;
+      font-size: 7px; line-height: 1; transition: background 0.1s, border-color 0.1s;
+    }
+    .dfam-step-btn.on { background: #ff4488; color: #000; border-color: #ff4488; }
+    .dfam-step-btn.dfam-active { box-shadow: 0 0 6px #ff4488; outline: 1px solid #fff4; }
     /* Add module button */
     .add-mod-wrap { align-self: center; display: flex; align-items: center; flex-direction: column; padding-left: 6px; flex-shrink: 0; position: relative; }
     .add-mod-btn {
@@ -1214,8 +1222,13 @@ const MOD_DEFS = {
   tremolo:  {label:'Tremolo',    cat:'effect',  color:'#b967ff', defaults:{rate:5, depth:60}},
   ringmod:  {label:'Ring Mod',   cat:'effect',  color:'#ff8844', defaults:{modFreq:110, mix:60}},
   vol:      {label:'Volume',     cat:'output',  color:'#05ffa1', defaults:{level:70}},
+  stereomix:   {label:'Stereo Mix',   cat:'effect', color:'#05ffa1', defaults:{pan:0, level:80, width:50}},
+  reverberator:{label:'Reverberator', cat:'effect', color:'#4499ff', defaults:{predelay:20, roomSize:70, damping:40, mix:30}},
+  tubeosc:     {label:'Tube Osc',     cat:'source', color:'#ffaa33', defaults:{freq:110, oct:0, drive:60, brightness:50, level:80}},
+  combfilter:  {label:'Comb Filter',  cat:'effect', color:'#01cdfe', defaults:{freq:120, feedback:75, damp:40, mix:60}},
+  dfam:        {label:'DFAM',         cat:'source', color:'#ff4488', defaults:{tempo:120, vco1:80, vco2:160, noiseMix:20, cutoff:800, resonance:50, decay:250, steps:'10010110'}},
 };
-const SOURCE_TYPES=new Set(['osc','osc2','noise']);
+const SOURCE_TYPES=new Set(['osc','osc2','noise','tubeosc','dfam']);
 function isSource(t){return SOURCE_TYPES.has(t);}
 
 // ─── Audio helpers ────────────────────────────────────────────
@@ -1324,6 +1337,148 @@ function createModuleNodes(ctx,mod,freq=null){
     case 'vol': {
       const g=ctx.createGain(); g.gain.value=p.level/100;
       return {input:g,output:g,gainNode:g,cleanup:()=>{try{g.disconnect();}catch(_){}}};
+    }
+    case 'stereomix': {
+      const pan=ctx.createStereoPanner(); pan.pan.value=p.pan/100;
+      const out=ctx.createGain(); out.gain.value=p.level/100;
+      // Width: blend between mono (0) and original stereo (100)
+      const splitter=ctx.createChannelSplitter(2),merger=ctx.createChannelMerger(2);
+      const wMono=ctx.createGain(),wStereo=ctx.createGain();
+      wMono.gain.value=1-p.width/100; wStereo.gain.value=p.width/100;
+      const inG=ctx.createGain();
+      inG.connect(splitter);
+      splitter.connect(wStereo,0,0); splitter.connect(wStereo,1,1);
+      splitter.connect(wMono,0); splitter.connect(wMono,1);
+      wMono.connect(merger,0,0); wMono.connect(merger,0,1);
+      wStereo.connect(merger,0,0); wStereo.connect(merger,1,1);
+      merger.connect(pan); pan.connect(out);
+      return {input:inG,output:out,cleanup:()=>{try{out.disconnect();}catch(_){}}};
+    }
+    case 'reverberator': {
+      const inG=ctx.createGain(),out=ctx.createGain();
+      const dry=ctx.createGain(),wet=ctx.createGain();
+      dry.gain.value=1-p.mix/100; wet.gain.value=p.mix/100;
+      const preDly=ctx.createDelay(0.5); preDly.delayTime.value=p.predelay/1000;
+      const len=Math.round(ctx.sampleRate*Math.max(0.5,(p.roomSize/100)*6));
+      const buf=ctx.createBuffer(2,len,ctx.sampleRate);
+      for(let c=0;c<2;c++){
+        const d=buf.getChannelData(c); const dmp=p.damping/100;
+        for(let i=0;i<len;i++){
+          const t=i/ctx.sampleRate;
+          const env=t<0.08?Math.exp(-t*(2+dmp*8)):Math.exp(-t*(1.5+p.roomSize/40+dmp*3));
+          d[i]=(Math.random()*2-1)*env*(c?0.97:1);
+        }
+      }
+      const conv=ctx.createConvolver(); conv.buffer=buf;
+      inG.connect(dry); inG.connect(preDly); preDly.connect(conv); conv.connect(wet);
+      dry.connect(out); wet.connect(out);
+      return {input:inG,output:out,cleanup:()=>{try{out.disconnect();}catch(_){}}};
+    }
+    case 'tubeosc': {
+      const osc=ctx.createOscillator(); osc.type='sawtooth';
+      osc.frequency.value=(p.freq||110)*Math.pow(2,p.oct||0);
+      // Asymmetric tube saturation — even harmonics via asymmetry
+      const n=4096,curve=new Float32Array(n),drv=Math.max(0.001,p.drive/100);
+      for(let i=0;i<n;i++){
+        const x=(i/(n-1))*2-1;
+        const k=2*drv/(1-drv+0.001);
+        let v=(1+k)*x/(1+k*Math.abs(x));
+        v+=0.12*drv*x*x; // even harmonic (asymmetric DC shift)
+        curve[i]=Math.max(-1,Math.min(1,v));
+      }
+      const tube=ctx.createWaveShaper(); tube.curve=curve; tube.oversample='4x';
+      const tone=ctx.createBiquadFilter(); tone.type='lowshelf'; tone.frequency.value=400;
+      tone.gain.value=-8+(p.brightness/100)*14;
+      const out=ctx.createGain(); out.gain.value=p.level/100;
+      osc.connect(tube); tube.connect(tone); tone.connect(out); osc.start();
+      return {input:null,output:out,cleanup:()=>{try{osc.stop();}catch(_){}try{out.disconnect();}catch(_){}}};
+    }
+    case 'combfilter': {
+      const inG=ctx.createGain(),out=ctx.createGain();
+      const dry=ctx.createGain(),wet=ctx.createGain();
+      dry.gain.value=1-p.mix/100; wet.gain.value=p.mix/100;
+      const dly=ctx.createDelay(1); dly.delayTime.value=1/Math.max(20,p.freq);
+      const fb=ctx.createGain(); fb.gain.value=Math.min(0.97,p.feedback/100);
+      const dmpF=ctx.createBiquadFilter(); dmpF.type='lowpass'; dmpF.frequency.value=20000-(p.damp/100)*18000;
+      inG.connect(dly); dly.connect(dmpF); dmpF.connect(fb); fb.connect(dly); dmpF.connect(wet);
+      inG.connect(dry); dry.connect(out); wet.connect(out);
+      return {input:inG,output:out,cleanup:()=>{try{out.disconnect();}catch(_){}}};
+    }
+    case 'dfam': {
+      const out=ctx.createGain(); out.gain.value=0.85;
+      const steps=[...p.steps].map(c=>c==='1');
+      let clockId=null,nextStepTime=0,seqStep=0;
+      const modId=mod.id;
+
+      function scheduleHit(si,when){
+        if(!steps[si]) return;
+        // VCO1 — body/boom (sine, pitch sweeps down)
+        const v1=ctx.createOscillator(); v1.type='sine';
+        v1.frequency.setValueAtTime(p.vco1*4,when);
+        v1.frequency.exponentialRampToValueAtTime(Math.max(10,p.vco1),when+p.decay/1000*0.4);
+        const v1g=ctx.createGain(); v1g.gain.value=1-p.noiseMix/100; v1.connect(v1g);
+        // VCO2 — click/attack transient (square)
+        const v2=ctx.createOscillator(); v2.type='square';
+        v2.frequency.value=p.vco2;
+        const v2g=ctx.createGain(); v2g.gain.value=0.25*(1-p.noiseMix/100); v2.connect(v2g);
+        // Noise burst
+        const nlen=Math.round(ctx.sampleRate*0.15),nbuf=ctx.createBuffer(1,nlen,ctx.sampleRate);
+        const nd=nbuf.getChannelData(0); for(let i=0;i<nlen;i++) nd[i]=Math.random()*2-1;
+        const ns=ctx.createBufferSource(); ns.buffer=nbuf;
+        const ng=ctx.createGain(); ng.gain.value=p.noiseMix/100; ns.connect(ng);
+        // Mix
+        const mx=ctx.createGain(); mx.gain.value=1;
+        v1g.connect(mx); v2g.connect(mx); ng.connect(mx);
+        // Ladder VCF (2 series lowpass = 24dB/oct)
+        const f1=ctx.createBiquadFilter(),f2=ctx.createBiquadFilter();
+        f1.type='lowpass'; f2.type='lowpass';
+        f1.frequency.setValueAtTime(p.cutoff*5,when);
+        f1.frequency.exponentialRampToValueAtTime(Math.max(20,p.cutoff),when+p.decay/1000*0.25);
+        f2.frequency.value=p.cutoff; f2.Q.value=0;
+        const q=Math.max(0.5,p.resonance*0.35); f1.Q.value=q;
+        mx.connect(f1); f1.connect(f2);
+        // Decay env
+        const env=ctx.createGain();
+        env.gain.setValueAtTime(0.001,when);
+        env.gain.linearRampToValueAtTime(0.95,when+0.003);
+        env.gain.exponentialRampToValueAtTime(0.001,when+Math.max(0.02,p.decay/1000));
+        f2.connect(env); env.connect(out);
+        const stopT=when+p.decay/1000+0.08;
+        v1.start(when); v2.start(when); ns.start(when);
+        v1.stop(stopT); v2.stop(stopT); ns.stop(stopT);
+        // Update step highlight
+        if(modId!=null){
+          const delay=Math.max(0,(when-ctx.currentTime)*1000);
+          setTimeout(()=>{
+            const el=document.querySelector(`.mod-tile[data-mod-id="${modId}"] .dfam-steps`);
+            if(el) el.querySelectorAll('.dfam-step-btn').forEach((b,i)=>b.classList.toggle('dfam-active',i===si));
+          },delay);
+        }
+      }
+
+      function scheduler(){
+        const lookahead=0.12,stepDur=60/p.tempo/2; // 16th-notes
+        while(nextStepTime<ctx.currentTime+lookahead){
+          scheduleHit(seqStep,nextStepTime);
+          seqStep=(seqStep+1)%8;
+          nextStepTime+=stepDur;
+        }
+      }
+
+      nextStepTime=ctx.currentTime+0.05;
+      scheduler();
+      clockId=setInterval(scheduler,40);
+
+      return {
+        input:null, output:out,
+        setSteps:(s)=>{[...s].forEach((c,i)=>{steps[i]=c==='1';});},
+        cleanup:()=>{
+          if(clockId!==null){clearInterval(clockId);clockId=null;}
+          const el=document.querySelector(`.mod-tile[data-mod-id="${modId}"] .dfam-steps`);
+          if(el) el.querySelectorAll('.dfam-step-btn').forEach(b=>b.classList.remove('dfam-active'));
+          try{out.disconnect();}catch(_){}
+        }
+      };
     }
     default: {const g=ctx.createGain(); return {input:g,output:g,cleanup:()=>{try{g.disconnect();}catch(_){}}};}
   }
@@ -1510,6 +1665,49 @@ function buildModBody(mod){
       </div>`;
     case 'vol': return `
       <div class="knob-row">${knobHTML('Level','level',0,100,p.level,'pct',false)}</div>`;
+    case 'stereomix': return `
+      <div class="knob-row">
+        ${knobHTML('Pan','pan',-100,100,p.pan,'num',false)}
+        ${knobHTML('Level','level',0,100,p.level,'pct',false)}
+        ${knobHTML('Width','width',0,100,p.width,'pct',false)}
+      </div>`;
+    case 'reverberator': return `
+      <div class="knob-row">
+        ${knobHTML('PreDly','predelay',0,200,p.predelay,'ms',false)}
+        ${knobHTML('Room','roomSize',1,100,p.roomSize,'pct',false)}
+        ${knobHTML('Damp','damping',0,100,p.damping,'pct',false)}
+        ${knobHTML('Mix','mix',0,100,p.mix,'pct',false)}
+      </div>`;
+    case 'tubeosc': return `
+      <div class="knob-row">
+        ${knobHTML('Freq','freq',20,2000,p.freq,'hz',true)}
+        ${knobHTML('Oct','oct',-3,3,p.oct,'num',false)}
+        ${knobHTML('Drive','drive',0,100,p.drive,'pct',false)}
+        ${knobHTML('Tone','brightness',0,100,p.brightness,'pct',false)}
+        ${knobHTML('Level','level',0,100,p.level,'pct',false)}
+      </div>`;
+    case 'combfilter': return `
+      <div class="knob-row">
+        ${knobHTML('Freq','freq',20,2000,p.freq,'hz',true)}
+        ${knobHTML('Fdbk','feedback',0,97,p.feedback,'pct',false)}
+        ${knobHTML('Damp','damp',0,100,p.damp,'pct',false)}
+        ${knobHTML('Mix','mix',0,100,p.mix,'pct',false)}
+      </div>`;
+    case 'dfam': return `
+      <div class="dfam-steps">
+        ${p.steps.split('').map((s,i)=>`<button class="dfam-step-btn${s==='1'?' on':''}" data-step="${i}">${i+1}</button>`).join('')}
+      </div>
+      <div class="knob-row">
+        ${knobHTML('Tempo','tempo',40,300,p.tempo,'num',false)}
+        ${knobHTML('VCO1','vco1',20,800,p.vco1,'hz',true)}
+        ${knobHTML('VCO2','vco2',20,1200,p.vco2,'hz',true)}
+        ${knobHTML('Noise','noiseMix',0,100,p.noiseMix,'pct',false)}
+      </div>
+      <div class="knob-row">
+        ${knobHTML('Cutoff','cutoff',20,8000,p.cutoff,'hz',true)}
+        ${knobHTML('Reson','resonance',0,100,p.resonance,'pct',false)}
+        ${knobHTML('Decay','decay',20,2000,p.decay,'ms',true)}
+      </div>`;
     default: return '';
   }
 }
@@ -1567,6 +1765,19 @@ function buildModTile(mod,patch){
       if(patch.playing){patchStop(patch); setTimeout(()=>patchStart(patch),50);}
     });
   });
+
+  // DFAM step buttons
+  if(mod.type==='dfam'){
+    tile.querySelectorAll('.dfam-step-btn').forEach((btn,i)=>{
+      btn.addEventListener('click',()=>{
+        const arr=mod.params.steps.split('');
+        arr[i]=arr[i]==='1'?'0':'1';
+        mod.params.steps=arr.join('');
+        btn.classList.toggle('on',arr[i]==='1');
+        if(patch.playing&&mod.nodes?.setSteps) mod.nodes.setSteps(mod.params.steps);
+      });
+    });
+  }
 
   // Drag-and-drop reorder within patch
   tile.addEventListener('dragstart',e=>{e.dataTransfer.setData('modId',mod.id); e.dataTransfer.setData('patchId',patch.id); tile.classList.add('dragging');});
