@@ -570,46 +570,42 @@
     .mod-palette-item:hover { background: var(--surface-up); border-color: var(--pink); }
 
     /* ─── JARVIS JOOG ─── */
-    .joog-panel { display:flex; flex-direction:column; }
+    /* === Mavis Panel === */
+    .joog-panel { display:flex; flex-direction:column; background:#0a0018; }
     .joog-header {
       display:flex; align-items:center; justify-content:space-between;
-      padding:8px 16px;
-      background:linear-gradient(90deg,#0a0018,#1a0035);
+      padding:8px 16px; background:linear-gradient(90deg,#0f0020,#1e0040);
       border-bottom:2px solid var(--pink);
     }
-    .joog-header-title { color:var(--pink); font-size:15px; letter-spacing:5px; text-shadow:0 0 12px var(--pink); }
+    .joog-header-title { color:var(--pink); font-size:15px; letter-spacing:5px; text-shadow:0 0 12px var(--pink); font-weight:700; }
     .joog-header-sub { color:var(--text-muted); font-size:9px; letter-spacing:1.5px; }
-    .joog-body { display:flex; overflow-x:auto; background:#060010; border-bottom:1px solid var(--border); }
-    .joog-sec { border-right:1px solid var(--border); padding:10px 12px; flex-shrink:0; }
+    .joog-body { display:flex; overflow-x:auto; background:#080014; border-bottom:1px solid var(--border); }
+    .joog-sec { border-right:1px solid var(--border); padding:10px 12px; flex-shrink:0; min-width:0; }
     .joog-sec:last-child { border-right:none; }
     .joog-sec-title {
       font-size:8px; letter-spacing:2px; text-transform:uppercase;
-      color:var(--pink); text-align:center; margin-bottom:8px;
-      border-bottom:1px solid var(--border); padding-bottom:5px;
+      color:var(--cyan); text-align:center; margin-bottom:8px;
+      border-bottom:1px solid rgba(1,205,254,0.2); padding-bottom:5px;
     }
-    .joog-vco-row { display:flex; gap:10px; }
-    .joog-vco { display:flex; flex-direction:column; align-items:center; gap:4px; min-width:88px; }
-    .joog-vco-name { font-size:9px; letter-spacing:1px; color:var(--cyan); margin-bottom:2px; }
-    .joog-wave-row,.joog-range-row { display:flex; gap:2px; flex-wrap:wrap; justify-content:center; }
-    .joog-wb,.joog-rb {
+    /* crossfader sliders */
+    .joog-xfader-wrap { display:flex; flex-direction:column; align-items:center; gap:2px; margin:4px 0; }
+    .joog-xfader-labels { display:flex; justify-content:space-between; width:100%; font-size:8px; color:var(--text-muted); }
+    .joog-xfader {
+      width:100%; accent-color:var(--pink);
+      cursor:pointer; -webkit-appearance:none; height:14px;
+      background:transparent;
+    }
+    .joog-xfader::-webkit-slider-thumb { -webkit-appearance:none; width:12px; height:20px; background:var(--pink); border-radius:3px; cursor:pointer; }
+    .joog-xfader::-webkit-slider-runnable-track { height:6px; background:var(--surface); border-radius:3px; border:1px solid var(--border); }
+    /* VCA switch */
+    .joog-vca-switch { display:flex; gap:4px; margin-top:6px; }
+    .joog-vsw {
+      flex:1; padding:3px 5px; font-size:9px; font-family:inherit;
       background:var(--surface); border:1px solid var(--border); color:var(--text-muted);
-      padding:2px 4px; font-size:9px; border-radius:2px; cursor:pointer; font-family:inherit;
+      border-radius:3px; cursor:pointer; text-align:center;
     }
-    .joog-wb.active { background:var(--pink); color:#000; border-color:var(--pink); }
-    .joog-rb.active { background:var(--cyan); color:#000; border-color:var(--cyan); }
-    .joog-switch { display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text-muted);cursor:pointer;margin-top:3px; }
-    .joog-switch input { accent-color:var(--green); }
-    .joog-lfo-targets { display:flex; gap:2px; margin-top:4px; }
-    .joog-ltb {
-      background:var(--surface); border:1px solid var(--border); color:var(--text-muted);
-      padding:2px 5px; font-size:9px; border-radius:2px; cursor:pointer; font-family:inherit;
-    }
-    .joog-ltb.active { background:var(--yellow); color:#000; border-color:var(--yellow); }
-    .joog-keys-wrap {
-      display:flex; flex-direction:column; align-items:center;
-      padding:10px 16px 14px; gap:8px; background:#040009;
-    }
-    .joog-kb-controls { display:flex; align-items:center; gap:10px; font-size:11px; flex-wrap:wrap; }
+    .joog-vsw.active { background:var(--pink); color:#000; border-color:var(--pink); box-shadow:0 0 8px var(--glow-pink); }
+    /* Scope + tuner (keep existing) */
     .joog-scope-tuner {
       display:flex; gap:10px; align-items:stretch;
       padding:8px 14px; background:#040009; border-top:1px solid var(--border);
@@ -627,15 +623,53 @@
     .joog-tuner-cents-bar.sharp { background:var(--pink); }
     .joog-tuner-cents-bar.flat { background:var(--cyan); }
     .joog-tuner-cents-label { color:var(--text-muted); font-size:9px; }
-    .joog-mavis-piano { display:flex; flex-direction:column; gap:3px; user-select:none; }
-    .joog-key-row { display:flex; gap:3px; }
+    /* Patch Bay */
+    .joog-patchbay {
+      padding:10px 14px; background:#060010; border-top:1px solid var(--border);
+    }
+    .joog-patchbay-title {
+      font-size:8px; letter-spacing:2px; text-transform:uppercase;
+      color:var(--purple); margin-bottom:8px; border-bottom:1px solid rgba(185,103,255,0.2); padding-bottom:4px;
+    }
+    .joog-patchbay-grid { display:flex; gap:8px; flex-wrap:wrap; }
+    .joog-patchbay-group { display:flex; flex-direction:column; gap:4px; min-width:72px; }
+    .joog-patchbay-group-title { font-size:7px; letter-spacing:1px; text-transform:uppercase; color:var(--text-muted); text-align:center; }
+    .joog-jack-row { display:flex; flex-direction:column; gap:3px; }
+    .joog-jack {
+      display:flex; align-items:center; gap:5px; cursor:pointer;
+      padding:2px 4px; border-radius:3px; transition:background 0.1s;
+    }
+    .joog-jack:hover { background:rgba(255,255,255,0.05); }
+    .joog-jack.selected { background:rgba(255,255,255,0.1); }
+    .joog-jack-circle {
+      width:14px; height:14px; border-radius:50%; flex-shrink:0;
+      box-sizing:border-box; position:relative;
+    }
+    .joog-jack.out .joog-jack-circle { border:none; }
+    .joog-jack.in .joog-jack-circle { background:transparent; border:2px solid currentColor; }
+    .joog-jack.in .joog-jack-circle::after {
+      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:5px; height:5px; border-radius:50%; background:currentColor; opacity:0.45;
+    }
+    .joog-jack.in.patched .joog-jack-circle { background:currentColor; }
+    .joog-jack.in.patched .joog-jack-circle::after { display:none; }
+    .joog-jack-label { font-size:9px; color:var(--text-muted); letter-spacing:0.5px; white-space:nowrap; }
+    .joog-jack.selected .joog-jack-label { color:#fff; }
+    /* Mavis rubber-pad keyboard */
+    .joog-keys-wrap {
+      display:flex; flex-direction:column; align-items:center;
+      padding:10px 16px 14px; gap:8px; background:#040009;
+    }
+    .joog-kb-controls { display:flex; align-items:center; gap:10px; font-size:11px; flex-wrap:wrap; }
+    .joog-mavis-piano { display:flex; flex-direction:column; gap:4px; user-select:none; }
+    .joog-key-row { display:flex; gap:4px; }
     .joog-key-nat {
-      width:40px; height:50px; border-radius:4px;
+      width:44px; height:52px; border-radius:5px;
       border:1px solid rgba(255,255,255,0.12);
       background:linear-gradient(180deg,#1e0038,#130025);
       color:var(--text-muted); font-size:9px; font-family:inherit;
       cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
-      padding-bottom:5px; user-select:none;
+      padding-bottom:6px; user-select:none;
       box-shadow:inset 0 -3px 0 rgba(0,0,0,0.6),0 2px 4px rgba(0,0,0,0.5);
       transition:background 0.06s,box-shadow 0.06s,transform 0.04s;
       -webkit-tap-highlight-color:transparent;
@@ -643,7 +677,7 @@
     .joog-key-nat:hover { background:linear-gradient(180deg,#2a004a,#1e0038); border-color:rgba(255,255,255,0.2); }
     .joog-key-nat.active { background:var(--pink); color:#000; border-color:var(--pink); box-shadow:0 0 16px var(--glow-pink),inset 0 1px 0 rgba(255,255,255,0.4); transform:translateY(1px); }
     .joog-key-sharp {
-      width:40px; height:36px; border-radius:3px;
+      width:44px; height:38px; border-radius:4px;
       border:1px solid rgba(255,255,255,0.07);
       background:linear-gradient(180deg,#08000f,#040009);
       color:rgba(255,255,255,0.3); font-size:8px; font-family:inherit;
@@ -655,7 +689,7 @@
     }
     .joog-key-sharp:hover { background:linear-gradient(180deg,#140025,#08000f); border-color:rgba(255,255,255,0.12); }
     .joog-key-sharp.active { background:var(--purple); color:#fff; border-color:var(--purple); box-shadow:0 0 12px var(--glow-purple),inset 0 1px 0 rgba(255,255,255,0.2); transform:translateY(1px); }
-    .joog-key-gap { width:40px; height:36px; background:transparent; border:none; pointer-events:none; box-shadow:none; }
+    .joog-key-gap { width:44px; height:38px; background:transparent; border:none; pointer-events:none; box-shadow:none; }
   </style>
 </head>
 <body>
@@ -2075,20 +2109,54 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 });
 
 // ═════════════════════════════════════════
-// JARVIS JOOG — Moog-inspired Monosynth
+// JARVIS JOOG — Moog Mavis-style monosynth
 // ═════════════════════════════════════════
 
 const joogP = {
-  v1Wave:'sawtooth', v1Range:0, v1Tune:0, v1Fine:0,
-  v2Wave:'sawtooth', v2Range:0, v2Tune:-7, v2Fine:0,
-  v3Wave:'triangle', v3Range:0, v3Tune:0, v3Fine:0, v3Lfo:false,
-  mix1:100, mix2:50, mix3:0, mixNoise:0,
-  cutoff:3000, emphasis:0, contour:50, keyFollow:50,
-  fAtk:10, fDcy:200, fSus:50, fRel:300,
-  aAtk:5,  aDcy:100, aSus:80, aRel:300,
-  glide:0, joogVol:80,
-  lfoRate:5, lfoDepth:20, lfoTarget:'pitch',
+  pitch:0, waveMix:0, pulseWidth:50,
+  pitchModMix:0.5, pitchModAmt:0,
+  pwmModMix:0.5, pwmModAmt:0,
+  foldAmt:0,
+  cutoff:3000, resonance:0,
+  vcfModMix:0.5, vcfModAmt:50,
+  attack:10, decay:200, sustain:70, release:300,
+  lfoRate:5, lfoWaveMix:0,
+  volume:80, vcaMode:'eg',
+  kbScale:100, glide:0,
+  attn:50, oneLvl:50,
 };
+
+const JACK_DEFS = [
+  // id, type('in'/'out'), label, color, normalled-to-id or null
+  {id:'vco_out',   t:'out', label:'VCO OUT',   color:'#f0c040', norm:null},
+  {id:'fold_out',  t:'out', label:'FOLD OUT',  color:'#ff8c00', norm:null},
+  {id:'eg_out',    t:'out', label:'EG',         color:'#ff6b6b', norm:null},
+  {id:'lfo_out',   t:'out', label:'LFO',        color:'#05ffa1', norm:null},
+  {id:'kbcv_out',  t:'out', label:'KB CV',      color:'#74c0fc', norm:null},
+  {id:'sh_out',    t:'out', label:'S+H OUT',    color:'#a9e34b', norm:null},
+  {id:'vca_out',   t:'out', label:'/VCA',       color:'#ff71ce', norm:null},
+  {id:'attn_out',  t:'out', label:'ATTN',       color:'#b967ff', norm:null},
+  {id:'mult1_out', t:'out', label:'MULT 1',     color:'#cc99ff', norm:null},
+  {id:'mult2_out', t:'out', label:'MULT 2',     color:'#cc99ff', norm:null},
+  {id:'onetwo_out',t:'out', label:'ONE+TWO',    color:'#ffaa55', norm:null},
+  {id:'1voct_in',  t:'in',  label:'1V/OCT',     color:'#74c0fc', norm:'kbcv_out'},
+  {id:'vcofm_in',  t:'in',  label:'VCO FM',     color:'#f0c040', norm:null},
+  {id:'vcopwm_in', t:'in',  label:'VCO PWM',    color:'#f0c040', norm:null},
+  {id:'vcfcv_in',  t:'in',  label:'VCF CV',     color:'#00d4ff', norm:null},
+  {id:'vcacv_in',  t:'in',  label:'VCA CV',     color:'#ff6b6b', norm:'eg_out'},
+  {id:'gate_in',   t:'in',  label:'GATE',       color:'#74c0fc', norm:'kbd'},
+  {id:'sh_in',     t:'in',  label:'S+H',        color:'#f0c040', norm:'vco_out'},
+  {id:'shgate_in', t:'in',  label:'S+H GATE',   color:'#05ffa1', norm:'lfo_out'},
+  {id:'foldin_in', t:'in',  label:'FOLD IN',    color:'#f0c040', norm:'vco_out'},
+  {id:'lforate_in',t:'in',  label:'LFO RATE',   color:'#05ffa1', norm:null},
+  {id:'attn_in',   t:'in',  label:'ATTN IN',    color:'#b967ff', norm:null},
+  {id:'one_in',    t:'in',  label:'ONE',        color:'#868e96', norm:'minus5'},
+  {id:'two_in',    t:'in',  label:'TWO',        color:'#ffaa55', norm:null},
+  {id:'mult_in',   t:'in',  label:'MULT',       color:'#cc99ff', norm:null},
+];
+
+const joogPatches = {}; // inputId → outputId
+let joogSelectedJack = null; // currently selected output id
 
 let joogVoice = null;
 let joogTabActive = false;
@@ -2096,141 +2164,149 @@ let joogLastFreq = null;
 let joogActiveKey = null;
 let joogOct = 3;
 
-function joogVcoFreq(baseFreq, rangeOcts, tuneSemis, fineCents){
-  return baseFreq * Math.pow(2, rangeOcts + tuneSemis/12 + fineCents/1200);
+const MAVIS_SEMIS = [0,1,2,3,4,5,6,7,8,9,10,11,12]; // C to C (13 keys)
+const MAVIS_SHARPS = new Set([1,3,6,8,10]);
+const JOOG_NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B','C'];
+
+function joogFreqFromMidi(midi){ return 440 * Math.pow(2,(midi-69)/12); }
+function joogMidiFromFreq(freq){ return Math.round(69+12*Math.log2(freq/440)); }
+function joogVcoFreqFromPitch(baseFreq){
+  return baseFreq * Math.pow(2, joogP.pitch/12);
 }
 function joogCutoffForNote(freq){
-  const kf = joogP.keyFollow/100;
-  return Math.max(40, Math.min(18000, joogP.cutoff * Math.pow(freq/440, kf)));
+  return Math.max(40, Math.min(18000, joogP.cutoff));
+}
+
+function makeWavefoldCurve(amount){
+  const n=4096; const curve=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    let x=(i/(n-1))*2-1;
+    if(amount<0.001){curve[i]=x;continue;}
+    const gain=1+amount*6;
+    let v=x*gain;
+    // fold: reflect between -1 and 1
+    v=((v+1)%2+2)%2;
+    if(v>1) v=2-v;
+    curve[i]=v*2-1;
+  }
+  return curve;
 }
 
 function joogBuildVoice(freq){
   const ctx=getCtx(), ana=getMasterAnalyser();
   const v={};
-  v.mix=ctx.createGain();
+  const now=ctx.currentTime;
+  const baseFreq=joogVcoFreqFromPitch(freq);
 
-  // VCO 1
-  v.vco1=ctx.createOscillator(); v.vco1.type=joogP.v1Wave;
-  v.vco1.frequency.value=joogVcoFreq(freq,joogP.v1Range,joogP.v1Tune,joogP.v1Fine);
-  v.g1=ctx.createGain(); v.g1.gain.value=joogP.mix1/100;
-  v.vco1.connect(v.g1); v.g1.connect(v.mix);
+  // === VCO (saw + square crossfade for SAW/PULSE blend) ===
+  v.osc_saw=ctx.createOscillator(); v.osc_saw.type='sawtooth';
+  v.osc_sqr=ctx.createOscillator(); v.osc_sqr.type='square';
+  v.osc_saw.frequency.value=baseFreq;
+  v.osc_sqr.frequency.value=baseFreq;
+  v.g_saw=ctx.createGain(); v.g_saw.gain.value=1-joogP.waveMix;
+  v.g_sqr=ctx.createGain(); v.g_sqr.gain.value=joogP.waveMix;
+  v.vco_bus=ctx.createGain(); v.vco_bus.gain.value=1;
+  v.osc_saw.connect(v.g_saw); v.g_saw.connect(v.vco_bus);
+  v.osc_sqr.connect(v.g_sqr); v.g_sqr.connect(v.vco_bus);
 
-  // VCO 2
-  v.vco2=ctx.createOscillator(); v.vco2.type=joogP.v2Wave;
-  v.vco2.frequency.value=joogVcoFreq(freq,joogP.v2Range,joogP.v2Tune,joogP.v2Fine);
-  v.g2=ctx.createGain(); v.g2.gain.value=joogP.mix2/100;
-  v.vco2.connect(v.g2); v.g2.connect(v.mix);
+  // === EG — ConstantSourceNode ramped by ADSR ===
+  v.egSrc=ctx.createConstantSource(); v.egSrc.offset.value=0; v.egSrc.start();
 
-  // VCO 3 or LFO
-  if(joogP.v3Lfo){
-    v.lfo=ctx.createOscillator(); v.lfo.type=joogP.v3Wave;
-    v.lfo.frequency.value=joogP.lfoRate;
-    v.lfoGain=ctx.createGain();
-    v.lfo.connect(v.lfoGain);
-  } else {
-    v.vco3=ctx.createOscillator(); v.vco3.type=joogP.v3Wave;
-    v.vco3.frequency.value=joogVcoFreq(freq,joogP.v3Range,joogP.v3Tune,joogP.v3Fine);
-    v.g3=ctx.createGain(); v.g3.gain.value=joogP.mix3/100;
-    v.vco3.connect(v.g3); v.g3.connect(v.mix);
-  }
+  // === LFO (tri + square crossfade) ===
+  v.lfo_tri=ctx.createOscillator(); v.lfo_tri.type='triangle';
+  v.lfo_sqr=ctx.createOscillator(); v.lfo_sqr.type='square';
+  v.lfo_tri.frequency.value=joogP.lfoRate;
+  v.lfo_sqr.frequency.value=joogP.lfoRate;
+  v.g_lfo_tri=ctx.createGain(); v.g_lfo_tri.gain.value=1-joogP.lfoWaveMix;
+  v.g_lfo_sqr=ctx.createGain(); v.g_lfo_sqr.gain.value=joogP.lfoWaveMix;
+  v.lfo_bus=ctx.createGain(); v.lfo_bus.gain.value=1;
+  v.lfo_tri.connect(v.g_lfo_tri); v.g_lfo_tri.connect(v.lfo_bus);
+  v.lfo_sqr.connect(v.g_lfo_sqr); v.g_lfo_sqr.connect(v.lfo_bus);
 
-  // Noise
-  if(joogP.mixNoise>0){
-    const len=ctx.sampleRate*2,buf=ctx.createBuffer(1,len,ctx.sampleRate),d=buf.getChannelData(0);
-    for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
-    v.noise=ctx.createBufferSource(); v.noise.buffer=buf; v.noise.loop=true;
-    v.gnoise=ctx.createGain(); v.gnoise.gain.value=joogP.mixNoise/100;
-    v.noise.connect(v.gnoise); v.gnoise.connect(v.mix);
-  }
+  // === Pitch modulation → VCO detune (cents) ===
+  const pitchCents=joogP.pitchModAmt*2; // 0-200 cents max range
+  v.pitch_eg=ctx.createGain(); v.pitch_eg.gain.value=(1-joogP.pitchModMix)*pitchCents;
+  v.pitch_lfo=ctx.createGain(); v.pitch_lfo.gain.value=joogP.pitchModMix*pitchCents;
+  v.egSrc.connect(v.pitch_eg); v.lfo_bus.connect(v.pitch_lfo);
+  v.pitch_eg.connect(v.osc_saw.detune); v.pitch_eg.connect(v.osc_sqr.detune);
+  v.pitch_lfo.connect(v.osc_saw.detune); v.pitch_lfo.connect(v.osc_sqr.detune);
 
-  // Moog Ladder Filter — two 2-pole lowpass in series = 24 dB/oct
+  // === Wavefolder ===
+  v.folder=ctx.createWaveShaper();
+  v.folder.curve=makeWavefoldCurve(joogP.foldAmt/100);
+  v.folder.oversample='4x';
+  v.vco_bus.connect(v.folder);
+
+  // === VCF (Moog ladder: 2x 2-pole LPF in series) ===
   v.f1=ctx.createBiquadFilter(); v.f1.type='lowpass';
   v.f2=ctx.createBiquadFilter(); v.f2.type='lowpass';
   const cut=joogCutoffForNote(freq);
   v.f1.frequency.value=cut; v.f2.frequency.value=cut;
-  const q=Math.max(0.5,joogP.emphasis*0.16);
-  v.f1.Q.value=q; v.f2.Q.value=q*0.75;
-  v.mix.connect(v.f1); v.f1.connect(v.f2);
+  const q=Math.max(0.5,joogP.resonance*0.3);
+  v.f1.Q.value=q; v.f2.Q.value=q*0.7;
+  v.folder.connect(v.f1); v.f1.connect(v.f2);
 
-  // LFO routing
-  if(v.lfoGain){
-    if(joogP.lfoTarget==='pitch'){
-      v.lfoGain.gain.value=joogP.lfoDepth*2;
-      v.lfoGain.connect(v.vco1.detune); v.lfoGain.connect(v.vco2.detune);
-    } else if(joogP.lfoTarget==='filter'){
-      v.lfoFiltGain=ctx.createGain(); v.lfoFiltGain.gain.value=joogP.lfoDepth*60;
-      v.lfoGain.gain.value=1;
-      v.lfoGain.connect(v.lfoFiltGain);
-      v.lfoFiltGain.connect(v.f1.frequency); v.lfoFiltGain.connect(v.f2.frequency);
-    } else {
-      v.lfoGain.gain.value=joogP.lfoDepth*0.006;
-      v.lfoGain.connect(v.ampEnv); // wired after ampEnv created below — see patch below
-    }
-  }
+  // === VCF modulation (EG + LFO → filter cutoff) ===
+  const vcfHz=joogP.vcfModAmt/100*10000;
+  v.vcf_eg=ctx.createGain(); v.vcf_eg.gain.value=(1-joogP.vcfModMix)*vcfHz;
+  v.vcf_lfo=ctx.createGain(); v.vcf_lfo.gain.value=joogP.vcfModMix*vcfHz;
+  v.egSrc.connect(v.vcf_eg); v.lfo_bus.connect(v.vcf_lfo);
+  v.vcf_eg.connect(v.f1.frequency); v.vcf_eg.connect(v.f2.frequency);
+  v.vcf_lfo.connect(v.f1.frequency); v.vcf_lfo.connect(v.f2.frequency);
 
-  // Amp envelope
-  v.ampEnv=ctx.createGain(); v.ampEnv.gain.value=0;
+  // === VCA ===
+  v.ampEnv=ctx.createGain();
+  v.ampEnv.gain.value=joogP.vcaMode==='on'?1:0;
   v.f2.connect(v.ampEnv);
-
-  // Amp LFO (tremolo) — connect after ampEnv exists
-  if(v.lfoGain && joogP.lfoTarget==='amp'){
-    try{v.lfoGain.disconnect();}catch(_){}
-    v.lfoGain.gain.value=joogP.lfoDepth*0.006;
-    v.lfoGain.connect(v.ampEnv.gain);
+  if(joogP.vcaMode==='eg'){
+    v.vca_eg=ctx.createGain(); v.vca_eg.gain.value=1;
+    v.egSrc.connect(v.vca_eg);
+    v.vca_eg.connect(v.ampEnv.gain);
   }
 
-  // Master volume
-  v.vol=ctx.createGain(); v.vol.gain.value=joogP.joogVol/100;
+  // === Master volume → out ===
+  v.vol=ctx.createGain(); v.vol.gain.value=joogP.volume/100;
   v.ampEnv.connect(v.vol); v.vol.connect(ana);
 
   return v;
 }
 
-function joogTriggerFilterEnv(v, freq, ctx, legato){
-  const now=ctx.currentTime;
-  const baseCutoff=joogCutoffForNote(freq);
-  const peakCutoff=Math.min(18000, baseCutoff+(joogP.contour/100)*(18000-baseCutoff));
-  const susCutoff=baseCutoff+(joogP.fSus/100)*(peakCutoff-baseCutoff);
-  const fA=Math.max(0.001,joogP.fAtk/1000), fD=Math.max(0.001,joogP.fDcy/1000);
-  [v.f1.frequency,v.f2.frequency].forEach(p=>{
-    p.cancelScheduledValues(now);
-    p.setValueAtTime(legato?p.value:baseCutoff, now);
-    p.linearRampToValueAtTime(peakCutoff, now+fA);
-    p.linearRampToValueAtTime(susCutoff, now+fA+fD);
-  });
+function joogTriggerEG(v, legato){
+  if(!v||!v.egSrc) return;
+  const ctx=getCtx(), now=ctx.currentTime;
+  const aA=Math.max(0.001,joogP.attack/1000);
+  const aD=Math.max(0.001,joogP.decay/1000);
+  const aSus=joogP.sustain/100;
+  v.egSrc.offset.cancelScheduledValues(now);
+  v.egSrc.offset.setValueAtTime(legato?v.egSrc.offset.value:0,now);
+  v.egSrc.offset.linearRampToValueAtTime(1,now+aA);
+  v.egSrc.offset.linearRampToValueAtTime(aSus,now+aA+aD);
 }
 
 function joogStart(freq){
   joogStop();
   const ctx=getCtx(), v=joogBuildVoice(freq);
-  [v.vco1,v.vco2,v.vco3,v.noise,v.lfo].forEach(n=>{if(n)try{n.start();}catch(_){}});
-
-  // Amp envelope
-  const now=ctx.currentTime;
-  const aA=Math.max(0.001,joogP.aAtk/1000), aD=Math.max(0.001,joogP.aDcy/1000);
-  v.ampEnv.gain.setValueAtTime(0,now);
-  v.ampEnv.gain.linearRampToValueAtTime(1,now+aA);
-  v.ampEnv.gain.linearRampToValueAtTime(joogP.aSus/100,now+aA+aD);
-
-  joogTriggerFilterEnv(v,freq,ctx,false);
+  [v.osc_saw,v.osc_sqr,v.lfo_tri,v.lfo_sqr,v.egSrc].forEach(n=>{if(n)try{n.start();}catch(_){}});
+  joogTriggerEG(v,false);
   joogVoice=v; joogLastFreq=freq;
 }
 
 function joogRelease(){
   if(!joogVoice) return;
   const v=joogVoice, ctx=getCtx(), now=ctx.currentTime;
-  const aR=Math.max(0.01,joogP.aRel/1000), fR=Math.max(0.01,joogP.fRel/1000);
-  v.ampEnv.gain.cancelScheduledValues(now);
-  v.ampEnv.gain.setValueAtTime(v.ampEnv.gain.value,now);
-  v.ampEnv.gain.linearRampToValueAtTime(0,now+aR);
-  [v.f1.frequency,v.f2.frequency].forEach(p=>{
-    p.cancelScheduledValues(now); p.setValueAtTime(p.value,now);
-    p.linearRampToValueAtTime(joogCutoffForNote(joogLastFreq||440),now+fR);
-  });
+  const aR=Math.max(0.01,joogP.release/1000);
+  if(joogP.vcaMode==='eg'){
+    v.ampEnv.gain.cancelScheduledValues(now);
+    v.ampEnv.gain.setValueAtTime(v.ampEnv.gain.value,now);
+    v.ampEnv.gain.linearRampToValueAtTime(0,now+aR);
+  }
+  v.egSrc.offset.cancelScheduledValues(now);
+  v.egSrc.offset.setValueAtTime(v.egSrc.offset.value,now);
+  v.egSrc.offset.linearRampToValueAtTime(0,now+aR);
   joogVoice=null;
   const snap=v;
   setTimeout(()=>{
-    [snap.vco1,snap.vco2,snap.vco3,snap.noise,snap.lfo].forEach(n=>{if(n)try{n.stop();}catch(_){}});
+    [snap.osc_saw,snap.osc_sqr,snap.lfo_tri,snap.lfo_sqr,snap.egSrc].forEach(n=>{if(n)try{n.stop();}catch(_){}});
     try{snap.vol.disconnect();}catch(_){}
   },(aR+0.15)*1000);
 }
@@ -2238,32 +2314,30 @@ function joogRelease(){
 function joogStop(){
   if(!joogVoice) return;
   const v=joogVoice; joogVoice=null;
-  [v.vco1,v.vco2,v.vco3,v.noise,v.lfo].forEach(n=>{if(n)try{n.stop();}catch(_){}});
+  [v.osc_saw,v.osc_sqr,v.lfo_tri,v.lfo_sqr,v.egSrc].forEach(n=>{if(n)try{n.stop();}catch(_){}});
   try{v.vol.disconnect();}catch(_){}
 }
 
-function joogNoteOn(freq, noteKey){
-  if(joogVoice && joogLastFreq && joogP.glide>0){
-    // Legato + glide
-    const ctx=getCtx(), gt=joogP.glide/1000, now=ctx.currentTime;
-    [[joogVoice.vco1,joogP.v1Range,joogP.v1Tune,joogP.v1Fine],
-     [joogVoice.vco2,joogP.v2Range,joogP.v2Tune,joogP.v2Fine],
-     [joogVoice.vco3,joogP.v3Range,joogP.v3Tune,joogP.v3Fine]].forEach(([osc,r,t,f])=>{
-      if(osc) osc.frequency.exponentialRampToValueAtTime(Math.max(1,joogVcoFreq(freq,r,t,f)),now+gt);
+function joogNoteOn(freq,noteKey){
+  const gt=joogP.glide/1000, ctx=getCtx(), now=ctx.currentTime;
+  if(joogVoice&&joogLastFreq&&joogP.glide>0){
+    const targetFreq=joogVcoFreqFromPitch(freq);
+    [joogVoice.osc_saw,joogVoice.osc_sqr].forEach(osc=>{
+      if(osc) osc.frequency.exponentialRampToValueAtTime(Math.max(1,targetFreq),now+gt);
     });
-    joogTriggerFilterEnv(joogVoice,freq,ctx,true);
+    joogTriggerEG(joogVoice,true);
   } else {
     joogStart(freq);
   }
   joogLastFreq=freq; joogActiveKey=noteKey;
   const panel=document.getElementById('panel-joog');
   if(panel){
-    const noteNames=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-    const midi=Math.round(69+12*Math.log2(freq/440));
+    const midi=joogMidiFromFreq(freq);
     const el=panel.querySelector('#joogNoteDisplay');
-    if(el) el.textContent=noteNames[((midi%12)+12)%12]+(Math.floor(midi/12)-1);
+    if(el) el.textContent=JOOG_NOTE_NAMES[((midi%12)+12)%12]+(Math.floor(midi/12)-1);
   }
 }
+
 function joogNoteOff(noteKey){
   if(joogActiveKey===noteKey){
     joogRelease(); joogActiveKey=null;
@@ -2272,33 +2346,181 @@ function joogNoteOff(noteKey){
   }
 }
 
-function joogLiveUpdate(param, val){
+function joogLiveUpdate(param,val){
   if(!joogVoice) return;
   const v=joogVoice, ctx=getCtx(), now=ctx.currentTime;
   switch(param){
-    case 'mix1': if(v.g1) v.g1.gain.value=val/100; break;
-    case 'mix2': if(v.g2) v.g2.gain.value=val/100; break;
-    case 'mix3': if(v.g3) v.g3.gain.value=val/100; break;
-    case 'joogVol': if(v.vol) v.vol.gain.value=val/100; break;
-    case 'emphasis': {
-      const q=Math.max(0.5,val*0.16);
-      if(v.f1) v.f1.Q.value=q; if(v.f2) v.f2.Q.value=q*0.75; break;
-    }
-    case 'cutoff': case 'keyFollow': {
-      const cut=joogCutoffForNote(joogLastFreq||440);
-      if(v.f1){v.f1.frequency.cancelScheduledValues(now);v.f1.frequency.setValueAtTime(cut,now);}
-      if(v.f2){v.f2.frequency.cancelScheduledValues(now);v.f2.frequency.setValueAtTime(cut,now);}
+    case 'volume': if(v.vol) v.vol.gain.value=val/100; break;
+    case 'cutoff':
+      if(v.f1){v.f1.frequency.cancelScheduledValues(now);v.f1.frequency.setValueAtTime(val,now);}
+      if(v.f2){v.f2.frequency.cancelScheduledValues(now);v.f2.frequency.setValueAtTime(val,now);}
       break;
+    case 'resonance': {
+      const q=Math.max(0.5,val*0.3);
+      if(v.f1) v.f1.Q.value=q; if(v.f2) v.f2.Q.value=q*0.7; break;
     }
-    case 'lfoRate': if(v.lfo) v.lfo.frequency.value=val; break;
-    case 'lfoDepth':
-      if(v.lfoGain){
-        if(joogP.lfoTarget==='pitch') v.lfoGain.gain.value=val*2;
-        else if(joogP.lfoTarget==='filter'&&v.lfoFiltGain) v.lfoFiltGain.gain.value=val*60;
-        else v.lfoGain.gain.value=val*0.006;
-      }
-      break;
+    case 'foldAmt':
+      if(v.folder) v.folder.curve=makeWavefoldCurve(val/100); break;
+    case 'waveMix':
+      if(v.g_saw) v.g_saw.gain.value=1-val;
+      if(v.g_sqr) v.g_sqr.gain.value=val; break;
+    case 'lfoRate':
+      if(v.lfo_tri) v.lfo_tri.frequency.value=val;
+      if(v.lfo_sqr) v.lfo_sqr.frequency.value=val; break;
+    case 'lfoWaveMix':
+      if(v.g_lfo_tri) v.g_lfo_tri.gain.value=1-val;
+      if(v.g_lfo_sqr) v.g_lfo_sqr.gain.value=val; break;
+    case 'vcfModMix': {
+      const hz=joogP.vcfModAmt/100*10000;
+      if(v.vcf_eg) v.vcf_eg.gain.value=(1-val)*hz;
+      if(v.vcf_lfo) v.vcf_lfo.gain.value=val*hz; break;
+    }
+    case 'vcfModAmt': {
+      const hz=val/100*10000;
+      if(v.vcf_eg) v.vcf_eg.gain.value=(1-joogP.vcfModMix)*hz;
+      if(v.vcf_lfo) v.vcf_lfo.gain.value=joogP.vcfModMix*hz; break;
+    }
+    case 'pitchModMix': {
+      const c=joogP.pitchModAmt*2;
+      if(v.pitch_eg) v.pitch_eg.gain.value=(1-val)*c;
+      if(v.pitch_lfo) v.pitch_lfo.gain.value=val*c; break;
+    }
+    case 'pitchModAmt': {
+      const c=val*2;
+      if(v.pitch_eg) v.pitch_eg.gain.value=(1-joogP.pitchModMix)*c;
+      if(v.pitch_lfo) v.pitch_lfo.gain.value=joogP.pitchModMix*c; break;
+    }
   }
+}
+
+// ─── Patch Bay ───────────────────────────────────────────────────────
+const JACK_COLOR = Object.fromEntries(JACK_DEFS.map(j=>[j.id,j.color]));
+
+function joogSelectJack(id){
+  joogSelectedJack = joogSelectedJack===id?null:id;
+  renderPatchBay();
+}
+
+function joogPatch(inputId, outputId){
+  if(outputId) joogPatches[inputId]=outputId;
+  else delete joogPatches[inputId];
+  renderPatchBay();
+}
+
+function renderPatchBay(){
+  const container=document.getElementById('joogPatchGrid'); if(!container) return;
+  JACK_DEFS.forEach(j=>{
+    const el=container.querySelector(`[data-jack="${j.id}"]`); if(!el) return;
+    const circle=el.querySelector('.joog-jack-circle');
+    const isSelected=(j.t==='out'&&joogSelectedJack===j.id);
+    el.classList.toggle('selected',isSelected);
+    if(j.t==='in'){
+      const patchedTo=joogPatches[j.id]||j.norm;
+      const color=patchedTo?JACK_COLOR[patchedTo]||j.color:'#333';
+      el.style.color=color;
+      circle.style.borderColor=color;
+      el.classList.toggle('patched',!!joogPatches[j.id]);
+    } else {
+      circle.style.background=joogSelectedJack===j.id?j.color:j.color+'aa';
+      circle.style.boxShadow=joogSelectedJack===j.id?`0 0 8px ${j.color},0 0 16px ${j.color}50`:'none';
+    }
+  });
+}
+
+function buildPatchBay(){
+  const grid=document.getElementById('joogPatchGrid'); if(!grid) return;
+  const groups=[
+    {title:'VCO', ids:['vco_out','fold_out','1voct_in','vcofm_in','vcopwm_in','foldin_in']},
+    {title:'VCF / EG', ids:['eg_out','vcfcv_in','vcacv_in']},
+    {title:'LFO / S+H', ids:['lfo_out','lforate_in','sh_out','sh_in','shgate_in']},
+    {title:'KBD / VCA', ids:['kbcv_out','vca_out','gate_in']},
+    {title:'UTIL', ids:['attn_out','mult1_out','mult2_out','onetwo_out','attn_in','one_in','two_in','mult_in']},
+  ];
+  const byId=Object.fromEntries(JACK_DEFS.map(j=>[j.id,j]));
+  grid.innerHTML='';
+  groups.forEach(g=>{
+    const grpEl=document.createElement('div'); grpEl.className='joog-patchbay-group';
+    grpEl.innerHTML=`<div class="joog-patchbay-group-title">${g.title}</div>`;
+    const rowEl=document.createElement('div'); rowEl.className='joog-jack-row';
+    g.ids.forEach(id=>{
+      const j=byId[id]; if(!j) return;
+      const el=document.createElement('div');
+      el.className=`joog-jack ${j.t}`; el.dataset.jack=id;
+      const patchedTo=joogPatches[id]||j.norm;
+      const color=j.t==='out'?j.color:(patchedTo?JACK_COLOR[patchedTo]||j.color:'#333');
+      el.style.color=color;
+      const circleStyle=j.t==='out'
+        ?`background:${j.color}aa;`
+        :`border:2px solid ${color};`;
+      el.innerHTML=`<div class="joog-jack-circle" style="${circleStyle}"></div><span class="joog-jack-label">${j.label}</span>`;
+      if(j.t==='in'&&joogPatches[id]) el.classList.add('patched');
+      el.addEventListener('click',()=>{
+        if(j.t==='out'){
+          joogSelectJack(id);
+        } else {
+          if(joogSelectedJack){
+            joogPatch(id,joogSelectedJack);
+            joogSelectedJack=null;
+          } else if(joogPatches[id]){
+            joogPatch(id,null);
+          }
+          renderPatchBay();
+        }
+      });
+      rowEl.appendChild(el);
+    });
+    grpEl.appendChild(rowEl);
+    grid.appendChild(grpEl);
+  });
+  renderPatchBay();
+}
+
+// ─── Mavis 13-key rubber pad keyboard ────────────────────────────────
+function buildJoogPiano(oct){
+  const piano=document.getElementById('joog-piano'); if(!piano) return;
+  piano.innerHTML='';
+  piano.className='joog-mavis-piano';
+  const sharpRow=document.createElement('div'); sharpRow.className='joog-key-row';
+  const natRow=document.createElement('div'); natRow.className='joog-key-row';
+
+  // Sharp row layout: C# D# [gap] F# G# A# [gap] C(high sharp placeholder)
+  const sharpLayout=[1,3,null,6,8,10,null,null];
+  // Natural row: C D E F G A B C
+  const natLayout=[0,2,4,5,7,9,11,12];
+
+  const base=(oct+1)*12;
+  sharpLayout.forEach(semi=>{
+    const div=document.createElement('div');
+    if(semi===null){
+      div.className='joog-key-gap';
+    } else {
+      const midi=base+semi;
+      div.className='joog-key-sharp'; div.dataset.midi=midi;
+      div.textContent=JOOG_NOTE_NAMES[semi]||'';
+      addJoogKeyEvents(div,`jk_${midi}`,joogFreqFromMidi(midi));
+    }
+    sharpRow.appendChild(div);
+  });
+  natLayout.forEach((semi,idx)=>{
+    const midi=base+semi;
+    const div=document.createElement('div');
+    div.className='joog-key-nat'; div.dataset.midi=midi;
+    div.innerHTML=`${JOOG_NOTE_NAMES[semi]}<br><span style="font-size:7px;opacity:0.35">${oct+(semi===12?1:0)}</span>`;
+    addJoogKeyEvents(div,`jk_${midi}`,joogFreqFromMidi(midi));
+    natRow.appendChild(div);
+  });
+  piano.appendChild(sharpRow);
+  piano.appendChild(natRow);
+}
+
+function addJoogKeyEvents(el,noteKey,freq){
+  const on=()=>{el.classList.add('active'); joogNoteOn(freq,noteKey);};
+  const off=()=>{el.classList.remove('active'); joogNoteOff(noteKey);};
+  el.addEventListener('mousedown',e=>{e.preventDefault();on();});
+  el.addEventListener('mouseenter',e=>{if(e.buttons===1)on();});
+  el.addEventListener('mouseup',off); el.addEventListener('mouseleave',off);
+  el.addEventListener('touchstart',e=>{e.preventDefault();on();},{passive:false});
+  el.addEventListener('touchend',off); el.addEventListener('touchcancel',off);
 }
 
 // ── Joog scope + tuner ──────────────────────────────────────────────
@@ -2398,72 +2620,8 @@ function stopJoogScope(){
   const bar=el('joogTunerBar'); if(bar){ bar.style.left='calc(50% - 3px)'; bar.style.marginLeft=''; bar.className='joog-tuner-cents-bar'; }
 }
 
-// ── Mavis-style Joog keyboard ────────────────────────────────────────
-const JOOG_SHARP_SEMIS=[1,3,null,6,8,10,null]; // C# D# gap F# G# A# gap
-const JOOG_NAT_SEMIS=[0,2,4,5,7,9,11];         // C D E F G A B
-const JOOG_NOTE_NAMES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-
-function buildJoogPiano(oct){
-  const piano=document.getElementById('joog-piano'); if(!piano) return;
-  piano.className='joog-mavis-piano';
-  piano.innerHTML='';
-  const NUM=2;
-  const sharpRow=document.createElement('div'); sharpRow.className='joog-key-row';
-  const natRow=document.createElement('div');   natRow.className='joog-key-row';
-
-  for(let o=0;o<NUM;o++){
-    if(o>0){
-      const sp1=document.createElement('div'); sp1.style.width='6px'; sp1.style.flexShrink='0';
-      const sp2=document.createElement('div'); sp2.style.width='6px'; sp2.style.flexShrink='0';
-      sharpRow.appendChild(sp1); natRow.appendChild(sp2);
-    }
-    const base=(oct+o+1)*12;
-    JOOG_SHARP_SEMIS.forEach(semi=>{
-      const div=document.createElement('div');
-      if(semi===null){
-        div.className='joog-key-gap';
-      } else {
-        const midi=base+semi;
-        div.className='joog-key-sharp'; div.dataset.midi=midi;
-        div.textContent=JOOG_NOTE_NAMES[semi];
-        addJoogKeyEvents(div,`jk_${midi}`,midiToFreqKb(midi));
-      }
-      sharpRow.appendChild(div);
-    });
-    JOOG_NAT_SEMIS.forEach(semi=>{
-      const midi=base+semi, div=document.createElement('div');
-      div.className='joog-key-nat'; div.dataset.midi=midi;
-      div.innerHTML=`${JOOG_NOTE_NAMES[semi]}<br><span style="font-size:7px;opacity:0.35">${oct+o}</span>`;
-      addJoogKeyEvents(div,`jk_${midi}`,midiToFreqKb(midi));
-      natRow.appendChild(div);
-    });
-  }
-  piano.appendChild(sharpRow);
-  piano.appendChild(natRow);
-}
-function addJoogKeyEvents(el,noteKey,freq){
-  const on=()=>{el.classList.add('active'); joogNoteOn(freq,noteKey);};
-  const off=()=>{el.classList.remove('active'); joogNoteOff(noteKey);};
-  el.addEventListener('mousedown',e=>{e.preventDefault();on();});
-  el.addEventListener('mouseenter',e=>{if(e.buttons===1)on();});
-  el.addEventListener('mouseup',off); el.addEventListener('mouseleave',off);
-  el.addEventListener('touchstart',e=>{e.preventDefault();on();},{passive:false});
-  el.addEventListener('touchend',off); el.addEventListener('touchcancel',off);
-}
-
 function initJoog(){
   const panel=document.getElementById('panel-joog'); if(!panel) return;
-  const WAVES=[['Saw','sawtooth'],['Tri','triangle'],['Sqr','square'],['Sin','sine']];
-  const RLBLS=["Lo","32'","16'","8'","4'","2'"]; const RVALS=[-3,-2,-1,0,1,2];
-
-  function waveRowHTML(vco,def){
-    return `<div class="joog-wave-row" data-vco="${vco}">`+
-      WAVES.map(([l,w])=>`<button class="joog-wb${w===def?' active':''}" data-wave="${w}">${l}</button>`).join('')+`</div>`;
-  }
-  function rangeRowHTML(vco,def){
-    return `<div class="joog-range-row" data-vco="${vco}">`+
-      RLBLS.map((r,i)=>`<button class="joog-rb${RVALS[i]===def?' active':''}" data-range="${RVALS[i]}">${r}</button>`).join('')+`</div>`;
-  }
 
   panel.innerHTML=`<div class="joog-patches-section">
   <div class="joog-patches-hdr">
@@ -2478,81 +2636,110 @@ function initJoog(){
 <div class="joog-panel">
 <div class="joog-header">
   <span class="joog-header-title">JARVIS JOOG</span>
-  <span class="joog-header-sub">Moog-inspired monosynth · 3 VCOs · ladder filter · dual envelope · glide</span>
+  <span class="joog-header-sub">Moog Mavis-style monosynth · wavefolder · 4-pole ladder · S+H · patch bay</span>
 </div>
 <div class="joog-body">
+
+  <!-- VCO -->
   <div class="joog-sec">
-    <div class="joog-sec-title">Oscillators</div>
-    <div class="joog-vco-row">
-      <div class="joog-vco">
-        <div class="joog-vco-name">VCO 1</div>
-        ${waveRowHTML(1,'sawtooth')} ${rangeRowHTML(1,0)}
-        <div class="knob-row">${knobHTML('Tune','v1Tune',-12,12,0,'semi',false)}${knobHTML('Fine','v1Fine',-100,100,0,'cents',false)}</div>
+    <div class="joog-sec-title">VCO</div>
+    ${knobHTML('Pitch','pitch',-24,24,0,'semi',false)}
+    <div class="joog-xfader-wrap" style="margin-top:6px;width:90px">
+      <div class="joog-xfader-labels"><span>SAW</span><span>PULSE</span></div>
+      <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0" data-param="waveMix">
+    </div>
+    ${knobHTML('P.Width','pulseWidth',0,100,50,'pct',false)}
+    <div style="border-top:1px solid var(--border);margin:6px 0;padding-top:6px">
+      <div style="font-size:8px;color:var(--text-muted);text-align:center;margin-bottom:4px;letter-spacing:1px">PITCH MOD</div>
+      <div class="joog-xfader-wrap" style="width:90px">
+        <div class="joog-xfader-labels"><span>EG</span><span>LFO</span></div>
+        <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0.5" data-param="pitchModMix">
       </div>
-      <div class="joog-vco">
-        <div class="joog-vco-name">VCO 2</div>
-        ${waveRowHTML(2,'sawtooth')} ${rangeRowHTML(2,0)}
-        <div class="knob-row">${knobHTML('Tune','v2Tune',-12,12,-7,'semi',false)}${knobHTML('Fine','v2Fine',-100,100,0,'cents',false)}</div>
+      ${knobHTML('Amount','pitchModAmt',0,100,0,'pct',false)}
+    </div>
+    <div style="border-top:1px solid var(--border);margin:6px 0;padding-top:6px">
+      <div style="font-size:8px;color:var(--text-muted);text-align:center;margin-bottom:4px;letter-spacing:1px">PWM MOD</div>
+      <div class="joog-xfader-wrap" style="width:90px">
+        <div class="joog-xfader-labels"><span>EG</span><span>LFO</span></div>
+        <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0.5" data-param="pwmModMix">
       </div>
-      <div class="joog-vco">
-        <div class="joog-vco-name">VCO 3 / LFO</div>
-        ${waveRowHTML(3,'triangle')} ${rangeRowHTML(3,0)}
-        <div class="knob-row">${knobHTML('Tune','v3Tune',-12,12,0,'semi',false)}${knobHTML('Fine','v3Fine',-100,100,0,'cents',false)}</div>
-        <label class="joog-switch"><input type="checkbox" id="joogV3Lfo"> LFO Mode</label>
-        <div id="joogLfoCtrl" style="display:none;margin-top:4px">
-          <div class="knob-row">${knobHTML('Rate','lfoRate',0.1,20,5,'lfo',true)}${knobHTML('Depth','lfoDepth',0,100,20,'pct',false)}</div>
-          <div class="joog-lfo-targets">
-            <button class="joog-ltb active" data-ltarget="pitch">Pitch</button>
-            <button class="joog-ltb" data-ltarget="filter">Filt</button>
-            <button class="joog-ltb" data-ltarget="amp">Amp</button>
-          </div>
-        </div>
+      ${knobHTML('Amount','pwmModAmt',0,100,0,'pct',false)}
+    </div>
+  </div>
+
+  <!-- WAVEFOLDER -->
+  <div class="joog-sec">
+    <div class="joog-sec-title">Wavefold</div>
+    ${knobHTML('Fold','foldAmt',0,100,0,'pct',false)}
+  </div>
+
+  <!-- VCF -->
+  <div class="joog-sec">
+    <div class="joog-sec-title">VCF</div>
+    ${knobHTML('Cutoff','cutoff',40,18000,3000,'hz',true)}
+    ${knobHTML('Resonance','resonance',0,100,0,'pct',false)}
+    <div style="border-top:1px solid var(--border);margin:6px 0;padding-top:6px">
+      <div style="font-size:8px;color:var(--text-muted);text-align:center;margin-bottom:4px;letter-spacing:1px">VCF MOD</div>
+      <div class="joog-xfader-wrap" style="width:90px">
+        <div class="joog-xfader-labels"><span>EG</span><span>LFO</span></div>
+        <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0.5" data-param="vcfModMix">
       </div>
+      ${knobHTML('Amount','vcfModAmt',0,100,50,'pct',false)}
     </div>
   </div>
+
+  <!-- EG -->
   <div class="joog-sec">
-    <div class="joog-sec-title">Mixer</div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      ${knobHTML('VCO 1','mix1',0,100,100,'pct',false)}
-      ${knobHTML('VCO 2','mix2',0,100,50,'pct',false)}
-      ${knobHTML('VCO 3','mix3',0,100,0,'pct',false)}
-      ${knobHTML('Noise','mixNoise',0,100,0,'pct',false)}
-    </div>
-  </div>
-  <div class="joog-sec">
-    <div class="joog-sec-title">Ladder Filter</div>
+    <div class="joog-sec-title">EG</div>
     <div class="knob-row">
-      ${knobHTML('Cutoff','cutoff',40,18000,3000,'hz',true)}
-      ${knobHTML('Emph','emphasis',0,100,0,'pct',false)}
-      ${knobHTML('Contour','contour',0,100,50,'pct',false)}
-      ${knobHTML('Key Fol','keyFollow',0,100,50,'pct',false)}
+      ${knobHTML('Atk','attack',1,5000,10,'ms',true)}
+      ${knobHTML('Dcy','decay',1,5000,200,'ms',true)}
     </div>
-  </div>
-  <div class="joog-sec">
-    <div class="joog-sec-title">Filter Env</div>
     <div class="knob-row">
-      ${knobHTML('Atk','fAtk',1,5000,10,'ms',true)}
-      ${knobHTML('Dcy','fDcy',1,5000,200,'ms',true)}
-      ${knobHTML('Sus','fSus',0,100,50,'pct',false)}
-      ${knobHTML('Rel','fRel',1,5000,300,'ms',true)}
+      ${knobHTML('Sus','sustain',0,100,70,'pct',false)}
+      ${knobHTML('Rel','release',1,5000,300,'ms',true)}
     </div>
   </div>
+
+  <!-- LFO -->
   <div class="joog-sec">
-    <div class="joog-sec-title">Amp Env</div>
-    <div class="knob-row">
-      ${knobHTML('Atk','aAtk',1,5000,5,'ms',true)}
-      ${knobHTML('Dcy','aDcy',1,5000,100,'ms',true)}
-      ${knobHTML('Sus','aSus',0,100,80,'pct',false)}
-      ${knobHTML('Rel','aRel',1,5000,300,'ms',true)}
+    <div class="joog-sec-title">LFO</div>
+    ${knobHTML('Rate','lfoRate',0.1,550,5,'hz',true)}
+    <div class="joog-xfader-wrap" style="margin-top:6px;width:80px">
+      <div class="joog-xfader-labels"><span>TRI</span><span>SQR</span></div>
+      <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0" data-param="lfoWaveMix">
     </div>
   </div>
+
+  <!-- VCA + KB + UTIL -->
   <div class="joog-sec">
-    <div class="joog-sec-title">Output</div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-      ${knobHTML('Volume','joogVol',0,100,80,'pct',false)}
+    <div class="joog-sec-title">VCA</div>
+    ${knobHTML('Volume','volume',0,100,80,'pct',false)}
+    <div class="joog-vca-switch">
+      <button class="joog-vsw active" data-mode="eg">EG</button>
+      <button class="joog-vsw" data-mode="on">ON</button>
+    </div>
+    <div style="border-top:1px solid var(--border);margin:8px 0;padding-top:8px">
+      <div class="joog-sec-title" style="margin-bottom:6px">Keyboard</div>
+      ${knobHTML('Glide','glide',0,2000,0,'ms',true)}
+      ${knobHTML('KB Scale','kbScale',50,200,100,'pct',false)}
+    </div>
+    <div style="border-top:1px solid var(--border);margin:8px 0;padding-top:8px">
+      <div class="joog-sec-title" style="margin-bottom:6px">Utility</div>
+      ${knobHTML('Attn','attn',0,100,50,'pct',false)}
+      ${knobHTML('One Lvl','oneLvl',0,100,50,'pct',false)}
     </div>
   </div>
+
 </div>
+
+<!-- PATCH BAY -->
+<div class="joog-patchbay">
+  <div class="joog-patchbay-title">Patch Bay — click an output to select, then click an input to connect · click a patched input to remove</div>
+  <div class="joog-patchbay-grid" id="joogPatchGrid"></div>
+</div>
+
+<!-- SCOPE + TUNER -->
 <div class="joog-scope-tuner">
   <div class="joog-scope-wrap"><canvas id="joogScope"></canvas></div>
   <div class="joog-tuner">
@@ -2564,6 +2751,8 @@ function initJoog(){
     <div id="joogTunerCents" class="joog-tuner-cents-label"></div>
   </div>
 </div>
+
+<!-- KEYBOARD -->
 <div class="joog-keys-wrap">
   <div class="joog-kb-controls">
     <button class="btn sm" id="joogOctDown">▼</button>
@@ -2571,11 +2760,7 @@ function initJoog(){
     <button class="btn sm" id="joogOctUp">▲</button>
     <span style="color:var(--text-muted);font-size:9px;letter-spacing:1px">OCT</span>
     <span style="color:var(--border)">│</span>
-    <span style="color:var(--text-muted);font-size:10px">Glide</span>
-    <input type="range" id="joogGlideSlider" min="0" max="2000" value="0" style="width:90px;accent-color:var(--cyan)">
-    <span id="joogGlideVal" style="color:var(--cyan);font-size:11px;min-width:40px">0 ms</span>
-    <span style="color:var(--border)">│</span>
-    <span id="joogNoteDisplay" style="color:var(--pink);font-size:14px;font-weight:bold;min-width:40px;text-shadow:0 0 8px var(--pink)">—</span>
+    <span id="joogNoteDisplay" style="color:var(--pink);font-size:14px;font-weight:bold;min-width:60px;text-shadow:0 0 8px var(--pink)">—</span>
   </div>
   <div id="joog-piano"></div>
 </div>
@@ -2587,40 +2772,27 @@ function initJoog(){
   addPatch();
 
   // Knobs
-  panel.querySelectorAll('.knob').forEach(el=>initKnob(el,v=>{joogP[el.dataset.param]=v; joogLiveUpdate(el.dataset.param,v);}));
-
-  // Wave buttons
-  panel.querySelectorAll('.joog-wave-row').forEach(row=>{
-    const vco=row.dataset.vco;
-    row.querySelectorAll('.joog-wb').forEach(btn=>btn.addEventListener('click',()=>{
-      row.querySelectorAll('.joog-wb').forEach(b=>b.classList.toggle('active',b===btn));
-      joogP[`v${vco}Wave`]=btn.dataset.wave;
-      if(joogVoice&&joogVoice[`vco${vco}`]) joogVoice[`vco${vco}`].type=btn.dataset.wave;
-    }));
-  });
-
-  // Range buttons
-  panel.querySelectorAll('.joog-range-row').forEach(row=>{
-    const vco=row.dataset.vco;
-    row.querySelectorAll('.joog-rb').forEach(btn=>btn.addEventListener('click',()=>{
-      row.querySelectorAll('.joog-rb').forEach(b=>b.classList.toggle('active',b===btn));
-      joogP[`v${vco}Range`]=+btn.dataset.range;
-    }));
-  });
-
-  // VCO 3 LFO toggle
-  panel.querySelector('#joogV3Lfo').addEventListener('change',e=>{
-    joogP.v3Lfo=e.target.checked;
-    panel.querySelector('#joogLfoCtrl').style.display=e.target.checked?'block':'none';
-  });
-
-  // LFO targets
-  panel.querySelectorAll('.joog-ltb').forEach(btn=>btn.addEventListener('click',()=>{
-    panel.querySelectorAll('.joog-ltb').forEach(b=>b.classList.toggle('active',b===btn));
-    joogP.lfoTarget=btn.dataset.ltarget;
+  panel.querySelectorAll('.knob').forEach(el=>initKnob(el,v=>{
+    joogP[el.dataset.param]=v; joogLiveUpdate(el.dataset.param,v);
   }));
 
-  // Octave
+  // Crossfaders
+  panel.querySelectorAll('.joog-xfader').forEach(el=>el.addEventListener('input',()=>{
+    const p=el.dataset.param; const v=parseFloat(el.value);
+    joogP[p]=v; joogLiveUpdate(p,v);
+  }));
+
+  // VCA mode switch
+  panel.querySelectorAll('.joog-vsw').forEach(btn=>btn.addEventListener('click',()=>{
+    panel.querySelectorAll('.joog-vsw').forEach(b=>b.classList.toggle('active',b===btn));
+    joogP.vcaMode=btn.dataset.mode;
+    if(joogVoice){
+      if(joogP.vcaMode==='on') joogVoice.ampEnv.gain.value=1;
+      else joogVoice.ampEnv.gain.value=0;
+    }
+  }));
+
+  // Octave controls
   panel.querySelector('#joogOctDown').addEventListener('click',()=>{
     if(joogOct>0){joogOct--;panel.querySelector('#joogOctDisplay').textContent=joogOct;buildJoogPiano(joogOct);}
   });
@@ -2628,12 +2800,10 @@ function initJoog(){
     if(joogOct<6){joogOct++;panel.querySelector('#joogOctDisplay').textContent=joogOct;buildJoogPiano(joogOct);}
   });
 
-  // Glide slider
-  panel.querySelector('#joogGlideSlider').addEventListener('input',e=>{
-    joogP.glide=+e.target.value;
-    panel.querySelector('#joogGlideVal').textContent=e.target.value+' ms';
-  });
+  // Patch bay
+  buildPatchBay();
 
+  // Keyboard
   buildJoogPiano(joogOct);
 }
 
