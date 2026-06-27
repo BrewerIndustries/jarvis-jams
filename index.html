@@ -2359,7 +2359,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     joogTabActive = (tab==='joog');
     if(tab==='joog'){
       setTimeout(startJoogScope, 80);
-      if(joogP.vcaMode==='on' && !joogVoice) setTimeout(()=>joogStart(joogFreqFromMidi(60)),100);
+      // Always init a persistent voice when entering the Joog tab.
+      // EG mode → VCA silent until key press; ON mode → VCA open immediately.
+      if(!joogVoice) setTimeout(()=>joogInitVoice(joogLastFreq||joogFreqFromMidi(60)),100);
     }
     else stopJoogScope();
     if(tab==='keys') setTimeout(drawLoopViz,50);
@@ -2564,24 +2566,14 @@ function joogStart(freq){
 
 function joogRelease(){
   if(!joogVoice) return;
-  if(joogP.vcaMode==='on') return; // drone mode: gate-up ignored, voice stays alive
+  if(joogP.vcaMode==='on') return; // VCA always open — gate ignored
   const v=joogVoice, ctx=getCtx(), now=ctx.currentTime;
   const aR=Math.max(0.01,joogP.release/1000);
-  if(joogP.vcaMode==='eg'){
-    v.ampEnv.gain.cancelScheduledValues(now);
-    v.ampEnv.gain.setValueAtTime(v.ampEnv.gain.value,now);
-    v.ampEnv.gain.linearRampToValueAtTime(0,now+aR);
-  }
+  // Release EG: ramps egSrc→0, which closes VCA via vca_eg modulation
   v.egSrc.offset.cancelScheduledValues(now);
   v.egSrc.offset.setValueAtTime(v.egSrc.offset.value,now);
   v.egSrc.offset.linearRampToValueAtTime(0,now+aR);
-  joogVoice=null;
-  const snap=v;
-  setTimeout(()=>{
-    [snap.osc_saw,snap.osc_sqr,snap.lfo_tri,snap.lfo_sqr,snap.egSrc].forEach(n=>{if(n)try{n.stop();}catch(_){}});
-    if(snap._extSrc) try{snap._extSrc.disconnect(snap.vco_bus);}catch(_){}
-    try{snap.vol.disconnect();}catch(_){}
-  },(aR+0.15)*1000);
+  // Voice persists — VCO keeps oscillating silently (matches Mavis hardware)
 }
 
 function joogStop(){
@@ -2592,18 +2584,32 @@ function joogStop(){
   try{v.vol.disconnect();}catch(_){}
 }
 
+// joogInitVoice: builds persistent voice without triggering EG.
+// EG mode → VCA silent until key press. ON mode → VCA open (drone).
+function joogInitVoice(freq){
+  joogStop();
+  const ctx=getCtx(), v=joogBuildVoice(freq||joogFreqFromMidi(60));
+  [v.osc_saw,v.osc_sqr,v.lfo_tri,v.lfo_sqr].forEach(n=>{if(n)try{n.start();}catch(_){}});
+  joogVoice=v; joogLastFreq=freq||joogFreqFromMidi(60);
+}
+
 function joogNoteOn(freq,noteKey){
   const gt=joogP.glide/1000, ctx=getCtx(), now=ctx.currentTime;
-  if(joogVoice && joogVoice.osc_saw && (joogP.vcaMode==='on' || (joogLastFreq && joogP.glide>0))){
+  if(!joogVoice){
+    // Voice not yet initialized (first press before tab had a chance to init)
+    joogInitVoice(freq); joogTriggerEG(joogVoice,false);
+  } else if(joogVoice.osc_saw){
+    // Persistent internal VCO: update pitch, trigger EG
     const targetFreq=joogVcoFreqFromPitch(freq);
     [joogVoice.osc_saw,joogVoice.osc_sqr].forEach(osc=>{
       if(!osc) return;
       if(gt>0) osc.frequency.exponentialRampToValueAtTime(Math.max(1,targetFreq),now+gt);
       else osc.frequency.setValueAtTime(Math.max(1,targetFreq),now);
     });
-    joogTriggerEG(joogVoice,true);
+    joogTriggerEG(joogVoice,!!joogActiveKey); // legato if a key is already held
   } else {
-    joogStart(freq);
+    // Ext patch mode: VCO pitch comes from patch, just trigger EG
+    joogTriggerEG(joogVoice,!!joogActiveKey);
   }
   joogLastFreq=freq; joogActiveKey=noteKey;
   const panel=document.getElementById('panel-joog');
@@ -3097,12 +3103,9 @@ function initJoog(){
   panel.querySelectorAll('.joog-vsw').forEach(btn=>btn.addEventListener('click',()=>{
     panel.querySelectorAll('.joog-vsw').forEach(b=>b.classList.toggle('active',b===btn));
     joogP.vcaMode=btn.dataset.mode;
-    if(joogVoice){
-      if(joogP.vcaMode==='on') joogVoice.ampEnv.gain.value=1;
-      else joogVoice.ampEnv.gain.value=0;
-    } else if(joogP.vcaMode==='on'){
-      joogStart(joogFreqFromMidi(60)); // auto-drone at C4 when switching to ON with no active voice
-    }
+    // Rebuild voice so VCA wiring matches the new mode.
+    // EG mode → silent until key; ON mode → drone immediately.
+    joogInitVoice(joogLastFreq||joogFreqFromMidi(60));
   }));
 
   // Octave controls
