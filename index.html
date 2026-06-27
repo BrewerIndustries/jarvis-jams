@@ -2535,7 +2535,9 @@ function joogBuildVoice(freq){
   v.folder=ctx.createWaveShaper();
   v.folder.curve=makeWavefoldCurve(joogP.foldAmt/100);
   v.folder.oversample='4x';
-  v.vco_bus.connect(v.folder);
+  // FOLD IN normalled to VCO; patch LFO OUT → FOLD IN to use LFO as audio source
+  if(joogPatches['foldin_in']==='lfo_out') v.lfo_bus.connect(v.folder);
+  else v.vco_bus.connect(v.folder);
 
   // === VCF (Moog ladder: 2x 2-pole LPF in series) ===
   v.f1=ctx.createBiquadFilter(); v.f1.type='lowpass';
@@ -2714,6 +2716,8 @@ function joogSelectJack(id){
 function joogPatch(inputId, outputId){
   if(outputId) joogPatches[inputId]=outputId;
   else delete joogPatches[inputId];
+  // Audio-routing patches require a voice rebuild to take effect
+  if(inputId==='foldin_in' && joogVoice) joogInitVoice(joogLastFreq||joogFreqFromMidi(60));
   renderPatchBay();
 }
 
