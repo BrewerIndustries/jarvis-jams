@@ -664,6 +664,9 @@
     }
     .joog-xfader::-webkit-slider-thumb { -webkit-appearance:none; width:10px; height:18px; background:var(--pink); border-radius:2px; cursor:pointer; }
     .joog-xfader::-webkit-slider-runnable-track { height:5px; background:var(--surface); border-radius:3px; border:1px solid var(--border); }
+    .joog-mix-labels { display:flex; justify-content:space-between; width:54px; font-size:6px; color:var(--text-muted); margin-top:1px; }
+    .joog-lfo-led { position:absolute; top:3px; right:0px; width:5px; height:5px; border-radius:50%; background:#ff4444; box-shadow:0 0 5px #ff4444,0 0 10px #ff000080; animation:joogLedBlink 0.2s linear infinite; }
+    @keyframes joogLedBlink { 0%,49%{opacity:1} 50%,100%{opacity:0.08} }
     /* VCA switch */
     .joog-vca-switch { display:flex; gap:4px; margin-top:5px; }
     .joog-vsw {
@@ -2648,7 +2651,8 @@ function joogLiveUpdate(param,val){
       if(v.g_sqr) v.g_sqr.gain.value=val; break;
     case 'lfoRate':
       if(v.lfo_tri) v.lfo_tri.frequency.value=val;
-      if(v.lfo_sqr) v.lfo_sqr.frequency.value=val; break;
+      if(v.lfo_sqr) v.lfo_sqr.frequency.value=val;
+      { const led=document.getElementById('joogLfoLed'); if(led) led.style.animationDuration=(1/val)+'s'; } break;
     case 'lfoWaveMix':
       if(v.g_lfo_tri) v.g_lfo_tri.gain.value=1-val;
       if(v.g_lfo_sqr) v.g_lfo_sqr.gain.value=val; break;
@@ -2951,22 +2955,16 @@ function initJoog(){
         <div class="joog-knob-row">
           ${knobHTML('Pitch','pitch',-24,24,0,'semi',false)}
           <div>
-            <div class="joog-xfader-wrap" style="width:80px;margin-top:14px">
-              <div class="joog-xfader-labels"><span>SAW</span><span>PULSE</span></div>
-              <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0" data-param="waveMix">
-            </div>
-            <div style="font-size:7px;color:var(--text-muted);text-align:center;letter-spacing:1px;margin-top:2px">VCO WAVE</div>
+            ${knobHTML('Wave','waveMix',0,1,0,'num',false)}
+            <div class="joog-mix-labels"><span>SAW</span><span>PULSE</span></div>
           </div>
           ${knobHTML('P.Width','pulseWidth',0,100,50,'pct',false)}
         </div>
         <div style="border-top:1px solid var(--border);margin:6px 0 4px;"></div>
         <div class="joog-knob-row">
           <div>
-            <div class="joog-xfader-wrap" style="width:72px">
-              <div class="joog-xfader-labels"><span>EG</span><span>LFO</span></div>
-              <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0.5" data-param="pitchModMix">
-            </div>
-            <div style="font-size:7px;color:var(--text-muted);text-align:center;letter-spacing:1px;margin-top:2px">VCO MOD MIX</div>
+            ${knobHTML('Mod Mix','pitchModMix',0,1,0.5,'num',false)}
+            <div class="joog-mix-labels"><span>EG</span><span>LFO</span></div>
           </div>
           ${knobHTML('Pitch Mod','pitchModAmt',0,100,0,'pct',false)}
           ${knobHTML('PWM Amt','pwmModAmt',0,100,0,'pct',false)}
@@ -2983,11 +2981,8 @@ function initJoog(){
         <div style="border-top:1px solid var(--border);margin:6px 0 4px;"></div>
         <div class="joog-knob-row">
           <div>
-            <div class="joog-xfader-wrap" style="width:72px">
-              <div class="joog-xfader-labels"><span>EG</span><span>LFO</span></div>
-              <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0.5" data-param="vcfModMix">
-            </div>
-            <div style="font-size:7px;color:var(--text-muted);text-align:center;letter-spacing:1px;margin-top:2px">VCF MOD MIX</div>
+            ${knobHTML('Mod Mix','vcfModMix',0,1,0.5,'num',false)}
+            <div class="joog-mix-labels"><span>EG</span><span>LFO</span></div>
           </div>
           ${knobHTML('VCF Mod','vcfModAmt',0,100,50,'pct',false)}
         </div>
@@ -3013,13 +3008,13 @@ function initJoog(){
       <div class="joog-sec">
         <div class="joog-sec-title">LFO</div>
         <div class="joog-knob-row">
-          ${knobHTML('Rate','lfoRate',0.1,550,5,'hz',true)}
+          <div style="position:relative">
+            ${knobHTML('Rate','lfoRate',0.1,550,5,'hz',true)}
+            <div id="joogLfoLed" class="joog-lfo-led"></div>
+          </div>
           <div>
-            <div class="joog-xfader-wrap" style="width:72px;margin-top:14px">
-              <div class="joog-xfader-labels"><span>TRI</span><span>SQR</span></div>
-              <input class="joog-xfader" type="range" min="0" max="1" step="0.01" value="0" data-param="lfoWaveMix">
-            </div>
-            <div style="font-size:7px;color:var(--text-muted);text-align:center;letter-spacing:1px;margin-top:2px">LFO WAVE</div>
+            ${knobHTML('Wave','lfoWaveMix',0,1,0,'num',false)}
+            <div class="joog-mix-labels"><span>TRI</span><span>SQR</span></div>
           </div>
         </div>
       </div>
@@ -3085,11 +3080,8 @@ function initJoog(){
     joogP[el.dataset.param]=v; joogLiveUpdate(el.dataset.param,v);
   }));
 
-  // Crossfaders
-  panel.querySelectorAll('.joog-xfader').forEach(el=>el.addEventListener('input',()=>{
-    const p=el.dataset.param; const v=parseFloat(el.value);
-    joogP[p]=v; joogLiveUpdate(p,v);
-  }));
+  // LFO LED init
+  { const led=document.getElementById('joogLfoLed'); if(led) led.style.animationDuration=(1/joogP.lfoRate)+'s'; }
 
   // VCO source selector
   document.getElementById('joogSrcSelect').addEventListener('change', e=>{
