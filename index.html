@@ -2459,6 +2459,21 @@ function makeWavefoldCurve(amount){
   return curve;
 }
 
+function joogGetSrcNode(outputId, v){
+  switch(outputId){
+    case 'vco_out':   return v.vco_bus   || null;
+    case 'lfo_out':   return v.lfo_bus   || null;
+    case 'eg_out':    return v.egSrc     || null;
+    case 'fold_out':  return v.folder    || null;
+    case 'vca_out':   return v.ampEnv    || null;
+    case 'onetwo_out':return v.onetwo_bus|| null;
+    case 'attn_out':  return v.attn_bus  || null;
+    case 'mult1_out':
+    case 'mult2_out': return v.mult_bus  || null;
+    default: return null;
+  }
+}
+
 function joogBuildVoice(freq){
   const ctx=getCtx(), ana=getMasterAnalyser();
   const v={};
@@ -2510,13 +2525,31 @@ function joogBuildVoice(freq){
     v.pitch_lfo.connect(v.osc_saw.detune); v.pitch_lfo.connect(v.osc_sqr.detune);
   }
 
+  // === Utility section: ATTN, MULT, ONE+TWO mixer ===
+  v.attn_bus=ctx.createGain(); v.attn_bus.gain.value=joogP.attn/100;
+  {const n=joogGetSrcNode(joogPatches['attn_in'],v); if(n) n.connect(v.attn_bus);}
+
+  v.mult_bus=ctx.createGain(); v.mult_bus.gain.value=1;
+  {const n=joogGetSrcNode(joogPatches['mult_in'],v); if(n) n.connect(v.mult_bus);}
+
+  v.onetwo_bus=ctx.createGain(); v.onetwo_bus.gain.value=1;
+  v.one_gain=ctx.createGain(); v.one_gain.gain.value=joogP.oneLvl/100;
+  if(joogPatches['one_in']){
+    const n=joogGetSrcNode(joogPatches['one_in'],v);
+    if(n){n.connect(v.one_gain); v.one_gain.connect(v.onetwo_bus);}
+  } else {
+    // Normalled: -1 DC (simulates -5 V reference on real Mavis)
+    v.one_dc=ctx.createConstantSource(); v.one_dc.offset.value=-1; v.one_dc.start();
+    v.one_dc.connect(v.one_gain); v.one_gain.connect(v.onetwo_bus);
+  }
+  {const n=joogGetSrcNode(joogPatches['two_in'],v); if(n) n.connect(v.onetwo_bus);}
+
   // === Wavefolder ===
   v.folder=ctx.createWaveShaper();
   v.folder.curve=makeWavefoldCurve(joogP.foldAmt/100);
   v.folder.oversample='4x';
-  // FOLD IN normalled to VCO; patch LFO OUT → FOLD IN to use LFO as audio source
-  if(joogPatches['foldin_in']==='lfo_out') v.lfo_bus.connect(v.folder);
-  else v.vco_bus.connect(v.folder);
+  // FOLD IN normalled to VCO OUT; any patch to foldin_in overrides
+  {const n=joogGetSrcNode(joogPatches['foldin_in']||'vco_out',v); (n||v.vco_bus).connect(v.folder);}
 
   // === VCF (Moog ladder: 2x 2-pole LPF in series) ===
   v.f1=ctx.createBiquadFilter(); v.f1.type='lowpass';
@@ -2587,7 +2620,7 @@ function joogRelease(){
 function joogStop(){
   if(!joogVoice) return;
   const v=joogVoice; joogVoice=null;
-  [v.osc_saw,v.osc_sqr,v.lfo_tri,v.lfo_sqr,v.egSrc].forEach(n=>{if(n)try{n.stop();}catch(_){}});
+  [v.osc_saw,v.osc_sqr,v.lfo_tri,v.lfo_sqr,v.egSrc,v.one_dc].forEach(n=>{if(n)try{n.stop();}catch(_){}});
   if(v._extSrc) try{v._extSrc.disconnect(v.vco_bus);}catch(_){}
   try{v.vol.disconnect();}catch(_){}
 }
@@ -2651,6 +2684,10 @@ function joogLiveUpdate(param,val){
     }
     case 'foldAmt':
       if(v.folder) v.folder.curve=makeWavefoldCurve(val/100); break;
+    case 'attn':
+      if(v.attn_bus) v.attn_bus.gain.value=val/100; break;
+    case 'oneLvl':
+      if(v.one_gain) v.one_gain.gain.value=val/100; break;
     case 'waveMix':
       if(v.g_saw) v.g_saw.gain.value=1-val;
       if(v.g_sqr) v.g_sqr.gain.value=val; break;
@@ -2692,11 +2729,11 @@ function joogSelectJack(id){
   renderPatchBay();
 }
 
+const JOOG_AUDIO_INPUTS=new Set(['foldin_in','one_in','two_in','attn_in','mult_in']);
 function joogPatch(inputId, outputId){
   if(outputId) joogPatches[inputId]=outputId;
   else delete joogPatches[inputId];
-  // Audio-routing patches require a voice rebuild to take effect
-  if(inputId==='foldin_in' && joogVoice) joogInitVoice(joogLastFreq||joogFreqFromMidi(60));
+  if(JOOG_AUDIO_INPUTS.has(inputId) && joogVoice) joogInitVoice(joogLastFreq||joogFreqFromMidi(60));
   renderPatchBay();
 }
 
