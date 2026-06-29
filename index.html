@@ -2470,6 +2470,8 @@ function joogGetSrcNode(outputId, v){
     case 'attn_out':  return v.attn_bus  || null;
     case 'mult1_out':
     case 'mult2_out': return v.mult_bus  || null;
+    case 'kbcv_out':  return v.kb_cv     || null;
+    case 'sh_out':    return v.sh_bus    || null;
     default: return null;
   }
 }
@@ -2498,7 +2500,15 @@ function joogBuildVoice(freq){
     v.g_sqr=ctx.createGain(); v.g_sqr.gain.value=joogP.waveMix;
     v.vco_bus=ctx.createGain(); v.vco_bus.gain.value=1;
     v.osc_saw.connect(v.g_saw); v.g_saw.connect(v.vco_bus);
-    v.osc_sqr.connect(v.g_sqr); v.g_sqr.connect(v.vco_bus);
+    // PWM: saw + DC bias → hard clip at 0 → variable duty cycle pulse wave
+    // (square can't do real PWM; sawtooth crossing a threshold can)
+    v.pwm_mix=ctx.createGain(); v.pwm_mix.gain.value=1;
+    v.osc_saw.connect(v.pwm_mix);
+    v.pwm_dc=ctx.createConstantSource(); v.pwm_dc.offset.value=2*joogP.pulseWidth/100-1; v.pwm_dc.start();
+    v.pwm_dc.connect(v.pwm_mix);
+    v.pwm_shape=ctx.createWaveShaper();
+    {const N=4096,c=new Float32Array(N);for(let i=0;i<N;i++)c[i]=(i/(N-1)*2-1)>0?1:-1;v.pwm_shape.curve=c;}
+    v.pwm_mix.connect(v.pwm_shape); v.pwm_shape.connect(v.g_sqr); v.g_sqr.connect(v.vco_bus);
   }
 
   // === EG — ConstantSourceNode ramped by ADSR ===
@@ -2515,6 +2525,18 @@ function joogBuildVoice(freq){
   v.lfo_tri.connect(v.g_lfo_tri); v.g_lfo_tri.connect(v.lfo_bus);
   v.lfo_sqr.connect(v.g_lfo_sqr); v.g_lfo_sqr.connect(v.lfo_bus);
 
+  // === KB CV output (tracks current keyboard note, 1V/oct, A4=0V) ===
+  v.kb_cv=ctx.createConstantSource();
+  v.kb_cv.offset.value=Math.log2(Math.max(1,freq)/440);
+  v.kb_cv.start();
+
+  // === LFO Rate CV input ===
+  if(joogPatches['lforate_in']){
+    v.lfo_rate_cv=ctx.createGain(); v.lfo_rate_cv.gain.value=50;
+    const n=joogGetSrcNode(joogPatches['lforate_in'],v);
+    if(n){n.connect(v.lfo_rate_cv); v.lfo_rate_cv.connect(v.lfo_tri.frequency); v.lfo_rate_cv.connect(v.lfo_sqr.frequency);}
+  }
+
   // === Pitch modulation → VCO detune (internal mode only) ===
   if(!isExt){
     const pitchCents=joogP.pitchModAmt*2; // 0-200 cents max range
@@ -2523,6 +2545,24 @@ function joogBuildVoice(freq){
     v.egSrc.connect(v.pitch_eg); v.lfo_bus.connect(v.pitch_lfo);
     v.pitch_eg.connect(v.osc_saw.detune); v.pitch_eg.connect(v.osc_sqr.detune);
     v.pitch_lfo.connect(v.osc_saw.detune); v.pitch_lfo.connect(v.osc_sqr.detune);
+    // 1V/OCT external pitch CV (additive to internal keyboard pitch)
+    if(joogPatches['1voct_in']){
+      v.pitch_1voct=ctx.createGain(); v.pitch_1voct.gain.value=1200;
+      const n1=joogGetSrcNode(joogPatches['1voct_in'],v);
+      if(n1){n1.connect(v.pitch_1voct); v.pitch_1voct.connect(v.osc_saw.detune); v.pitch_1voct.connect(v.osc_sqr.detune);}
+    }
+    // VCO FM (linear frequency modulation, 220Hz/V)
+    if(joogPatches['vcofm_in']){
+      v.vco_fm=ctx.createGain(); v.vco_fm.gain.value=220;
+      const n2=joogGetSrcNode(joogPatches['vcofm_in'],v);
+      if(n2){n2.connect(v.vco_fm); v.vco_fm.connect(v.osc_saw.frequency); v.vco_fm.connect(v.osc_sqr.frequency);}
+    }
+    // VCO PWM CV (modulates DC bias into PWM stage)
+    if(joogPatches['vcopwm_in']){
+      v.pwm_cv=ctx.createGain(); v.pwm_cv.gain.value=0.5;
+      const n3=joogGetSrcNode(joogPatches['vcopwm_in'],v);
+      if(n3){n3.connect(v.pwm_cv); v.pwm_cv.connect(v.pwm_dc.offset);}
+    }
   }
 
   // === Utility section: ATTN, MULT, ONE+TWO mixer ===
@@ -2567,20 +2607,48 @@ function joogBuildVoice(freq){
   v.egSrc.connect(v.vcf_eg); v.lfo_bus.connect(v.vcf_lfo);
   v.vcf_eg.connect(v.f1.frequency); v.vcf_eg.connect(v.f2.frequency);
   v.vcf_lfo.connect(v.f1.frequency); v.vcf_lfo.connect(v.f2.frequency);
+  // VCF external CV (5000Hz/V additive to internal VCF modulation)
+  if(joogPatches['vcfcv_in']){
+    v.vcf_cv=ctx.createGain(); v.vcf_cv.gain.value=5000;
+    const n=joogGetSrcNode(joogPatches['vcfcv_in'],v);
+    if(n){n.connect(v.vcf_cv); v.vcf_cv.connect(v.f1.frequency); v.vcf_cv.connect(v.f2.frequency);}
+  }
 
   // === VCA ===
   v.ampEnv=ctx.createGain();
   v.ampEnv.gain.value=joogP.vcaMode==='on'?1:0;
   v.f2.connect(v.ampEnv);
-  if(joogP.vcaMode==='eg'){
+  {const vcacvSrc=joogPatches['vcacv_in'];
+  if(vcacvSrc){
+    // Explicit VCA CV patch overrides normalled EG
+    v.vca_cv=ctx.createGain(); v.vca_cv.gain.value=1;
+    const n=joogGetSrcNode(vcacvSrc,v);
+    if(n){n.connect(v.vca_cv); v.vca_cv.connect(v.ampEnv.gain);}
+  } else if(joogP.vcaMode==='eg'){
     v.vca_eg=ctx.createGain(); v.vca_eg.gain.value=1;
     v.egSrc.connect(v.vca_eg);
     v.vca_eg.connect(v.ampEnv.gain);
-  }
+  }}
 
   // === Master volume → out ===
   v.vol=ctx.createGain(); v.vol.gain.value=joogP.volume/100;
   v.ampEnv.connect(v.vol); v.vol.connect(ana);
+
+  // === S+H (Sample & Hold): samples sh_in on rising edge of shgate_in) ===
+  {const shSrc=joogGetSrcNode(joogPatches['sh_in']||'vco_out',v)||v.vco_bus;
+  const shGateSrc=joogGetSrcNode(joogPatches['shgate_in']||'lfo_out',v)||v.lfo_bus;
+  v.sh_merger=ctx.createChannelMerger(2);
+  shSrc.connect(v.sh_merger,0,0);
+  shGateSrc.connect(v.sh_merger,0,1);
+  v.sh_proc=ctx.createScriptProcessor(256,2,1);
+  let _shHeld=0,_shLast=0;
+  v.sh_proc.onaudioprocess=function(e){
+    const s=e.inputBuffer.getChannelData(0),g=e.inputBuffer.getChannelData(1),o=e.outputBuffer.getChannelData(0);
+    for(let i=0;i<s.length;i++){if(g[i]>0.5&&_shLast<=0.5)_shHeld=s[i];_shLast=g[i];o[i]=_shHeld;}
+  };
+  v.sh_merger.connect(v.sh_proc);
+  v.sh_bus=ctx.createGain(); v.sh_bus.gain.value=1;
+  v.sh_proc.connect(v.sh_bus);}
 
   return v;
 }
@@ -2620,7 +2688,8 @@ function joogRelease(){
 function joogStop(){
   if(!joogVoice) return;
   const v=joogVoice; joogVoice=null;
-  [v.osc_saw,v.osc_sqr,v.lfo_tri,v.lfo_sqr,v.egSrc,v.one_dc].forEach(n=>{if(n)try{n.stop();}catch(_){}});
+  [v.osc_saw,v.osc_sqr,v.lfo_tri,v.lfo_sqr,v.egSrc,v.one_dc,v.kb_cv,v.pwm_dc].forEach(n=>{if(n)try{n.stop();}catch(_){}});
+  if(v.sh_proc) try{v.sh_proc.disconnect();}catch(_){}
   if(v._extSrc) try{v._extSrc.disconnect(v.vco_bus);}catch(_){}
   try{v.vol.disconnect();}catch(_){}
 }
@@ -2653,6 +2722,7 @@ function joogNoteOn(freq,noteKey){
     joogTriggerEG(joogVoice,!!joogActiveKey);
   }
   joogLastFreq=freq; joogActiveKey=noteKey;
+  if(joogVoice&&joogVoice.kb_cv) joogVoice.kb_cv.offset.value=Math.log2(Math.max(1,freq)/440);
   const panel=document.getElementById('panel-joog');
   if(panel){
     const midi=joogMidiFromFreq(freq);
@@ -2684,6 +2754,8 @@ function joogLiveUpdate(param,val){
     }
     case 'foldAmt':
       if(v.folder) v.folder.curve=makeWavefoldCurve(val/100); break;
+    case 'pulseWidth':
+      if(v.pwm_dc) v.pwm_dc.offset.value=2*val/100-1; break;
     case 'attn':
       if(v.attn_bus) v.attn_bus.gain.value=val/100; break;
     case 'oneLvl':
@@ -2729,7 +2801,10 @@ function joogSelectJack(id){
   renderPatchBay();
 }
 
-const JOOG_AUDIO_INPUTS=new Set(['foldin_in','one_in','two_in','attn_in','mult_in']);
+const JOOG_AUDIO_INPUTS=new Set([
+  'foldin_in','one_in','two_in','attn_in','mult_in',
+  '1voct_in','vcofm_in','vcopwm_in','vcfcv_in','vcacv_in','lforate_in','sh_in','shgate_in'
+]);
 function joogPatch(inputId, outputId){
   if(outputId) joogPatches[inputId]=outputId;
   else delete joogPatches[inputId];
