@@ -667,30 +667,9 @@
     .joog-mix-labels { display:flex; justify-content:space-between; width:54px; font-size:6px; color:var(--text-muted); margin-top:1px; }
     .joog-lfo-led { position:absolute; top:3px; right:0px; width:5px; height:5px; border-radius:50%; background:#ff4444; box-shadow:0 0 5px #ff4444,0 0 10px #ff000080; animation:joogLedBlink 0.2s linear infinite; }
     @keyframes joogLedBlink { 0%,49%{opacity:1} 50%,100%{opacity:0.08} }
-    /* Abbreviation tooltips */
-    .jt { position:relative; cursor:help; border-bottom:1px dashed rgba(255,113,206,0.35); }
-    .jt::after {
-      content: attr(data-tip);
-      position: absolute;
-      bottom: calc(100% + 6px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: #140025;
-      color: #d8b0ff;
-      border: 1px solid rgba(255,113,206,0.55);
-      border-radius: 4px;
-      padding: 3px 8px;
-      font-size: 9px;
-      font-weight: normal;
-      text-transform: none;
-      letter-spacing: 0.3px;
-      white-space: nowrap;
-      z-index: 9999;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-    .jt:hover::after { opacity: 1; }
+    /* Abbreviation tooltips — shown via JS fixed-position div (avoids overflow clipping) */
+    .jt { cursor:help; border-bottom:1px dashed rgba(255,113,206,0.35); }
+    .joog-sec-title .jt { border-bottom:none; }
     /* VCA switch */
     .joog-vca-switch { display:flex; gap:4px; margin-top:5px; }
     .joog-vsw {
@@ -3152,6 +3131,29 @@ initBeatMachine();
 initTuner();
 initKeyboard();
 initJoog();
+
+// ── Abbreviation tooltip (position:fixed — works inside overflow:auto containers) ──
+(function(){
+  const tip = document.createElement('div');
+  tip.style.cssText = 'position:fixed;z-index:99999;background:#140025;color:#d8b0ff;border:1px solid rgba(255,113,206,0.55);border-radius:4px;padding:3px 8px;font-size:10px;letter-spacing:0.3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.12s;';
+  document.body.appendChild(tip);
+  let active = false;
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('[data-tip]');
+    if (!el) return;
+    tip.textContent = el.dataset.tip;
+    active = true; tip.style.opacity = '1';
+  });
+  document.addEventListener('mousemove', e => {
+    if (!active) return;
+    tip.style.left = (e.clientX + 14) + 'px';
+    tip.style.top  = (e.clientY - 32) + 'px';
+  });
+  document.addEventListener('mouseout', e => {
+    if (!e.target.closest('[data-tip]')) return;
+    active = false; tip.style.opacity = '0';
+  });
+})();
 </script>
 </body>
 </html>
