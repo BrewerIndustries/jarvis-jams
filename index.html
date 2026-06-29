@@ -383,6 +383,73 @@
     }
     #tgPatches { max-height:320px; overflow-y:auto; }
 
+    /* ─── Rack System ─── */
+    .rack-toolbar { display:flex;align-items:center;gap:8px;padding:10px 0 14px; }
+    .rack-section { border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);margin-bottom:20px;overflow:hidden; }
+    .rack-hdr { display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface-up);border-bottom:1px solid var(--border); }
+    .rack-name-inp { background:transparent;border:none;border-bottom:1px solid transparent;color:var(--cyan);font:inherit;font-size:12px;font-weight:700;letter-spacing:0.06em;min-width:60px;max-width:180px;outline:none;cursor:text; }
+    .rack-name-inp:focus { border-bottom-color:var(--cyan); }
+    .rack-viewport {
+      position:relative;width:100%;height:480px;overflow:hidden;cursor:default;
+      background:
+        linear-gradient(rgba(185,103,255,0.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(185,103,255,0.04) 1px,transparent 1px);
+      background-size:40px 40px;background-color:var(--bg);
+    }
+    .rack-viewport.panning { cursor:grabbing; }
+    .rack-world { position:absolute;top:0;left:0;transform-origin:0 0;min-width:2000px;min-height:1200px; }
+    /* Module tiles */
+    .rmod {
+      position:absolute;background:var(--surface-up);border:1px solid var(--border);
+      border-radius:6px;min-width:150px;cursor:default;
+      box-shadow:0 2px 16px rgba(0,0,0,0.4);
+    }
+    .rmod-hdr {
+      display:flex;align-items:center;gap:6px;padding:5px 8px;
+      background:rgba(0,0,0,0.3);border-radius:6px 6px 0 0;
+      cursor:move;user-select:none;
+    }
+    .rmod-color-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+    .rmod-name-lbl { font-size:8px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase; }
+    .rmod-del-btn { margin-left:auto;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;line-height:1;padding:0 2px; }
+    .rmod-del-btn:hover { color:var(--pink); }
+    .rmod-body { padding:8px; }
+    .rmod-jacks { display:flex;justify-content:space-between;align-items:center;padding:4px 8px 7px;border-top:1px solid var(--border);margin-top:2px;min-height:28px; }
+    .rmod-jacks-in { display:flex;flex-direction:column;gap:4px; }
+    .rmod-jacks-out { display:flex;flex-direction:column;gap:4px;align-items:flex-end; }
+    .rack-jack { display:flex;align-items:center;gap:4px;cursor:pointer;padding:2px; }
+    .rmod-jacks-out .rack-jack { flex-direction:row-reverse; }
+    .rack-jack-lbl { font-size:7px;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-muted); }
+    .rack-jack-dot { width:11px;height:11px;border-radius:50%;border:2px solid;transition:box-shadow 0.1s,background 0.1s;flex-shrink:0; }
+    .rack-jack-dot.jout { border-color:var(--pink);background:rgba(255,113,206,0.1); }
+    .rack-jack-dot.jin  { border-color:var(--cyan);background:rgba(1,205,254,0.1); }
+    .rack-jack-dot.jout:hover { box-shadow:0 0 0 3px rgba(255,113,206,0.35); }
+    .rack-jack-dot.jin:hover  { box-shadow:0 0 0 3px rgba(1,205,254,0.35); }
+    .rack-jack-dot.selected { box-shadow:0 0 0 4px rgba(255,113,206,0.6)!important;background:var(--pink)!important; }
+    .rack-jack-dot.patched.jout { background:rgba(255,113,206,0.5); }
+    .rack-jack-dot.patched.jin  { background:rgba(1,205,254,0.5); }
+    .rmod-spkr .rmod-hdr { background:rgba(5,255,161,0.08); }
+    .rmod-spkr .rmod-name-lbl { color:var(--green); }
+    .rmod-spkr .rmod-body { text-align:center;padding:10px 12px;font-size:26px;line-height:1; }
+    .rmod-joog-tile .rmod-hdr { background:rgba(255,113,206,0.08); }
+    .rmod-joog-tile .rmod-name-lbl { color:var(--pink); }
+    .rmod-joog-tile .rmod-body { padding:6px 12px;font-size:9px;color:var(--text-muted);text-align:center; }
+    /* Module picker */
+    .mod-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;align-items:center;justify-content:center; }
+    .mod-picker-overlay.open { display:flex; }
+    .mod-picker-box { background:var(--surface-up);border:1px solid var(--border);border-radius:8px;padding:20px;width:520px;max-height:80vh;overflow-y:auto; }
+    .mod-picker-hdr { display:flex;align-items:center;margin-bottom:14px; }
+    .mod-picker-title { font-size:13px;font-weight:700;color:var(--pink);letter-spacing:0.06em; }
+    .mod-picker-close { margin-left:auto;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px; }
+    .mod-picker-close:hover { color:var(--pink); }
+    .mod-picker-section { margin-bottom:12px; }
+    .mod-picker-section-title { font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;border-bottom:1px solid var(--border);padding-bottom:4px; }
+    .mod-picker-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px; }
+    .mod-picker-item { background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:8px 6px;cursor:pointer;text-align:center;transition:all 0.12s; }
+    .mod-picker-item:hover { border-color:var(--pink);background:rgba(255,113,206,0.06); }
+    .mod-picker-item-dot { width:8px;height:8px;border-radius:50%;margin:0 auto 5px; }
+    .mod-picker-item-label { font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase; }
+
     /* ─── Tone gen play button ─── */
     .tg-play-row { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 8px 0; }
     #tgPlayBtn {
@@ -742,7 +809,7 @@
     <button class="tab-btn active" data-tab="beat">Beat Machine</button>
     <button class="tab-btn" data-tab="tuner">Tuner</button>
     <button class="tab-btn" data-tab="keys">Keys</button>
-    <button class="tab-btn" data-tab="joog">Joog</button>
+    <button class="tab-btn" data-tab="rack">Rack</button>
   </div>
 </header>
 
@@ -898,7 +965,7 @@
   </div><!-- /panel-keys -->
 
   <!-- ═══ ALL ═══ -->
-  <div class="panel" id="panel-joog"></div><!-- /panel-joog -->
+  <div class="panel" id="panel-rack"></div><!-- /panel-rack -->
 
 
 </main>
@@ -1234,9 +1301,23 @@ const MOD_DEFS = {
   tubeosc:     {label:'Tube Osc',     cat:'source', color:'#ffaa33', defaults:{freq:110, oct:0, drive:60, brightness:50, level:80}},
   combfilter:  {label:'Comb Filter',  cat:'effect', color:'#01cdfe', defaults:{freq:120, feedback:75, damp:40, mix:60}},
   dfam:        {label:'DFAM',         cat:'source', color:'#ff4488', defaults:{tempo:120, vco1:80, vco2:160, noiseMix:20, cutoff:800, resonance:50, decay:250, steps:'10010110'}},
+  joog:        {label:'Joog',         cat:'special', color:'#ff71ce', defaults:{}},
+  spkr:        {label:'Speaker',      cat:'special', color:'#05ffa1', defaults:{}},
 };
 const SOURCE_TYPES=new Set(['osc','osc2','noise','tubeosc','dfam']);
 function isSource(t){return SOURCE_TYPES.has(t);}
+
+// Jack definitions for each module type in the rack canvas
+const RACK_JACK_DEFS = {
+  osc:['out'], osc2:['out'], noise:['out'], tubeosc:['out'], dfam:['out'],
+  lfo:['out'], env:['out'],
+  filter:['in','out'], dist:['in','out'], delay:['in','out'],
+  reverb:['in','out'], chorus:['in','out'], compress:['in','out'],
+  bitcrush:['in','out'], panner:['in','out'], tremolo:['in','out'],
+  ringmod:['in','out'], vol:['in','out'], stereomix:['in','out'],
+  reverberator:['in','out'], combfilter:['in','out'],
+  joog:['out'], spkr:['in'],
+};
 
 // ─── Audio helpers ────────────────────────────────────────────
 function makeDistCurve(amount,type){
@@ -2361,12 +2442,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b===btn));
     document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
     if(tab!=='tuner') stopAllTones();
-    if(tab!=='joog') { stopAllPatches(); joogStop(); }
+    if(tab!=='rack') { stopAllPatches(); joogStop(); }
     kbTabActive = (tab==='keys');
-    joogTabActive = (tab==='joog');
-    if(tab==='joog'){
+    joogTabActive = (tab==='rack');
+    if(tab==='rack'){
       setTimeout(startJoogScope, 80);
-      // Always init a persistent voice when entering the Joog tab.
+      // Always init a persistent voice when entering the Rack tab.
       // EG mode → VCA silent until key press; ON mode → VCA open immediately.
       if(!joogVoice) setTimeout(()=>joogInitVoice(joogLastFreq||joogFreqFromMidi(60)),100);
     }
@@ -2401,7 +2482,7 @@ const JACK_DEFS = [
   {id:'lfo_out',   t:'out', label:'LFO',      tip:'Low Frequency Oscillator modulation output',    color:'#05ffa1', norm:null},
   {id:'kbcv_out',  t:'out', label:'KB CV',    tip:'Keyboard pitch CV output (1 V/oct)',            color:'#74c0fc', norm:null},
   {id:'sh_out',    t:'out', label:'S+H OUT',  tip:'Sample & Hold output',                          color:'#a9e34b', norm:null},
-  {id:'vca_out',   t:'out', label:'/VCA',     tip:'VCA main audio output',                         color:'#ff71ce', norm:null},
+  {id:'vca_out',   t:'out', label:'/VCA 🎧',   tip:'VCA main audio output',                         color:'#ff71ce', norm:null},
   {id:'attn_out',  t:'out', label:'ATTN',     tip:'Attenuator output (scaled ATTN IN signal)',     color:'#b967ff', norm:null},
   {id:'mult1_out', t:'out', label:'MULT 1',   tip:'Passive signal multiplier — output 1',          color:'#cc99ff', norm:null},
   {id:'mult2_out', t:'out', label:'MULT 2',   tip:'Passive signal multiplier — output 2',          color:'#cc99ff', norm:null},
@@ -2428,6 +2509,11 @@ let joogSelectedJack = null; // currently selected output id
 let joogVoice = null;
 let joogExtPatchIdx = -1; // -1 = internal VCO, else index into patchInstances
 let joogTabActive = false;
+let joogOutputBus = null; // stable GainNode for rack cable routing
+let rackIdSeq = 0;
+const rackInstances = [];
+let rackSelectedJack = null; // {rack, modId} of selected output jack
+let pickerTargetRack = null;
 let joogLastFreq = null;
 let joogActiveKey = null;
 let joogOct = 3;
@@ -2633,7 +2719,10 @@ function joogBuildVoice(freq){
 
   // === Master volume → out ===
   v.vol=ctx.createGain(); v.vol.gain.value=joogP.volume/100;
-  v.ampEnv.connect(v.vol); v.vol.connect(ana);
+  v.ampEnv.connect(v.vol);
+  v.scopeAna = ctx.createAnalyser(); v.scopeAna.fftSize = 1024;
+  v.vol.connect(v.scopeAna);        // for scope/tuner (always connected)
+  v.vol.connect(getJoogOutputBus()); // stable output bus for rack cables
 
   // === S+H (Sample & Hold): samples sh_in on rising edge of shgate_in) ===
   {const shSrc=joogGetSrcNode(joogPatches['sh_in']||'vco_out',v)||v.vco_bus;
@@ -2958,7 +3047,7 @@ function updateJoogTuner(freq){
 function drawJoogScope(){
   if(!joogTabActive){ joogScopeRAF=null; return; }
   const canvas=document.getElementById('joogScope');
-  const ana=getMasterAnalyser();
+  const ana=(joogVoice&&joogVoice.scopeAna)?joogVoice.scopeAna:getMasterAnalyser();
   if(!canvas||!ana){ joogScopeRAF=requestAnimationFrame(drawJoogScope); return; }
   const W=canvas.offsetWidth||300;
   if(canvas.width!==W) canvas.width=W;
@@ -3062,6 +3151,562 @@ function joogLoad(){
     reader.readAsText(file);
   });
   inp.click();
+}
+
+// ═════════════════════════════════════════
+// RACK SYSTEM — digital eurorack canvas
+// ═════════════════════════════════════════
+
+function getJoogOutputBus(){
+  if(!joogOutputBus){
+    const ctx=getCtx();
+    joogOutputBus=ctx.createGain(); joogOutputBus.gain.value=1;
+    joogOutputBus.connect(getMasterAnalyser());
+    joogOutputBus._directConnected=true;
+  }
+  return joogOutputBus;
+}
+
+function joogBusHasCables(){
+  for(const r of rackInstances)
+    for(const m of r.modules)
+      if(m.type==='joog'&&r.cables.some(c=>c.fromMod===m.id)) return true;
+  return false;
+}
+
+function syncJoogBusDirect(){
+  if(!joogOutputBus) return;
+  const has=joogBusHasCables();
+  if(has&&joogOutputBus._directConnected){
+    try{joogOutputBus.disconnect(getMasterAnalyser());}catch(e){}
+    joogOutputBus._directConnected=false;
+  } else if(!has&&!joogOutputBus._directConnected){
+    try{joogOutputBus.connect(getMasterAnalyser());}catch(e){}
+    joogOutputBus._directConnected=true;
+  }
+}
+
+function makeRack(name){
+  return {
+    id:'rack_'+(++rackIdSeq), name:name||('Rack '+rackIdSeq),
+    modules:[], cables:[],
+    _panX:0,_panY:0,_zoom:1,
+    _nodes:new Map(),
+    _el:null,_vpEl:null,_worldEl:null,_svgEl:null,
+  };
+}
+
+function makeRackMod(type,x,y){
+  const def=MOD_DEFS[type]||{};
+  return {
+    id:'rm_'+(++rackIdSeq)+'_'+Math.random().toString(36).slice(2,5),
+    type, x:x||80, y:y||80,
+    params:Object.assign({},def.defaults||{}),
+  };
+}
+
+function rackInitModNodes(ctx,rack,mod){
+  if(mod.type==='joog'){
+    rack._nodes.set(mod.id,{input:null,output:getJoogOutputBus(),cleanup:null});
+    return;
+  }
+  if(mod.type==='spkr'){
+    rack._nodes.set(mod.id,{input:getMasterAnalyser(),output:null,cleanup:null});
+    return;
+  }
+  if(mod.type==='lfo'){
+    const p=mod.params,osc=ctx.createOscillator();
+    osc.type=p.wave||'sine'; osc.frequency.value=p.rate||5;
+    const g=ctx.createGain(); g.gain.value=(p.depth||50)/100;
+    osc.connect(g); osc.start();
+    rack._nodes.set(mod.id,{input:null,output:g,_osc:osc,
+      cleanup:()=>{try{osc.stop();}catch(_){}try{g.disconnect();}catch(_){}}});
+    return;
+  }
+  if(mod.type==='env'){
+    const g=ctx.createGain(); g.gain.value=(mod.params.sustain||70)/100;
+    rack._nodes.set(mod.id,{input:g,output:g,cleanup:()=>{try{g.disconnect();}catch(_){}}});
+    return;
+  }
+  const nodes=createModuleNodes(ctx,mod,440);
+  rack._nodes.set(mod.id,nodes);
+}
+
+function rackRebuildModNodes(rack,mod){
+  const inC=rack.cables.filter(c=>c.toMod===mod.id);
+  const outC=rack.cables.filter(c=>c.fromMod===mod.id);
+  [...inC,...outC].forEach(c=>{
+    const fn=rack._nodes.get(c.fromMod),tn=rack._nodes.get(c.toMod);
+    if(fn&&fn.output&&tn&&tn.input) try{fn.output.disconnect(tn.input);}catch(e){}
+  });
+  const old=rack._nodes.get(mod.id);
+  if(old&&old.cleanup) try{old.cleanup();}catch(e){}
+  rack._nodes.delete(mod.id);
+  rackInitModNodes(getCtx(),rack,mod);
+  [...inC,...outC].forEach(c=>{
+    const fn=rack._nodes.get(c.fromMod),tn=rack._nodes.get(c.toMod);
+    if(fn&&fn.output&&tn&&tn.input) try{fn.output.connect(tn.input);}catch(e){}
+  });
+}
+
+function rackLiveUpdateMod(rack,mod,param,val){
+  const nodes=rack._nodes.get(mod.id); if(!nodes) return;
+  if(mod.type==='filter'&&nodes.filterNode){
+    if(param==='cutoff'){nodes.filterNode.frequency.value=val;return;}
+    if(param==='q'){nodes.filterNode.Q.value=val;return;}
+  }
+  if(mod.type==='vol'&&nodes.gainNode&&param==='level'){nodes.gainNode.gain.value=val/100;return;}
+  if(mod.type==='lfo'&&nodes._osc){
+    if(param==='rate'){nodes._osc.frequency.value=val;return;}
+    if(param==='depth'){nodes.output.gain.value=val/100;return;}
+  }
+  if(mod.type==='panner'&&param==='pan'&&nodes.input&&nodes.input.pan){
+    nodes.input.pan.value=val;return;
+  }
+  rackRebuildModNodes(rack,mod);
+}
+
+function rackGetJackCenter(rack,modId,dir){
+  const dot=document.getElementById('jdot_'+modId+'_'+dir);
+  if(!dot||!rack._vpEl) return null;
+  const vpR=rack._vpEl.getBoundingClientRect(), dR=dot.getBoundingClientRect();
+  return {
+    x:(dR.left+dR.width/2-vpR.left-rack._panX)/rack._zoom,
+    y:(dR.top+dR.height/2-vpR.top-rack._panY)/rack._zoom
+  };
+}
+
+function rackUpdateSVG(rack){
+  const svg=rack._svgEl; if(!svg) return;
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  rack.cables.forEach(cable=>{
+    const from=rackGetJackCenter(rack,cable.fromMod,'out');
+    const to=rackGetJackCenter(rack,cable.toMod,'in');
+    if(!from||!to) return;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',from.x); line.setAttribute('y1',from.y);
+    line.setAttribute('x2',to.x);   line.setAttribute('y2',to.y);
+    line.setAttribute('stroke','rgba(255,113,206,0.8)');
+    line.setAttribute('stroke-width','2.5');
+    line.setAttribute('stroke-linecap','round');
+    svg.appendChild(line);
+  });
+}
+
+function rackUpdateTransform(rack){
+  if(!rack._worldEl) return;
+  rack._worldEl.style.transform=`translate(${rack._panX}px,${rack._panY}px) scale(${rack._zoom})`;
+  rackUpdateSVG(rack);
+}
+
+function rackDeselectJack(){
+  if(!rackSelectedJack) return;
+  const dot=document.getElementById('jdot_'+rackSelectedJack.modId+'_out');
+  if(dot) dot.classList.remove('selected');
+  rackSelectedJack=null;
+}
+
+function rackCableCreate(rack,fromModId,toModId){
+  const existing=rack.cables.find(c=>c.toMod===toModId);
+  if(existing) rackCableRemove(rack,existing.id);
+  const cable={id:'cable_'+(++rackIdSeq),fromMod:fromModId,toMod:toModId};
+  rack.cables.push(cable);
+  const fn=rack._nodes.get(fromModId),tn=rack._nodes.get(toModId);
+  if(fn&&fn.output&&tn&&tn.input) try{fn.output.connect(tn.input);}catch(e){}
+  const od=document.getElementById('jdot_'+fromModId+'_out');
+  const id_=document.getElementById('jdot_'+toModId+'_in');
+  if(od) od.classList.add('patched');
+  if(id_) id_.classList.add('patched');
+  syncJoogBusDirect();
+  rackUpdateSVG(rack);
+}
+
+function rackCableRemove(rack,cableId){
+  const idx=rack.cables.findIndex(c=>c.id===cableId); if(idx<0) return;
+  const cable=rack.cables[idx]; rack.cables.splice(idx,1);
+  const fn=rack._nodes.get(cable.fromMod),tn=rack._nodes.get(cable.toMod);
+  if(fn&&fn.output&&tn&&tn.input) try{fn.output.disconnect(tn.input);}catch(e){}
+  if(!rack.cables.some(c=>c.fromMod===cable.fromMod)){
+    const od=document.getElementById('jdot_'+cable.fromMod+'_out');
+    if(od) od.classList.remove('patched');
+  }
+  const id_=document.getElementById('jdot_'+cable.toMod+'_in');
+  if(id_) id_.classList.remove('patched');
+  syncJoogBusDirect();
+  rackUpdateSVG(rack);
+}
+
+function rackJackClick(rack,modId,dir){
+  if(dir==='out'){
+    if(rackSelectedJack&&rackSelectedJack.rack===rack&&rackSelectedJack.modId===modId){
+      rackDeselectJack();
+    } else {
+      rackDeselectJack();
+      rackSelectedJack={rack,modId};
+      const dot=document.getElementById('jdot_'+modId+'_out');
+      if(dot) dot.classList.add('selected');
+    }
+  } else { // in
+    if(rackSelectedJack&&rackSelectedJack.rack===rack){
+      rackCableCreate(rack,rackSelectedJack.modId,modId);
+      rackDeselectJack();
+    } else {
+      const cable=rack.cables.find(c=>c.toMod===modId);
+      if(cable) rackCableRemove(rack,cable.id);
+    }
+  }
+}
+
+function rackRemoveModule(rack,modId){
+  [...rack.cables].forEach(c=>{
+    if(c.fromMod===modId||c.toMod===modId) rackCableRemove(rack,c.id);
+  });
+  const nodes=rack._nodes.get(modId);
+  if(nodes&&nodes.cleanup) try{nodes.cleanup();}catch(e){}
+  rack._nodes.delete(modId);
+  const idx=rack.modules.findIndex(m=>m.id===modId);
+  if(idx>=0) rack.modules.splice(idx,1);
+  const el=document.getElementById('rmod_'+modId);
+  if(el) el.remove();
+  rackUpdateSVG(rack);
+}
+
+function makeDraggableMod(rack,el,mod,handle){
+  let ox,oy,mx,my,dragging=false;
+  handle.addEventListener('mousedown',e=>{
+    if(e.button!==0) return;
+    e.preventDefault(); e.stopPropagation();
+    dragging=true; ox=e.clientX; oy=e.clientY; mx=mod.x; my=mod.y;
+    el.style.zIndex=10;
+    const move=ev=>{
+      mod.x=mx+(ev.clientX-ox)/rack._zoom;
+      mod.y=my+(ev.clientY-oy)/rack._zoom;
+      el.style.left=mod.x+'px'; el.style.top=mod.y+'px';
+      rackUpdateSVG(rack);
+    };
+    const up=()=>{
+      dragging=false; el.style.zIndex='';
+      window.removeEventListener('mousemove',move);
+      window.removeEventListener('mouseup',up);
+    };
+    window.addEventListener('mousemove',move);
+    window.addEventListener('mouseup',up);
+  });
+}
+
+function buildRackTile(rack,mod){
+  const def=MOD_DEFS[mod.type]||{label:mod.type,color:'#555'};
+  const jacks=RACK_JACK_DEFS[mod.type]||[];
+  const hasIn=jacks.includes('in'), hasOut=jacks.includes('out');
+
+  const el=document.createElement('div');
+  el.className='rmod mod-tile'+
+    (mod.type==='spkr'?' rmod-spkr':'')+
+    (mod.type==='joog'?' rmod-joog-tile':'');
+  el.id='rmod_'+mod.id; el.dataset.modId=mod.id;
+  el.style.left=mod.x+'px'; el.style.top=mod.y+'px';
+
+  const hdr=document.createElement('div'); hdr.className='rmod-hdr';
+  hdr.innerHTML=`<div class="rmod-color-dot" style="background:${def.color}"></div><span class="rmod-name-lbl">${def.label||mod.type}</span><button class="rmod-del-btn" title="Remove">✕</button>`;
+  hdr.querySelector('.rmod-del-btn').addEventListener('click',e=>{e.stopPropagation();rackRemoveModule(rack,mod.id);});
+
+  const body=document.createElement('div'); body.className='rmod-body';
+  if(mod.type==='joog'){
+    body.innerHTML=`<span style="color:var(--text-muted);letter-spacing:0.05em">controls below ↓</span>`;
+  } else if(mod.type==='spkr'){
+    body.innerHTML='🔊';
+  } else {
+    body.innerHTML=buildModBody(mod);
+  }
+
+  const jackSec=document.createElement('div'); jackSec.className='rmod-jacks';
+  const inDiv=document.createElement('div'); inDiv.className='rmod-jacks-in';
+  const outDiv=document.createElement('div'); outDiv.className='rmod-jacks-out';
+
+  if(hasIn){
+    const j=document.createElement('div'); j.className='rack-jack';
+    j.dataset.modId=mod.id; j.dataset.dir='in'; j.dataset.rackId=rack.id;
+    j.innerHTML=`<div class="rack-jack-dot jin" id="jdot_${mod.id}_in"></div><span class="rack-jack-lbl">in</span>`;
+    j.addEventListener('click',e=>{e.stopPropagation();rackJackClick(rack,mod.id,'in');});
+    inDiv.appendChild(j);
+  }
+  if(hasOut){
+    const j=document.createElement('div'); j.className='rack-jack';
+    j.dataset.modId=mod.id; j.dataset.dir='out'; j.dataset.rackId=rack.id;
+    j.innerHTML=`<span class="rack-jack-lbl">out</span><div class="rack-jack-dot jout" id="jdot_${mod.id}_out"></div>`;
+    j.addEventListener('click',e=>{e.stopPropagation();rackJackClick(rack,mod.id,'out');});
+    outDiv.appendChild(j);
+  }
+  jackSec.appendChild(inDiv); jackSec.appendChild(outDiv);
+  el.appendChild(hdr); el.appendChild(body); el.appendChild(jackSec);
+
+  makeDraggableMod(rack,el,mod,hdr);
+
+  // Initialize controls (knobs, buttons, wave selectors)
+  if(mod.type!=='joog'&&mod.type!=='spkr'){
+    el.querySelectorAll('.knob[data-param]').forEach(kEl=>{
+      initKnob(kEl,v=>{mod.params[kEl.dataset.param]=v;rackLiveUpdateMod(rack,mod,kEl.dataset.param,v);});
+    });
+    el.querySelectorAll('.ftype-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const grp=btn.closest('[data-group]')?.dataset.group; if(!grp) return;
+        mod.params[grp]=btn.dataset.groupVal;
+        el.querySelectorAll(`[data-group="${grp}"] .ftype-btn`).forEach(b=>b.classList.toggle('active',b===btn));
+        rackLiveUpdateMod(rack,mod,grp,mod.params[grp]);
+      });
+    });
+    el.querySelectorAll('.wave-btn[data-wave]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        el.querySelectorAll(`.wave-btn[data-scope="${mod.id}"]`).forEach(b=>b.classList.toggle('active',b===btn));
+        mod.params.wave=btn.dataset.wave;
+        rackLiveUpdateMod(rack,mod,'wave',mod.params.wave);
+      });
+    });
+    if(mod.type==='dfam'){
+      el.querySelectorAll('.dfam-step-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const s=+btn.dataset.step,arr=[...mod.params.steps];
+          arr[s]=arr[s]==='1'?'0':'1'; mod.params.steps=arr.join('');
+          btn.classList.toggle('on',arr[s]==='1');
+          const nodes=rack._nodes.get(mod.id);
+          if(nodes&&nodes.setSteps) nodes.setSteps(mod.params.steps);
+        });
+      });
+    }
+  }
+  return el;
+}
+
+function rackAddModule(rack,type,x,y){
+  const n=rack.modules.length;
+  const mod=makeRackMod(type,
+    x!==undefined?x:80+n*10,
+    y!==undefined?y:60+n*10
+  );
+  rack.modules.push(mod);
+  rackInitModNodes(getCtx(),rack,mod);
+  const tile=buildRackTile(rack,mod);
+  rack._worldEl.insertBefore(tile,rack._svgEl);
+  return mod;
+}
+
+function rackSave(rack){
+  const data={
+    name:rack.name,
+    modules:rack.modules.map(m=>({id:m.id,type:m.type,x:m.x,y:m.y,params:{...m.params}})),
+    cables:rack.cables.map(c=>({id:c.id,fromMod:c.fromMod,toMod:c.toMod})),
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(rack.name||'rack').replace(/[^a-z0-9]/gi,'_')+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+function rackLoadFromData(rack,data){
+  [...rack.modules].forEach(m=>rackRemoveModule(rack,m.id));
+  rack.name=data.name||'Rack';
+  const nameEl=rack._el&&rack._el.querySelector('.rack-name-inp');
+  if(nameEl) nameEl.value=rack.name;
+  const ctx=getCtx();
+  (data.modules||[]).forEach(md=>{
+    const mod={id:md.id,type:md.type,x:md.x||80,y:md.y||80,params:{...(md.params||{})}};
+    rack.modules.push(mod);
+    rackInitModNodes(ctx,rack,mod);
+    const tile=buildRackTile(rack,mod);
+    rack._worldEl.insertBefore(tile,rack._svgEl);
+  });
+  (data.cables||[]).forEach(cd=>{
+    const cable={id:cd.id,fromMod:cd.fromMod,toMod:cd.toMod};
+    rack.cables.push(cable);
+    const fn=rack._nodes.get(cd.fromMod),tn=rack._nodes.get(cd.toMod);
+    if(fn&&fn.output&&tn&&tn.input) try{fn.output.connect(tn.input);}catch(e){}
+    const od=document.getElementById('jdot_'+cd.fromMod+'_out');
+    if(od) od.classList.add('patched');
+    const id_=document.getElementById('jdot_'+cd.toMod+'_in');
+    if(id_) id_.classList.add('patched');
+  });
+  syncJoogBusDirect();
+  setTimeout(()=>rackUpdateSVG(rack),50);
+}
+
+function rackLoad(rack){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='.json,application/json';
+  inp.addEventListener('change',e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{ rackLoadFromData(rack,JSON.parse(ev.target.result)); }
+      catch(err){ console.error('Rack load failed:',err); alert('Invalid rack file.'); }
+    };
+    reader.readAsText(file);
+  });
+  inp.click();
+}
+
+function rackDelete(rack){
+  if(rackInstances.length<=1) return;
+  [...rack.modules].forEach(m=>rackRemoveModule(rack,m.id));
+  const idx=rackInstances.indexOf(rack);
+  if(idx>=0) rackInstances.splice(idx,1);
+  if(rack._el) rack._el.remove();
+}
+
+function buildRackSection(rack,idx){
+  const card=document.createElement('div'); card.className='rack-section'; rack._el=card;
+
+  const hdr=document.createElement('div'); hdr.className='rack-hdr';
+  const nameEl=document.createElement('input'); nameEl.className='rack-name-inp'; nameEl.value=rack.name;
+  nameEl.addEventListener('input',()=>rack.name=nameEl.value||'Rack');
+  const sp=document.createElement('span'); sp.style.flex='1';
+  const addModBtn=document.createElement('button'); addModBtn.className='btn sm'; addModBtn.textContent='+ Module';
+  addModBtn.addEventListener('click',()=>openModPicker(rack));
+  const saveBtn=document.createElement('button'); saveBtn.className='btn sm'; saveBtn.textContent='⬇ Rack';
+  saveBtn.addEventListener('click',()=>rackSave(rack));
+  const loadBtn=document.createElement('button'); loadBtn.className='btn sm cyan'; loadBtn.textContent='⬆ Rack';
+  loadBtn.addEventListener('click',()=>rackLoad(rack));
+  const delBtn=document.createElement('button'); delBtn.className='btn sm danger'; delBtn.textContent='✕';
+  if(idx===0) delBtn.style.display='none';
+  delBtn.addEventListener('click',()=>rackDelete(rack));
+  hdr.append(nameEl,sp,addModBtn,saveBtn,loadBtn,delBtn);
+
+  const vp=document.createElement('div'); vp.className='rack-viewport'; rack._vpEl=vp;
+  const world=document.createElement('div'); world.className='rack-world'; rack._worldEl=world;
+
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('style','position:absolute;top:0;left:0;overflow:visible;pointer-events:none;');
+  svg.setAttribute('width','1'); svg.setAttribute('height','1');
+  rack._svgEl=svg; world.appendChild(svg);
+  vp.appendChild(world);
+  rackUpdateTransform(rack);
+
+  // Pan on background drag
+  let panFrom=null;
+  vp.addEventListener('mousedown',e=>{
+    if(e.button!==0) return;
+    if(e.target!==vp&&e.target!==world) return;
+    e.preventDefault();
+    panFrom={cx:e.clientX-rack._panX,cy:e.clientY-rack._panY};
+    vp.classList.add('panning');
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!panFrom) return;
+    rack._panX=e.clientX-panFrom.cx; rack._panY=e.clientY-panFrom.cy;
+    rackUpdateTransform(rack);
+  });
+  window.addEventListener('mouseup',()=>{if(panFrom){panFrom=null;vp.classList.remove('panning');}});
+
+  // Zoom on scroll
+  vp.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const rect=vp.getBoundingClientRect();
+    const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+    const factor=e.deltaY>0?0.9:1.1;
+    const nz=Math.max(0.2,Math.min(3.0,rack._zoom*factor));
+    rack._panX=mx-(mx-rack._panX)*(nz/rack._zoom);
+    rack._panY=my-(my-rack._panY)*(nz/rack._zoom);
+    rack._zoom=nz; rackUpdateTransform(rack);
+  },{passive:false});
+
+  // Click background to deselect
+  vp.addEventListener('click',e=>{if(e.target===vp||e.target===world) rackDeselectJack();});
+
+  card.appendChild(hdr); card.appendChild(vp);
+  return card;
+}
+
+function addRack(name){
+  const rack=makeRack(name); rackInstances.push(rack);
+  const section=buildRackSection(rack,rackInstances.length-1);
+  const container=document.getElementById('rackCanvases');
+  if(container) container.appendChild(section);
+  return rack;
+}
+
+function openModPicker(rack){
+  pickerTargetRack=rack;
+  const ov=document.getElementById('modPickerOverlay'); if(ov) ov.classList.add('open');
+}
+function closeModPicker(){
+  pickerTargetRack=null;
+  const ov=document.getElementById('modPickerOverlay'); if(ov) ov.classList.remove('open');
+}
+
+function buildModPickerModal(){
+  const overlay=document.createElement('div');
+  overlay.className='mod-picker-overlay'; overlay.id='modPickerOverlay';
+  const box=document.createElement('div'); box.className='mod-picker-box';
+  const hdr=document.createElement('div'); hdr.className='mod-picker-hdr';
+  hdr.innerHTML='<span class="mod-picker-title">ADD MODULE</span>';
+  const closeBtn=document.createElement('button'); closeBtn.className='mod-picker-close'; closeBtn.textContent='✕';
+  closeBtn.addEventListener('click',closeModPicker); hdr.appendChild(closeBtn); box.appendChild(hdr);
+
+  const cats=[
+    {label:'SPECIAL', types:['joog','spkr']},
+    {label:'SOURCES', types:['osc','osc2','noise','tubeosc','dfam']},
+    {label:'CONTROL', types:['lfo','env']},
+    {label:'EFFECTS', types:['filter','dist','delay','reverb','chorus','compress','bitcrush','panner','tremolo','ringmod','stereomix','reverberator','combfilter']},
+    {label:'OUTPUT',  types:['vol']},
+  ];
+  cats.forEach(cat=>{
+    const sec=document.createElement('div'); sec.className='mod-picker-section';
+    sec.innerHTML=`<div class="mod-picker-section-title">${cat.label}</div>`;
+    const grid=document.createElement('div'); grid.className='mod-picker-grid';
+    cat.types.forEach(type=>{
+      const def=MOD_DEFS[type]||{label:type,color:'#555'};
+      const item=document.createElement('div'); item.className='mod-picker-item';
+      item.innerHTML=`<div class="mod-picker-item-dot" style="background:${def.color}"></div><div class="mod-picker-item-label">${def.label||type}</div>`;
+      item.addEventListener('click',()=>{
+        if(pickerTargetRack){
+          const vp=pickerTargetRack._vpEl, n=pickerTargetRack.modules.length;
+          const cx=vp?(vp.offsetWidth/2-pickerTargetRack._panX)/pickerTargetRack._zoom:120;
+          const cy=vp?(vp.offsetHeight/2-pickerTargetRack._panY)/pickerTargetRack._zoom:120;
+          rackAddModule(pickerTargetRack,type,cx-80+n*15,cy-60+n*15);
+        }
+        closeModPicker();
+      });
+      grid.appendChild(item);
+    });
+    sec.appendChild(grid); box.appendChild(sec);
+  });
+  overlay.appendChild(box);
+  overlay.addEventListener('click',e=>{if(e.target===overlay) closeModPicker();});
+  document.body.appendChild(overlay);
+}
+
+function initRackSystem(){
+  const panel=document.getElementById('panel-rack'); if(!panel) return;
+
+  // Rack canvas section
+  const canvasSection=document.createElement('div'); canvasSection.id='rackCanvases';
+  panel.appendChild(canvasSection);
+
+  // Toolbar
+  const toolbar=document.createElement('div'); toolbar.className='rack-toolbar';
+  toolbar.innerHTML=`<span style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--cyan)">RACKS</span><button class="btn sm" id="rackAddBtn">+ New Rack</button>`;
+  toolbar.querySelector('#rackAddBtn').addEventListener('click',()=>{
+    const r=addRack('Rack '+(rackInstances.length+1));
+    // Show delete button on the previously hidden first rack
+    if(rackInstances.length===2&&rackInstances[0]._el){
+      const db=rackInstances[0]._el.querySelector('.btn.sm.danger');
+      if(db) db.style.display='';
+    }
+  });
+  canvasSection.appendChild(toolbar);
+  addRack('Rack 1');
+
+  buildModPickerModal();
+
+  // Divider between racks and Joog panel
+  const div=document.createElement('div');
+  div.style.cssText='border-top:1px solid var(--border);margin:20px 0 16px;';
+  panel.appendChild(div);
+
+  // Create panel-joog div so all existing Joog code still works
+  const joogEl=document.createElement('div'); joogEl.id='panel-joog';
+  panel.appendChild(joogEl);
+  initJoog();
 }
 
 function initJoog(){
@@ -3300,7 +3945,7 @@ function initJoog(){
 initBeatMachine();
 initTuner();
 initKeyboard();
-initJoog();
+initRackSystem();
 
 // ── Abbreviation tooltip (position:fixed — works inside overflow:auto containers) ──
 (function(){
