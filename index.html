@@ -102,9 +102,10 @@
     }
 
     /* ─── Layout ─── */
-    main { flex: 1; padding: 24px; max-width: 1120px; width: 100%; margin: 0 auto; }
+    main { flex: 1; width: 100%; display: flex; flex-direction: column; }
     .panel { display: none; }
-    .panel.active { display: block; }
+    .panel.active { display: block; flex: 1; padding: 24px; max-width: 1120px; margin: 0 auto; width: 100%; }
+    #panel-rack.active { display: flex; flex-direction: column; padding: 0; max-width: none; }
 
     /* ─── Controls ─── */
     .ctrl-row {
@@ -368,42 +369,37 @@
       font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
       color: var(--cyan); margin-bottom: 10px; text-shadow: 0 0 8px var(--glow-cyan);
     }
-    .joog-patches-section {
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 14px;
-      margin-bottom: 0;
-    }
-    .joog-patches-hdr {
-      display:flex; align-items:center; justify-content:space-between;
-      margin-bottom:10px;
-    }
-    .joog-patches-hdr span {
-      color:var(--green); font-size:11px; text-transform:uppercase; letter-spacing:.1em;
-      text-shadow:0 0 8px rgba(5,255,161,0.4);
-    }
-    #tgPatches { max-height:320px; overflow-y:auto; }
 
     /* ─── Rack System ─── */
-    .rack-toolbar { display:flex;align-items:center;gap:8px;padding:10px 0 14px; }
-    .rack-section { border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);margin-bottom:20px;overflow:hidden; }
-    .rack-hdr { display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface-up);border-bottom:1px solid var(--border); }
+    #rackCanvases { flex:1; display:flex; flex-direction:column; }
+    .rack-toolbar { display:flex;align-items:center;gap:8px;padding:8px 16px; border-bottom:1px solid var(--border); background:var(--surface); }
+    .rack-section { flex:1;display:flex;flex-direction:column;border-bottom:1px solid var(--border); }
+    .rack-hdr { display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface-up);border-bottom:1px solid var(--border);flex-shrink:0; }
     .rack-name-inp { background:transparent;border:none;border-bottom:1px solid transparent;color:var(--cyan);font:inherit;font-size:12px;font-weight:700;letter-spacing:0.06em;min-width:60px;max-width:180px;outline:none;cursor:text; }
     .rack-name-inp:focus { border-bottom-color:var(--cyan); }
     .rack-viewport {
-      position:relative;width:100%;height:480px;overflow:hidden;cursor:default;
+      flex:1; position:relative;width:100%;min-height:400px;overflow:hidden;cursor:default;
       background:
         linear-gradient(rgba(185,103,255,0.04) 1px,transparent 1px),
         linear-gradient(90deg,rgba(185,103,255,0.04) 1px,transparent 1px);
       background-size:40px 40px;background-color:var(--bg);
     }
     .rack-viewport.panning { cursor:grabbing; }
-    .rack-world { position:absolute;top:0;left:0;transform-origin:0 0;min-width:2000px;min-height:1200px; }
+    .rack-world { position:absolute;top:0;left:0;transform-origin:0 0;min-width:4000px;min-height:3000px; }
     /* Module tiles */
     .rmod {
       position:absolute;background:var(--surface-up);border:1px solid var(--border);
       border-radius:6px;min-width:150px;cursor:default;
       box-shadow:0 2px 16px rgba(0,0,0,0.4);
+      overflow:visible;
     }
+    .rmod-resize {
+      position:absolute;bottom:2px;right:2px;width:14px;height:14px;
+      cursor:se-resize;display:flex;align-items:center;justify-content:center;
+      opacity:0.3;font-size:12px;line-height:1;color:var(--text-muted);
+      pointer-events:all; user-select:none;
+    }
+    .rmod-resize:hover { opacity:1; color:var(--pink); }
     .rmod-hdr {
       display:flex;align-items:center;gap:6px;padding:5px 8px;
       background:rgba(0,0,0,0.3);border-radius:6px 6px 0 0;
@@ -433,7 +429,7 @@
     .rmod-spkr .rmod-body { text-align:center;padding:10px 12px;font-size:26px;line-height:1; }
     .rmod-joog-tile .rmod-hdr { background:rgba(255,113,206,0.08); }
     .rmod-joog-tile .rmod-name-lbl { color:var(--pink); }
-    .rmod-joog-tile .rmod-body { padding:6px 12px;font-size:9px;color:var(--text-muted);text-align:center; }
+    .rmod-joog-tile .rmod-body { padding:0; overflow:auto; }
     /* Module picker */
     .mod-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;align-items:center;justify-content:center; }
     .mod-picker-overlay.open { display:flex; }
@@ -2446,10 +2442,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     kbTabActive = (tab==='keys');
     joogTabActive = (tab==='rack');
     if(tab==='rack'){
-      setTimeout(startJoogScope, 80);
-      // Always init a persistent voice when entering the Rack tab.
-      // EG mode → VCA silent until key press; ON mode → VCA open immediately.
-      if(!joogVoice) setTimeout(()=>joogInitVoice(joogLastFreq||joogFreqFromMidi(60)),100);
+      if(joogInitialized) setTimeout(startJoogScope, 80);
+      if(joogInitialized&&!joogVoice) setTimeout(()=>joogInitVoice(joogLastFreq||joogFreqFromMidi(60)),100);
     }
     else stopJoogScope();
     if(tab==='keys') setTimeout(drawLoopViz,50);
@@ -2514,6 +2508,7 @@ let rackIdSeq = 0;
 const rackInstances = [];
 let rackSelectedJack = null; // {rack, modId} of selected output jack
 let pickerTargetRack = null;
+let joogInitialized = false;
 let joogLastFreq = null;
 let joogActiveKey = null;
 let joogOct = 3;
@@ -3201,6 +3196,7 @@ function makeRackMod(type,x,y){
   return {
     id:'rm_'+(++rackIdSeq)+'_'+Math.random().toString(36).slice(2,5),
     type, x:x||80, y:y||80,
+    w:type==='joog'?860:null, h:null,
     params:Object.assign({},def.defaults||{}),
   };
 }
@@ -3400,11 +3396,13 @@ function buildRackTile(rack,mod){
   const hasIn=jacks.includes('in'), hasOut=jacks.includes('out');
 
   const el=document.createElement('div');
-  el.className='rmod mod-tile'+
+  el.className='rmod'+
     (mod.type==='spkr'?' rmod-spkr':'')+
     (mod.type==='joog'?' rmod-joog-tile':'');
   el.id='rmod_'+mod.id; el.dataset.modId=mod.id;
   el.style.left=mod.x+'px'; el.style.top=mod.y+'px';
+  if(mod.w) el.style.width=mod.w+'px';
+  if(mod.h) el.style.height=mod.h+'px';
 
   const hdr=document.createElement('div'); hdr.className='rmod-hdr';
   hdr.innerHTML=`<div class="rmod-color-dot" style="background:${def.color}"></div><span class="rmod-name-lbl">${def.label||mod.type}</span><button class="rmod-del-btn" title="Remove">✕</button>`;
@@ -3412,7 +3410,14 @@ function buildRackTile(rack,mod){
 
   const body=document.createElement('div'); body.className='rmod-body';
   if(mod.type==='joog'){
-    body.innerHTML=`<span style="color:var(--text-muted);letter-spacing:0.05em">controls below ↓</span>`;
+    const joogDiv=document.createElement('div'); joogDiv.id='panel-joog';
+    body.appendChild(joogDiv);
+    setTimeout(()=>{
+      if(!joogInitialized){ joogInitialized=true; initJoog(); }
+      syncJoogBusDirect();
+      if(!joogVoice) joogInitVoice(joogLastFreq||joogFreqFromMidi(60));
+      if(joogTabActive) startJoogScope();
+    },0);
   } else if(mod.type==='spkr'){
     body.innerHTML='🔊';
   } else {
@@ -3441,6 +3446,23 @@ function buildRackTile(rack,mod){
   el.appendChild(hdr); el.appendChild(body); el.appendChild(jackSec);
 
   makeDraggableMod(rack,el,mod,hdr);
+
+  // Resize handle
+  const resizeH=document.createElement('div'); resizeH.className='rmod-resize'; resizeH.textContent='⤡';
+  el.appendChild(resizeH);
+  resizeH.addEventListener('mousedown',e=>{
+    e.stopPropagation(); e.preventDefault();
+    const ox=e.clientX,oy=e.clientY,sw=el.offsetWidth,sh=el.offsetHeight;
+    const isJoog=mod.type==='joog';
+    const mv=ev=>{
+      const dx=(ev.clientX-ox)/rack._zoom, dy=(ev.clientY-oy)/rack._zoom;
+      mod.w=Math.max(150,sw+dx); el.style.width=mod.w+'px';
+      if(!isJoog){mod.h=Math.max(60,sh+dy); el.style.height=mod.h+'px';}
+      rackUpdateSVG(rack);
+    };
+    const up=()=>{window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
+    window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+  });
 
   // Initialize controls (knobs, buttons, wave selectors)
   if(mod.type!=='joog'&&mod.type!=='spkr'){
@@ -3493,7 +3515,7 @@ function rackAddModule(rack,type,x,y){
 function rackSave(rack){
   const data={
     name:rack.name,
-    modules:rack.modules.map(m=>({id:m.id,type:m.type,x:m.x,y:m.y,params:{...m.params}})),
+    modules:rack.modules.map(m=>({id:m.id,type:m.type,x:m.x,y:m.y,w:m.w,h:m.h,params:{...m.params}})),
     cables:rack.cables.map(c=>({id:c.id,fromMod:c.fromMod,toMod:c.toMod})),
   };
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -3510,7 +3532,7 @@ function rackLoadFromData(rack,data){
   if(nameEl) nameEl.value=rack.name;
   const ctx=getCtx();
   (data.modules||[]).forEach(md=>{
-    const mod={id:md.id,type:md.type,x:md.x||80,y:md.y||80,params:{...(md.params||{})}};
+    const mod={id:md.id,type:md.type,x:md.x||80,y:md.y||80,w:md.w||null,h:md.h||null,params:{...(md.params||{})}};
     rack.modules.push(mod);
     rackInitModNodes(ctx,rack,mod);
     const tile=buildRackTile(rack,mod);
@@ -3694,35 +3716,22 @@ function initRackSystem(){
     }
   });
   canvasSection.appendChild(toolbar);
-  addRack('Rack 1');
+  const r1=addRack('Rack 1');
 
   buildModPickerModal();
 
-  // Divider between racks and Joog panel
-  const div=document.createElement('div');
-  div.style.cssText='border-top:1px solid var(--border);margin:20px 0 16px;';
-  panel.appendChild(div);
+  // Auto-add Joog as a rack module
+  rackAddModule(r1,'joog',20,20);
 
-  // Create panel-joog div so all existing Joog code still works
-  const joogEl=document.createElement('div'); joogEl.id='panel-joog';
-  panel.appendChild(joogEl);
-  initJoog();
+  // Silent default patch so the Keys tab has a tone to play
+  patchInstances.push(makePatch());
+  updateKbToneSelect();
 }
 
 function initJoog(){
   const panel=document.getElementById('panel-joog'); if(!panel) return;
 
-  panel.innerHTML=`<div class="joog-patches-section">
-  <div class="joog-patches-hdr">
-    <span>Patches</span>
-    <div style="display:flex;gap:8px">
-      <button class="btn sm danger" id="allStopAll">■ Stop All</button>
-      <button class="btn sm cyan" id="tgAddTone">+ New Patch</button>
-    </div>
-  </div>
-  <div id="tgPatches"></div>
-</div>
-<div class="joog-panel">
+  panel.innerHTML=`<div class="joog-panel">
 <div class="joog-header">
   <div>
     <span class="joog-header-title">JARVIS JOOG</span>
@@ -3893,11 +3902,6 @@ function initJoog(){
   // Preset save/load
   panel.querySelector('#joogSaveBtn').addEventListener('click', joogSave);
   panel.querySelector('#joogLoadBtn').addEventListener('click', joogLoad);
-
-  // Patches section
-  panel.querySelector('#tgAddTone').addEventListener('click', addPatch);
-  panel.querySelector('#allStopAll').addEventListener('click', stopAllPatches);
-  addPatch();
 
   // Knobs
   panel.querySelectorAll('.knob').forEach(el=>initKnob(el,v=>{
