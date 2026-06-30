@@ -430,6 +430,61 @@
     .rmod-joog-tile .rmod-hdr { background:rgba(255,113,206,0.08); }
     .rmod-joog-tile .rmod-name-lbl { color:var(--pink); }
     .rmod-joog-tile .rmod-body { padding:0; overflow:auto; }
+    /* ─── Abacus Module ─── */
+    .rmod-abacus .rmod-hdr { background:rgba(255,153,51,0.08); }
+    .rmod-abacus .rmod-name-lbl { color:#ff9933; }
+    .rmod-abacus .rmod-body { padding:0; }
+    .abacus-panel { display:flex; flex-direction:column; gap:0; }
+    .abacus-row { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(255,153,51,0.08); }
+    .abacus-ch {
+      background:var(--surface);
+      padding:7px 8px 6px;
+    }
+    .abacus-ch-title {
+      font-size:8px; font-weight:700; letter-spacing:0.1em;
+      color:#ff9933; text-align:center; margin-bottom:5px;
+      text-transform:uppercase;
+    }
+    .abacus-ch.atten .abacus-ch-title { color:var(--cyan); }
+    .abacus-knobs { display:flex; gap:4px; justify-content:center; align-items:flex-end; }
+    .abacus-kw { display:flex; flex-direction:column; align-items:center; gap:2px; }
+    .abacus-klbl { font-size:7px; color:var(--text-muted); letter-spacing:0.04em; white-space:nowrap; }
+    .abacus-knob {
+      width:26px; height:26px; border-radius:50%;
+      border:2px solid rgba(255,153,51,0.4);
+      background:rgba(255,153,51,0.08);
+      position:relative; cursor:pointer; user-select:none;
+    }
+    .abacus-ch.atten .abacus-knob { border-color:rgba(1,205,254,0.4); background:rgba(1,205,254,0.06); }
+    .abacus-knob-tick {
+      position:absolute; bottom:2px; left:50%; width:2px; height:7px;
+      transform-origin:50% -3px; background:#ff9933;
+      transform:translateX(-50%) rotate(0deg);
+    }
+    .abacus-ch.atten .abacus-knob-tick { background:var(--cyan); }
+    .abacus-cycle-btn {
+      display:block; width:100%; margin-top:5px;
+      padding:2px 4px; font-size:7px; letter-spacing:0.06em; font-family:inherit;
+      text-transform:uppercase; border:1px solid rgba(255,153,51,0.3);
+      border-radius:3px; background:transparent; color:var(--text-muted);
+      cursor:pointer; text-align:center; transition:all 0.15s;
+    }
+    .abacus-cycle-btn.on { background:rgba(255,153,51,0.18); color:#ff9933; border-color:#ff9933; }
+    .abacus-jacks {
+      background:rgba(0,0,0,0.25);
+      border-top:1px solid rgba(255,153,51,0.12);
+      padding:5px 8px;
+      display:flex; flex-wrap:wrap; gap:4px; align-items:center;
+    }
+    .abacus-jack {
+      display:flex; flex-direction:column; align-items:center; gap:2px;
+      cursor:pointer;
+    }
+    .abacus-jack-lbl { font-size:6px; letter-spacing:0.04em; color:var(--text-muted); white-space:nowrap; }
+    .abacus-jack .rack-jack-dot {
+      width:10px; height:10px;
+    }
+    .abacus-jack-sep { width:1px; height:18px; background:rgba(255,153,51,0.15); margin:0 2px; }
     /* Module picker */
     .mod-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;align-items:center;justify-content:center; }
     .mod-picker-overlay.open { display:flex; }
@@ -1299,6 +1354,12 @@ const MOD_DEFS = {
   dfam:        {label:'DFAM',         cat:'source', color:'#ff4488', defaults:{tempo:120, vco1:80, vco2:160, noiseMix:20, cutoff:800, resonance:50, decay:250, steps:'10010110'}},
   joog:        {label:'Joog',         cat:'special', color:'#ff71ce', defaults:{}},
   spkr:        {label:'Speaker',      cat:'special', color:'#05ffa1', defaults:{}},
+  abacus:      {label:'Abacus',       cat:'special', color:'#ff9933', defaults:{
+    ch1Rise:30,ch1Fall:40,ch1Resp:50,ch1Cycle:false,
+    ch2Atten:50,
+    ch3Atten:50,
+    ch4Rise:30,ch4Fall:40,ch4Resp:50,ch4Cycle:false,
+  }},
 };
 const SOURCE_TYPES=new Set(['osc','osc2','noise','tubeosc','dfam']);
 function isSource(t){return SOURCE_TYPES.has(t);}
@@ -1313,6 +1374,19 @@ const RACK_JACK_DEFS = {
   ringmod:['in','out'], vol:['in','out'], stereomix:['in','out'],
   reverberator:['in','out'], combfilter:['in','out'],
   joog:['out'], spkr:['in'],
+  abacus:[
+    {dir:'in', name:'trig1',  label:'T1'},
+    {dir:'in', name:'trig4',  label:'T4'},
+    {dir:'out',name:'ch1',    label:'CH1'},
+    {dir:'out',name:'ch4',    label:'CH4'},
+    {dir:'out',name:'or',     label:'OR'},
+    {dir:'out',name:'sum',    label:'SUM'},
+    {dir:'out',name:'inv',    label:'INV'},
+    {dir:'out',name:'eor',    label:'EOR'},
+    {dir:'out',name:'eoc',    label:'EOC'},
+    {dir:'out',name:'unity1', label:'U1'},
+    {dir:'out',name:'unity4', label:'U4'},
+  ],
 };
 
 // ─── Audio helpers ────────────────────────────────────────────
@@ -3178,12 +3252,222 @@ function makeRack(name){
 
 function makeRackMod(type,x,y){
   const def=MOD_DEFS[type]||{};
+  const w=type==='joog'?860:type==='abacus'?300:null;
   return {
     id:'rm_'+(++rackIdSeq)+'_'+Math.random().toString(36).slice(2,5),
     type, x:x||80, y:y||80,
-    w:type==='joog'?860:null, h:null,
+    w, h:null,
     params:Object.assign({},def.defaults||{}),
   };
+}
+
+// ─── Abacus function generator ────────────────────────────────────────────────
+
+// Maps 0-100 knob to milliseconds on a log scale (30ms → 540,000ms = 9 min)
+function abacusKnobToMs(v){
+  return 30*Math.exp(9.89*v/100);
+}
+
+// Apply response curve: t=0..1 phase → 0..1 output
+// resp: -1=log, 0=lin, +1=exp
+function abacusResponseCurve(t,resp){
+  t=Math.max(0,Math.min(1,t));
+  if(resp<0){
+    const logV=1-Math.exp(-6*t);
+    return logV*(-resp)+t*(1+resp);
+  } else {
+    const expV=t*t*t;
+    return expV*resp+t*(1-resp);
+  }
+}
+
+function abacusInitNodes(ctx,rack,mod){
+  const mkCS=()=>{const cs=ctx.createConstantSource();cs.offset.value=0;cs.start();return cs;};
+  const ch1Out=mkCS(), ch4Out=mkCS(), orOut=mkCS(), sumOut=mkCS();
+  const invOut=mkCS(), eorOut=mkCS(), eocOut=mkCS();
+  const trig1Anl=ctx.createAnalyser(); trig1Anl.fftSize=32;
+  const trig4Anl=ctx.createAnalyser(); trig4Anl.fftSize=32;
+  const trig1Gain=ctx.createGain(); trig1Gain.gain.value=1;
+  const trig4Gain=ctx.createGain(); trig4Gain.gain.value=1;
+  trig1Gain.connect(trig1Anl); trig4Gain.connect(trig4Anl);
+  trig1Anl.connect(ctx.destination); trig4Anl.connect(ctx.destination);
+
+  const state={
+    ch1:{s:'idle',phase:0,startMs:0,voltage:0,prevTrig:false},
+    ch4:{s:'idle',phase:0,startMs:0,voltage:0,prevTrig:false},
+  };
+  const buf=new Float32Array(32);
+  let raf=null, dead=false;
+
+  function sampleTrig(anl){
+    anl.getFloatTimeDomainData(buf);
+    let peak=0; for(let i=0;i<buf.length;i++) if(Math.abs(buf[i])>Math.abs(peak)) peak=buf[i];
+    return peak;
+  }
+
+  function stepCh(ch,p,trigV,nowMs){
+    const riseMs=abacusKnobToMs(p.riseK);
+    const fallMs=abacusKnobToMs(p.fallK);
+    const resp=p.resp;
+    const cycle=p.cycle;
+    const trig=trigV>2.5;
+    let eor=false, eoc=false;
+    if((trig&&!ch.prevTrig||cycle)&&ch.s==='idle'){
+      ch.s='rising'; ch.startMs=nowMs; ch.phase=0;
+    }
+    ch.prevTrig=trig;
+    if(ch.s==='rising'){
+      const elapsed=nowMs-ch.startMs;
+      ch.phase=elapsed/riseMs;
+      if(ch.phase>=1){
+        ch.voltage=10; eor=true;
+        if(cycle){ ch.s='falling'; ch.startMs=nowMs; }
+        else { ch.s='idle'; }
+      } else {
+        ch.voltage=10*abacusResponseCurve(ch.phase,resp);
+      }
+    } else if(ch.s==='falling'){
+      const elapsed=nowMs-ch.startMs;
+      ch.phase=elapsed/fallMs;
+      if(ch.phase>=1){
+        ch.voltage=0; eoc=true;
+        if(cycle){ ch.s='rising'; ch.startMs=nowMs; }
+        else { ch.s='idle'; }
+      } else {
+        ch.voltage=10*(1-abacusResponseCurve(ch.phase,resp));
+      }
+    } else {
+      ch.voltage=0;
+    }
+    return {voltage:ch.voltage, eor, eoc};
+  }
+
+  function tick(){
+    if(dead) return;
+    const nowMs=performance.now();
+    const p=mod.params;
+    const trig1V=sampleTrig(trig1Anl);
+    const trig4V=sampleTrig(trig4Anl);
+    // resp: knob 0-100 maps to -1..+1 (0=log, 50=linear, 100=exp)
+    const r1=stepCh(state.ch1,{riseK:p.ch1Rise??30,fallK:p.ch1Fall??40,resp:(p.ch1Resp??50)/50-1,cycle:p.ch1Cycle},trig1V,nowMs);
+    const r4=stepCh(state.ch4,{riseK:p.ch4Rise??30,fallK:p.ch4Fall??40,resp:(p.ch4Resp??50)/50-1,cycle:p.ch4Cycle},trig4V,nowMs);
+    const v1=r1.voltage, v4=r4.voltage;
+    const ch2v=(p.ch2Atten??50)/50-1;
+    const ch3v=(p.ch3Atten??50)/50-1;
+    const a1=v1*((p.ch1Atten??100)/100);
+    const a4=v4*((p.ch4Atten??100)/100);
+    const orV=Math.max(a1,ch2v*5+5,ch3v*5+5,a4);
+    const sumV=Math.max(-10,Math.min(10,(a1+(ch2v*5+5)+(ch3v*5+5)+a4)/2));
+    ch1Out.offset.value=v1/10;
+    ch4Out.offset.value=v4/10;
+    orOut.offset.value=orV/10;
+    sumOut.offset.value=sumV/10;
+    invOut.offset.value=-sumV/10;
+    eorOut.offset.value=r1.eor?1:0;
+    eocOut.offset.value=r1.eoc?1:0;
+    const tile=document.getElementById('rmod_'+mod.id);
+    if(tile){
+      const led1=tile.querySelector('.abacus-led-ch1');
+      const led4=tile.querySelector('.abacus-led-ch4');
+      if(led1) led1.style.opacity=v1/10;
+      if(led4) led4.style.opacity=v4/10;
+    }
+    raf=setTimeout(tick,16);
+  }
+  raf=setTimeout(tick,16);
+
+  rack._nodes.set(mod.id,{
+    input:null, output:ch1Out,
+    _inputs:{trig1:trig1Gain, trig4:trig4Gain},
+    _outputs:{ch1:ch1Out, ch4:ch4Out, or:orOut, sum:sumOut, inv:invOut, eor:eorOut, eoc:eocOut, unity1:ch1Out, unity4:ch4Out},
+    cleanup:()=>{
+      dead=true; if(raf) clearTimeout(raf);
+      try{ch1Out.stop();}catch(_){} try{ch4Out.stop();}catch(_){}
+      try{orOut.stop();}catch(_){} try{sumOut.stop();}catch(_){}
+      try{invOut.stop();}catch(_){} try{eorOut.stop();}catch(_){} try{eocOut.stop();}catch(_){}
+      try{trig1Anl.disconnect();}catch(_){} try{trig4Anl.disconnect();}catch(_){}
+      try{trig1Gain.disconnect();}catch(_){} try{trig4Gain.disconnect();}catch(_){}
+    },
+  });
+}
+
+function buildAbacusKnob(label,param,initVal,mod,rack,respKnob){
+  const wrap=document.createElement('div'); wrap.className='abacus-kw';
+  const lbl=document.createElement('div'); lbl.className='abacus-klbl'; lbl.textContent=label;
+  const knob=document.createElement('div'); knob.className='abacus-knob';
+  const tick=document.createElement('div'); tick.className='abacus-knob-tick';
+  knob.appendChild(tick);
+  wrap.appendChild(knob); wrap.appendChild(lbl);
+  let val=initVal||50, dragging=false, startY=0, startVal=0;
+  function setVal(v){
+    val=Math.max(0,Math.min(100,v));
+    mod.params[param]=val;
+    const deg=-135+val*2.7;
+    tick.style.transform=`translateX(-50%) rotate(${deg}deg)`;
+  }
+  setVal(val);
+  knob.addEventListener('mousedown',e=>{
+    e.stopPropagation(); e.preventDefault();
+    dragging=true; startY=e.clientY; startVal=val;
+    const mv=ev=>{if(dragging) setVal(startVal-(ev.clientY-startY)*0.8);};
+    const up=()=>{dragging=false;window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
+    window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+  });
+  return wrap;
+}
+
+function buildAbacusBody(mod,body,rack){
+  const p=mod.params;
+  const panel=document.createElement('div'); panel.className='abacus-panel';
+
+  // Top row: CH1 (full generator) + CH4 (full generator)
+  const topRow=document.createElement('div'); topRow.className='abacus-row';
+
+  function buildGenCh(chNum,riseKey,fallKey,respKey,cycleKey,attenKey){
+    const ch=document.createElement('div'); ch.className='abacus-ch';
+    const title=document.createElement('div'); title.className='abacus-ch-title';
+    title.textContent='CH '+chNum;
+    const knobs=document.createElement('div'); knobs.className='abacus-knobs';
+    knobs.appendChild(buildAbacusKnob('RISE',riseKey,p[riseKey],mod,rack));
+    knobs.appendChild(buildAbacusKnob('FALL',fallKey,p[fallKey],mod,rack));
+    knobs.appendChild(buildAbacusKnob('RESP',respKey,p[respKey],mod,rack));
+    const cycBtn=document.createElement('button'); cycBtn.className='abacus-cycle-btn'+(p[cycleKey]?' on':'');
+    cycBtn.textContent='CYCLE';
+    cycBtn.addEventListener('click',()=>{
+      p[cycleKey]=!p[cycleKey];
+      cycBtn.classList.toggle('on',p[cycleKey]);
+      // If cycle turned on and channel is idle, start rising
+      const nodes=rack._nodes.get(mod.id);
+      if(nodes&&p[cycleKey]){
+        // trigger will start on next external trig; or we can self-start here
+      }
+    });
+    const led=document.createElement('div'); led.className='abacus-led abacus-led-ch'+chNum;
+    led.style.cssText='width:6px;height:6px;border-radius:50%;background:#ff9933;opacity:0;margin:4px auto 0;display:block;box-shadow:0 0 4px #ff9933;transition:none;';
+    ch.appendChild(title); ch.appendChild(knobs); ch.appendChild(cycBtn); ch.appendChild(led);
+    return ch;
+  }
+
+  function buildAttenCh(chNum,attenKey){
+    const ch=document.createElement('div'); ch.className='abacus-ch atten';
+    const title=document.createElement('div'); title.className='abacus-ch-title';
+    title.textContent='CH '+chNum;
+    const knobs=document.createElement('div'); knobs.className='abacus-knobs';
+    knobs.appendChild(buildAbacusKnob('ATTEN',attenKey,p[attenKey],mod,rack));
+    ch.appendChild(title); ch.appendChild(knobs);
+    return ch;
+  }
+
+  topRow.appendChild(buildGenCh(1,'ch1Rise','ch1Fall','ch1Resp','ch1Cycle'));
+  topRow.appendChild(buildAttenCh(2,'ch2Atten'));
+
+  const botRow=document.createElement('div'); botRow.className='abacus-row';
+  botRow.appendChild(buildAttenCh(3,'ch3Atten'));
+  botRow.appendChild(buildGenCh(4,'ch4Rise','ch4Fall','ch4Resp','ch4Cycle'));
+
+  panel.appendChild(topRow);
+  panel.appendChild(botRow);
+  body.appendChild(panel);
 }
 
 function rackInitModNodes(ctx,rack,mod){
@@ -3211,16 +3495,26 @@ function rackInitModNodes(ctx,rack,mod){
     rack._nodes.set(mod.id,{input:g,output:g,cleanup:()=>{try{g.disconnect();}catch(_){}}});
     return;
   }
+  if(mod.type==='abacus'){
+    abacusInitNodes(ctx,rack,mod);
+    return;
+  }
   const nodes=createModuleNodes(ctx,mod,440);
   rack._nodes.set(mod.id,nodes);
 }
 
+function rackNodeForJack(nodes,dir,jackName){
+  if(!nodes) return null;
+  if(dir==='out') return (jackName&&jackName!=='out'&&nodes._outputs)?nodes._outputs[jackName]:nodes.output;
+  return (jackName&&jackName!=='in'&&nodes._inputs)?nodes._inputs[jackName]:nodes.input;
+}
 function rackRebuildModNodes(rack,mod){
   const inC=rack.cables.filter(c=>c.toMod===mod.id);
   const outC=rack.cables.filter(c=>c.fromMod===mod.id);
   [...inC,...outC].forEach(c=>{
     const fn=rack._nodes.get(c.fromMod),tn=rack._nodes.get(c.toMod);
-    if(fn&&fn.output&&tn&&tn.input) try{fn.output.disconnect(tn.input);}catch(e){}
+    const fo=rackNodeForJack(fn,'out',c.fromJack),ti=rackNodeForJack(tn,'in',c.toJack);
+    if(fo&&ti) try{fo.disconnect(ti);}catch(e){}
   });
   const old=rack._nodes.get(mod.id);
   if(old&&old.cleanup) try{old.cleanup();}catch(e){}
@@ -3228,7 +3522,8 @@ function rackRebuildModNodes(rack,mod){
   rackInitModNodes(getCtx(),rack,mod);
   [...inC,...outC].forEach(c=>{
     const fn=rack._nodes.get(c.fromMod),tn=rack._nodes.get(c.toMod);
-    if(fn&&fn.output&&tn&&tn.input) try{fn.output.connect(tn.input);}catch(e){}
+    const fo=rackNodeForJack(fn,'out',c.fromJack),ti=rackNodeForJack(tn,'in',c.toJack);
+    if(fo&&ti) try{fo.connect(ti);}catch(e){}
   });
 }
 
@@ -3249,8 +3544,9 @@ function rackLiveUpdateMod(rack,mod,param,val){
   rackRebuildModNodes(rack,mod);
 }
 
-function rackGetJackCenter(rack,modId,dir){
-  const dot=document.getElementById('jdot_'+modId+'_'+dir);
+function rackGetJackCenter(rack,modId,dir,jackName){
+  const jn=jackName||(dir==='out'?'out':'in');
+  const dot=document.getElementById('jdot_'+modId+'_'+jn);
   if(!dot||!rack._vpEl) return null;
   const vpR=rack._vpEl.getBoundingClientRect(), dR=dot.getBoundingClientRect();
   return {
@@ -3263,8 +3559,8 @@ function rackUpdateSVG(rack){
   const svg=rack._svgEl; if(!svg) return;
   while(svg.firstChild) svg.removeChild(svg.firstChild);
   rack.cables.forEach(cable=>{
-    const from=rackGetJackCenter(rack,cable.fromMod,'out');
-    const to=rackGetJackCenter(rack,cable.toMod,'in');
+    const from=rackGetJackCenter(rack,cable.fromMod,'out',cable.fromJack);
+    const to=rackGetJackCenter(rack,cable.toMod,'in',cable.toJack);
     if(!from||!to) return;
     const line=document.createElementNS('http://www.w3.org/2000/svg','line');
     line.setAttribute('x1',from.x); line.setAttribute('y1',from.y);
@@ -3284,20 +3580,23 @@ function rackUpdateTransform(rack){
 
 function rackDeselectJack(){
   if(!rackSelectedJack) return;
-  const dot=document.getElementById('jdot_'+rackSelectedJack.modId+'_out');
+  const jn=rackSelectedJack.jackName||'out';
+  const dot=document.getElementById('jdot_'+rackSelectedJack.modId+'_'+jn);
   if(dot) dot.classList.remove('selected');
   rackSelectedJack=null;
 }
 
-function rackCableCreate(rack,fromModId,toModId){
-  const existing=rack.cables.find(c=>c.toMod===toModId);
+function rackCableCreate(rack,fromModId,toModId,fromJack,toJack){
+  fromJack=fromJack||'out'; toJack=toJack||'in';
+  const existing=rack.cables.find(c=>c.toMod===toModId&&(c.toJack||'in')===toJack);
   if(existing) rackCableRemove(rack,existing.id);
-  const cable={id:'cable_'+(++rackIdSeq),fromMod:fromModId,toMod:toModId};
+  const cable={id:'cable_'+(++rackIdSeq),fromMod:fromModId,fromJack,toMod:toModId,toJack};
   rack.cables.push(cable);
   const fn=rack._nodes.get(fromModId),tn=rack._nodes.get(toModId);
-  if(fn&&fn.output&&tn&&tn.input) try{fn.output.connect(tn.input);}catch(e){}
-  const od=document.getElementById('jdot_'+fromModId+'_out');
-  const id_=document.getElementById('jdot_'+toModId+'_in');
+  const fo=rackNodeForJack(fn,'out',fromJack),ti=rackNodeForJack(tn,'in',toJack);
+  if(fo&&ti) try{fo.connect(ti);}catch(e){}
+  const od=document.getElementById('jdot_'+fromModId+'_'+fromJack);
+  const id_=document.getElementById('jdot_'+toModId+'_'+toJack);
   if(od) od.classList.add('patched');
   if(id_) id_.classList.add('patched');
   syncJoogBusDirect();
@@ -3307,34 +3606,37 @@ function rackCableCreate(rack,fromModId,toModId){
 function rackCableRemove(rack,cableId){
   const idx=rack.cables.findIndex(c=>c.id===cableId); if(idx<0) return;
   const cable=rack.cables[idx]; rack.cables.splice(idx,1);
+  const fromJack=cable.fromJack||'out', toJack=cable.toJack||'in';
   const fn=rack._nodes.get(cable.fromMod),tn=rack._nodes.get(cable.toMod);
-  if(fn&&fn.output&&tn&&tn.input) try{fn.output.disconnect(tn.input);}catch(e){}
-  if(!rack.cables.some(c=>c.fromMod===cable.fromMod)){
-    const od=document.getElementById('jdot_'+cable.fromMod+'_out');
+  const fo=rackNodeForJack(fn,'out',fromJack),ti=rackNodeForJack(tn,'in',toJack);
+  if(fo&&ti) try{fo.disconnect(ti);}catch(e){}
+  if(!rack.cables.some(c=>c.fromMod===cable.fromMod&&(c.fromJack||'out')===fromJack)){
+    const od=document.getElementById('jdot_'+cable.fromMod+'_'+fromJack);
     if(od) od.classList.remove('patched');
   }
-  const id_=document.getElementById('jdot_'+cable.toMod+'_in');
+  const id_=document.getElementById('jdot_'+cable.toMod+'_'+toJack);
   if(id_) id_.classList.remove('patched');
   syncJoogBusDirect();
   rackUpdateSVG(rack);
 }
 
-function rackJackClick(rack,modId,dir){
+function rackJackClick(rack,modId,dir,jackName){
+  jackName=jackName||(dir==='out'?'out':'in');
   if(dir==='out'){
-    if(rackSelectedJack&&rackSelectedJack.rack===rack&&rackSelectedJack.modId===modId){
+    if(rackSelectedJack&&rackSelectedJack.rack===rack&&rackSelectedJack.modId===modId&&rackSelectedJack.jackName===jackName){
       rackDeselectJack();
     } else {
       rackDeselectJack();
-      rackSelectedJack={rack,modId};
-      const dot=document.getElementById('jdot_'+modId+'_out');
+      rackSelectedJack={rack,modId,jackName};
+      const dot=document.getElementById('jdot_'+modId+'_'+jackName);
       if(dot) dot.classList.add('selected');
     }
   } else { // in
     if(rackSelectedJack&&rackSelectedJack.rack===rack){
-      rackCableCreate(rack,rackSelectedJack.modId,modId);
+      rackCableCreate(rack,rackSelectedJack.modId,modId,rackSelectedJack.jackName,jackName);
       rackDeselectJack();
     } else {
-      const cable=rack.cables.find(c=>c.toMod===modId);
+      const cable=rack.cables.find(c=>c.toMod===modId&&(c.toJack||'in')===jackName);
       if(cable) rackCableRemove(rack,cable.id);
     }
   }
@@ -3379,13 +3681,16 @@ function makeDraggableMod(rack,el,mod,handle){
 
 function buildRackTile(rack,mod){
   const def=MOD_DEFS[mod.type]||{label:mod.type,color:'#555'};
-  const jacks=RACK_JACK_DEFS[mod.type]||[];
-  const hasIn=jacks.includes('in'), hasOut=jacks.includes('out');
+  const rawJacks=RACK_JACK_DEFS[mod.type]||[];
+  const jackList=rawJacks.map(j=>typeof j==='string'?{dir:j,name:j,label:j}:j);
+  const hasIn=jackList.some(j=>j.dir==='in');
+  const hasOut=jackList.some(j=>j.dir==='out');
 
   const el=document.createElement('div');
   el.className='rmod'+
     (mod.type==='spkr'?' rmod-spkr':'')+
-    (mod.type==='joog'?' rmod-joog-tile':'');
+    (mod.type==='joog'?' rmod-joog-tile':'')+
+    (mod.type==='abacus'?' rmod-abacus':'');
   el.id='rmod_'+mod.id; el.dataset.modId=mod.id;
   el.style.left=mod.x+'px'; el.style.top=mod.y+'px';
   if(mod.w) el.style.width=mod.w+'px';
@@ -3407,29 +3712,49 @@ function buildRackTile(rack,mod){
     },0);
   } else if(mod.type==='spkr'){
     body.innerHTML='🔊';
+  } else if(mod.type==='abacus'){
+    buildAbacusBody(mod,body,rack);
   } else {
     body.innerHTML=buildModBody(mod);
   }
 
-  const jackSec=document.createElement('div'); jackSec.className='rmod-jacks';
-  const inDiv=document.createElement('div'); inDiv.className='rmod-jacks-in';
-  const outDiv=document.createElement('div'); outDiv.className='rmod-jacks-out';
-
-  if(hasIn){
-    const j=document.createElement('div'); j.className='rack-jack';
-    j.dataset.modId=mod.id; j.dataset.dir='in'; j.dataset.rackId=rack.id;
-    j.innerHTML=`<div class="rack-jack-dot jin" id="jdot_${mod.id}_in"></div><span class="rack-jack-lbl">in</span>`;
-    j.addEventListener('click',e=>{e.stopPropagation();rackJackClick(rack,mod.id,'in');});
-    inDiv.appendChild(j);
+  let jackSec;
+  if(mod.type==='abacus'){
+    // Horizontal wrap layout for Abacus — inputs (orange tint) + outputs in a single row
+    jackSec=document.createElement('div'); jackSec.className='abacus-jacks';
+    jackList.forEach((jk,i)=>{
+      // Separator before outputs section
+      if(i>0&&jk.dir==='out'&&jackList[i-1].dir==='in'){
+        const sep=document.createElement('div'); sep.className='abacus-jack-sep';
+        jackSec.appendChild(sep);
+      }
+      const j=document.createElement('div'); j.className='abacus-jack';
+      j.dataset.modId=mod.id; j.dataset.dir=jk.dir; j.dataset.rackId=rack.id;
+      const dotClass=jk.dir==='in'?'jin':'jout';
+      const dot=document.createElement('div'); dot.className=`rack-jack-dot ${dotClass}`; dot.id=`jdot_${mod.id}_${jk.name}`;
+      const lbl=document.createElement('div'); lbl.className='abacus-jack-lbl'; lbl.textContent=jk.label;
+      j.appendChild(dot); j.appendChild(lbl);
+      j.addEventListener('click',e=>{e.stopPropagation();rackJackClick(rack,mod.id,jk.dir,jk.name);});
+      jackSec.appendChild(j);
+    });
+  } else {
+    jackSec=document.createElement('div'); jackSec.className='rmod-jacks';
+    const inDiv=document.createElement('div'); inDiv.className='rmod-jacks-in';
+    const outDiv=document.createElement('div'); outDiv.className='rmod-jacks-out';
+    jackList.forEach(jk=>{
+      const j=document.createElement('div'); j.className='rack-jack';
+      j.dataset.modId=mod.id; j.dataset.dir=jk.dir; j.dataset.rackId=rack.id;
+      const dotClass=jk.dir==='in'?'jin':'jout';
+      if(jk.dir==='in'){
+        j.innerHTML=`<div class="rack-jack-dot ${dotClass}" id="jdot_${mod.id}_${jk.name}"></div><span class="rack-jack-lbl">${jk.label}</span>`;
+      } else {
+        j.innerHTML=`<span class="rack-jack-lbl">${jk.label}</span><div class="rack-jack-dot ${dotClass}" id="jdot_${mod.id}_${jk.name}"></div>`;
+      }
+      j.addEventListener('click',e=>{e.stopPropagation();rackJackClick(rack,mod.id,jk.dir,jk.name);});
+      (jk.dir==='in'?inDiv:outDiv).appendChild(j);
+    });
+    jackSec.appendChild(inDiv); jackSec.appendChild(outDiv);
   }
-  if(hasOut){
-    const j=document.createElement('div'); j.className='rack-jack';
-    j.dataset.modId=mod.id; j.dataset.dir='out'; j.dataset.rackId=rack.id;
-    j.innerHTML=`<span class="rack-jack-lbl">out</span><div class="rack-jack-dot jout" id="jdot_${mod.id}_out"></div>`;
-    j.addEventListener('click',e=>{e.stopPropagation();rackJackClick(rack,mod.id,'out');});
-    outDiv.appendChild(j);
-  }
-  jackSec.appendChild(inDiv); jackSec.appendChild(outDiv);
   el.appendChild(hdr); el.appendChild(body); el.appendChild(jackSec);
 
   makeDraggableMod(rack,el,mod,hdr);
@@ -3452,7 +3777,7 @@ function buildRackTile(rack,mod){
   });
 
   // Initialize controls (knobs, buttons, wave selectors)
-  if(mod.type!=='joog'&&mod.type!=='spkr'){
+  if(mod.type!=='joog'&&mod.type!=='spkr'&&mod.type!=='abacus'){
     el.querySelectorAll('.knob[data-param]').forEach(kEl=>{
       initKnob(kEl,v=>{mod.params[kEl.dataset.param]=v;rackLiveUpdateMod(rack,mod,kEl.dataset.param,v);});
     });
@@ -3526,13 +3851,15 @@ function rackLoadFromData(rack,data){
     rack._worldEl.insertBefore(tile,rack._svgEl);
   });
   (data.cables||[]).forEach(cd=>{
-    const cable={id:cd.id,fromMod:cd.fromMod,toMod:cd.toMod};
+    const fromJack=cd.fromJack||'out', toJack=cd.toJack||'in';
+    const cable={id:cd.id,fromMod:cd.fromMod,fromJack,toMod:cd.toMod,toJack};
     rack.cables.push(cable);
     const fn=rack._nodes.get(cd.fromMod),tn=rack._nodes.get(cd.toMod);
-    if(fn&&fn.output&&tn&&tn.input) try{fn.output.connect(tn.input);}catch(e){}
-    const od=document.getElementById('jdot_'+cd.fromMod+'_out');
+    const fo=rackNodeForJack(fn,'out',fromJack),ti=rackNodeForJack(tn,'in',toJack);
+    if(fo&&ti) try{fo.connect(ti);}catch(e){}
+    const od=document.getElementById('jdot_'+cd.fromMod+'_'+fromJack);
     if(od) od.classList.add('patched');
-    const id_=document.getElementById('jdot_'+cd.toMod+'_in');
+    const id_=document.getElementById('jdot_'+cd.toMod+'_'+toJack);
     if(id_) id_.classList.add('patched');
   });
   syncJoogBusDirect();
@@ -3652,7 +3979,7 @@ function buildModPickerModal(){
   closeBtn.addEventListener('click',closeModPicker); hdr.appendChild(closeBtn); box.appendChild(hdr);
 
   const cats=[
-    {label:'SPECIAL', types:['joog','spkr']},
+    {label:'SPECIAL', types:['joog','spkr','abacus']},
     {label:'SOURCES', types:['osc','osc2','noise','tubeosc','dfam']},
     {label:'CONTROL', types:['lfo','env']},
     {label:'EFFECTS', types:['filter','dist','delay','reverb','chorus','compress','bitcrush','panner','tremolo','ringmod','stereomix','reverberator','combfilter']},
