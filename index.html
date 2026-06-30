@@ -485,6 +485,84 @@
       width:10px; height:10px;
     }
     .abacus-jack-sep { width:1px; height:18px; background:rgba(255,153,51,0.15); margin:0 2px; }
+    /* ─── Swells Module ─── */
+    .rmod-swells .rmod-hdr { background:rgba(0,200,255,0.07); }
+    .rmod-swells .rmod-name-lbl { color:#00c8ff; }
+    .rmod-swells .rmod-body { padding:0; }
+    .sw-panel { display:flex; flex-direction:column; background:var(--surface); }
+    /* Sliders */
+    .sw-sliders { display:flex; gap:3px; padding:7px 8px 5px; border-bottom:1px solid rgba(0,200,255,0.1); }
+    .sw-fader-wrap { display:flex; flex-direction:column; align-items:center; flex:1; min-width:0; gap:3px; }
+    .sw-fader-lbl { font-size:5.5px; color:var(--text-muted); letter-spacing:0.04em; white-space:nowrap; text-transform:uppercase; }
+    .sw-fader-track {
+      width:6px; height:64px; background:rgba(255,255,255,0.07);
+      border-radius:3px; position:relative; cursor:pointer; user-select:none;
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .sw-fader-thumb {
+      width:14px; height:5px; background:#00c8ff; border-radius:2px;
+      position:absolute; left:50%; transform:translateX(-50%);
+      box-shadow:0 0 5px rgba(0,200,255,0.6); cursor:grab;
+    }
+    .sw-fader-led {
+      width:5px; height:5px; border-radius:50%;
+      background:#00c8ff; opacity:0.4;
+    }
+    /* Bottom controls */
+    .sw-bottom { display:flex; align-items:stretch; gap:0; border-bottom:1px solid rgba(0,200,255,0.08); }
+    .sw-col { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:5px 4px; gap:3px; }
+    .sw-col-sep { width:1px; background:rgba(0,200,255,0.08); flex-shrink:0; }
+    .sw-big-knob { width:32px; height:32px; border-radius:50%; border:2px solid rgba(0,200,255,0.4); background:rgba(0,200,255,0.07); position:relative; cursor:pointer; user-select:none; }
+    .sw-big-knob-tick { position:absolute; bottom:3px; left:50%; width:2px; height:8px; transform-origin:50% -4px; background:#00c8ff; transform:translateX(-50%) rotate(0deg); }
+    .sw-knob-lbl { font-size:6px; color:var(--text-muted); letter-spacing:0.06em; text-transform:uppercase; }
+    /* Model selector */
+    .sw-model-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; }
+    .sw-model-btn {
+      font-size:6px; padding:2px 3px; border:1px solid rgba(0,200,255,0.2);
+      background:transparent; color:var(--text-muted); cursor:pointer;
+      border-radius:2px; font-family:inherit; text-align:center; transition:all 0.1s;
+      white-space:nowrap;
+    }
+    .sw-model-btn.active { background:rgba(0,200,255,0.18); color:#00c8ff; border-color:#00c8ff; }
+    .sw-section-lbl { font-size:5.5px; color:rgba(0,200,255,0.5); letter-spacing:0.08em; text-transform:uppercase; }
+    /* LO-FI switch */
+    .sw-lofi-group { display:flex; flex-direction:column; gap:1px; }
+    .sw-lofi-btn {
+      font-size:5.5px; padding:1px 3px; border:1px solid rgba(0,200,255,0.2);
+      background:transparent; color:var(--text-muted); cursor:pointer;
+      border-radius:2px; font-family:inherit; transition:all 0.1s;
+    }
+    .sw-lofi-btn.active { background:rgba(0,200,255,0.18); color:#00c8ff; border-color:#00c8ff; }
+    /* FX buttons */
+    .sw-fx-row { display:flex; gap:3px; padding:4px 8px; background:rgba(0,0,0,0.15); }
+    .sw-fx-btn {
+      font-size:6px; padding:2px 5px; border:1px solid rgba(0,200,255,0.25);
+      background:rgba(0,0,0,0.3); color:var(--text-muted); cursor:pointer;
+      border-radius:3px; font-family:inherit; flex:1; text-align:center;
+      letter-spacing:0.04em; transition:all 0.12s;
+    }
+    .sw-fx-btn.active { border-color:#00c8ff; color:#00c8ff; background:rgba(0,200,255,0.15); }
+    /* SWELL knob (small) */
+    .sw-sm-knob { width:22px; height:22px; border-radius:50%; border:2px solid rgba(0,200,255,0.35); background:rgba(0,200,255,0.06); position:relative; cursor:pointer; user-select:none; }
+    .sw-sm-knob-tick { position:absolute; bottom:2px; left:50%; width:2px; height:6px; transform-origin:50% -3px; background:#00c8ff; transform:translateX(-50%) rotate(0deg); }
+    /* SWELL LED */
+    .sw-swell-led { width:7px; height:7px; border-radius:50%; background:#00c8ff; opacity:0.15; box-shadow:0 0 4px #00c8ff; transition:none; }
+    /* Swell mode btn */
+    .sw-mode-btn {
+      font-size:5.5px; padding:2px 4px; border:1px solid rgba(0,200,255,0.25);
+      background:transparent; color:var(--text-muted); cursor:pointer;
+      border-radius:2px; font-family:inherit; letter-spacing:0.04em;
+    }
+    .sw-mode-btn.active { color:#00c8ff; border-color:#00c8ff; background:rgba(0,200,255,0.12); }
+    /* Jack section reuse */
+    .sw-jacks {
+      background:rgba(0,0,0,0.25); border-top:1px solid rgba(0,200,255,0.1);
+      padding:5px 8px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;
+    }
+    .sw-jack { display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; }
+    .sw-jack-lbl { font-size:6px; letter-spacing:0.04em; color:var(--text-muted); white-space:nowrap; }
+    .sw-jack .rack-jack-dot { width:10px; height:10px; }
+    .sw-jack-sep { width:1px; height:18px; background:rgba(0,200,255,0.12); margin:0 2px; }
     /* Module picker */
     .mod-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;align-items:center;justify-content:center; }
     .mod-picker-overlay.open { display:flex; }
@@ -1354,6 +1432,15 @@ const MOD_DEFS = {
   dfam:        {label:'DFAM',         cat:'source', color:'#ff4488', defaults:{tempo:120, vco1:80, vco2:160, noiseMix:20, cutoff:800, resonance:50, decay:250, steps:'10010110'}},
   joog:        {label:'Joog',         cat:'special', color:'#ff71ce', defaults:{}},
   spkr:        {label:'Speaker',      cat:'special', color:'#05ffa1', defaults:{}},
+  swells:      {label:'Swells',        cat:'special', color:'#00c8ff', defaults:{
+    predly:20, size:55, decay:60, lodamp:80, hidamp:70,
+    ebb:50, flow:50, eq:50,
+    input:70, mix:50,
+    modelBank:'X', modelNum:'1', lofi:'OFF',
+    freeze:false, reverse:false, burst:false,
+    rise:30, fall:40, thresh:30,
+    swellMode:'oneshot', swellSrc:'IN',
+  }},
   abacus:      {label:'Abacus',       cat:'special', color:'#ff9933', defaults:{
     ch1Rise:30,ch1Fall:40,ch1Resp:50,ch1Cycle:false,
     ch2Atten:50,
@@ -1374,6 +1461,16 @@ const RACK_JACK_DEFS = {
   ringmod:['in','out'], vol:['in','out'], stereomix:['in','out'],
   reverberator:['in','out'], combfilter:['in','out'],
   joog:['out'], spkr:['in'],
+  swells:[
+    {dir:'in',  name:'inL',   label:'IN L'},
+    {dir:'in',  name:'inR',   label:'IN R'},
+    {dir:'in',  name:'trig',  label:'TRIG'},
+    {dir:'in',  name:'sc',    label:'SC'},
+    {dir:'in',  name:'level', label:'LVL'},
+    {dir:'out', name:'swOut', label:'SWELL'},
+    {dir:'out', name:'outL',  label:'OUT L'},
+    {dir:'out', name:'outR',  label:'OUT R'},
+  ],
   abacus:[
     {dir:'in', name:'trig1',  label:'T1'},
     {dir:'in', name:'trig4',  label:'T4'},
@@ -3252,7 +3349,7 @@ function makeRack(name){
 
 function makeRackMod(type,x,y){
   const def=MOD_DEFS[type]||{};
-  const w=type==='joog'?860:type==='abacus'?300:null;
+  const w=type==='joog'?860:type==='abacus'?300:type==='swells'?380:null;
   return {
     id:'rm_'+(++rackIdSeq)+'_'+Math.random().toString(36).slice(2,5),
     type, x:x||80, y:y||80,
@@ -3470,6 +3567,386 @@ function buildAbacusBody(mod,body,rack){
   body.appendChild(panel);
 }
 
+// ═══════════════════════════════════════════════════════════
+// SWELLS MODULE
+// ═══════════════════════════════════════════════════════════
+
+const SWELLS_MODEL_DELAYS = {
+  'X1':[29.7,37.1,41.1,43.7], 'X2':[31.0,38.8,45.0,53.1],
+  'X3':[40.0,49.0,57.0,68.0], 'Y1':[20.0,25.3,29.1,34.0],
+  'Y2':[25.0,50.0,75.0,100.0],'Y3':[45.0,45.4,45.9,46.3],
+  'Z1':[29.7,37.1,41.1,43.7], 'Z2':[24.3,36.5,48.6,60.8],
+  'Z3':[30.0,60.0,90.0,120.0],
+};
+
+function swellsInitNodes(ctx,rack,mod){
+  const p=mod.params;
+
+  // Input nodes (stereo)
+  const inGainL=ctx.createGain(); inGainL.gain.value=1;
+  const inGainR=ctx.createGain(); inGainR.gain.value=1;
+  const inSum=ctx.createGain(); inSum.gain.value=0.5;
+  inGainL.connect(inSum); inGainR.connect(inSum);
+
+  // Reverb send path: INPUT knob → pre-delay → freeze gate
+  const inputGain=ctx.createGain(); inputGain.gain.value=(p.input??70)/100;
+  inSum.connect(inputGain);
+  const preDelay=ctx.createDelay(1.0); preDelay.delayTime.value=(p.predly??20)/1000;
+  inputGain.connect(preDelay);
+  const reverbSend=ctx.createGain(); reverbSend.gain.value=1;
+  preDelay.connect(reverbSend);
+
+  // Helper accessors from mod.params
+  const getBase=()=>SWELLS_MODEL_DELAYS[(p.modelBank||'X')+(p.modelNum||'1')]||SWELLS_MODEL_DELAYS['X1'];
+  const getSS=()=>0.3+((p.size??55)/100)*2.2;
+  const getFb=()=>p.freeze?0.9999:0.2+((p.decay??60)/100)*0.77;
+  const getHiCut=()=>300*Math.pow(60,(p.hidamp??70)/100);
+
+  // 4 comb filters in parallel (Schroeder reverb)
+  const combs=getBase().map(bt=>{
+    const delay=ctx.createDelay(3.0);
+    delay.delayTime.value=bt*getSS()/1000;
+    const lpf=ctx.createBiquadFilter(); lpf.type='lowpass'; lpf.frequency.value=getHiCut(); lpf.Q.value=0.4;
+    const fb=ctx.createGain(); fb.gain.value=getFb();
+    reverbSend.connect(delay);
+    delay.connect(lpf); lpf.connect(fb); fb.connect(delay);
+    return {delay,lpf,fb};
+  });
+
+  // Sum combs → 2 allpass diffusers
+  const combSum=ctx.createGain(); combSum.gain.value=0.25;
+  combs.forEach(c=>c.delay.connect(combSum));
+  const ap1=ctx.createBiquadFilter(); ap1.type='allpass'; ap1.frequency.value=225; ap1.Q.value=1;
+  const ap2=ctx.createBiquadFilter(); ap2.type='allpass'; ap2.frequency.value=556; ap2.Q.value=1;
+  combSum.connect(ap1); ap1.connect(ap2);
+
+  // LO-FI waveshaper (soft saturation)
+  function makeLofiCurve(drive){
+    const n=256,c=new Float32Array(n);
+    for(let i=0;i<n;i++){const x=(i*2)/n-1;c[i]=drive>0?Math.tanh(x*(1+drive*3))/Math.tanh(1+drive*3):x;}
+    return c;
+  }
+  const lofiWS=ctx.createWaveShaper();
+  lofiWS.curve=makeLofiCurve(p.lofi==='MIN'?0.5:p.lofi==='MAX'?2.0:0);
+  ap2.connect(lofiWS);
+
+  // EQ tilt filter (high-shelf, bipolar)
+  const eqFilter=ctx.createBiquadFilter();
+  eqFilter.type='highshelf'; eqFilter.frequency.value=1000;
+  eqFilter.gain.value=((p.eq??50)-50)/50*8;
+  lofiWS.connect(eqFilter);
+
+  // Equal-power wet/dry mix
+  const mn=(p.mix??50)/100;
+  const wetL=ctx.createGain(); wetL.gain.value=Math.sin(mn*Math.PI/2);
+  const wetR=ctx.createGain(); wetR.gain.value=Math.sin(mn*Math.PI/2);
+  const dryL=ctx.createGain(); dryL.gain.value=Math.cos(mn*Math.PI/2);
+  const dryR=ctx.createGain(); dryR.gain.value=Math.cos(mn*Math.PI/2);
+  const spreadDelay=ctx.createDelay(0.02); spreadDelay.delayTime.value=0.007;
+  eqFilter.connect(wetL);
+  eqFilter.connect(spreadDelay); spreadDelay.connect(wetR);
+  inGainL.connect(dryL); inGainR.connect(dryR);
+
+  const outL=ctx.createGain(); outL.gain.value=1;
+  const outR=ctx.createGain(); outR.gain.value=1;
+  wetL.connect(outL); dryL.connect(outL);
+  wetR.connect(outR); dryR.connect(outR);
+
+  // SWELL envelope CV output (0-0.5 normalized = 0-5V)
+  const swellOut=ctx.createConstantSource(); swellOut.offset.value=0; swellOut.start();
+
+  // Analysers for SWELL source (IN or OUT)
+  const swAnlIn=ctx.createAnalyser(); swAnlIn.fftSize=32;
+  const swAnlOut=ctx.createAnalyser(); swAnlOut.fftSize=32;
+  inSum.connect(swAnlIn); swAnlIn.connect(ctx.destination);
+  outL.connect(swAnlOut); swAnlOut.connect(ctx.destination);
+  const swBuf=new Float32Array(32);
+
+  // BURST noise buffer (shaped burst)
+  const noiseLen=Math.floor(ctx.sampleRate*0.3);
+  const noiseBuf=ctx.createBuffer(1,noiseLen,ctx.sampleRate);
+  const nd=noiseBuf.getChannelData(0);
+  for(let i=0;i<noiseLen;i++) nd[i]=(Math.random()*2-1)*Math.exp(-i/noiseLen*6);
+  const burstGain=ctx.createGain(); burstGain.gain.value=0.35; burstGain.connect(reverbSend);
+  let noiseSrc=null;
+
+  // LFO for wow/flutter (FLOW param)
+  const wowLFO=ctx.createOscillator(); wowLFO.frequency.value=0.7;
+  const wowGain=ctx.createGain(); wowGain.gain.value=0;
+  wowLFO.connect(wowGain); wowLFO.start();
+  combs.forEach(c=>wowGain.connect(c.delay.delayTime));
+
+  // REVERSE: feedback delay with inverted phase
+  const revDelay=ctx.createDelay(0.5); revDelay.delayTime.value=0.12;
+  const revGain=ctx.createGain(); revGain.gain.value=0;
+  const revInv=ctx.createGain(); revInv.gain.value=-0.9;
+  eqFilter.connect(revInv); revInv.connect(revDelay);
+  revDelay.connect(revGain); revGain.connect(reverbSend);
+
+  // SWELL envelope state
+  const swState={s:'idle',startMs:0,voltage:0,prevAbove:false};
+  let dead=false,ticker=null;
+
+  function updateParams(){
+    const p=mod.params;
+    const base=SWELLS_MODEL_DELAYS[(p.modelBank||'X')+(p.modelNum||'1')]||SWELLS_MODEL_DELAYS['X1'];
+    const ss=0.3+((p.size??55)/100)*2.2;
+    const newFb=p.freeze?0.9999:0.2+((p.decay??60)/100)*0.77;
+    const hiCut=300*Math.pow(60,(p.hidamp??70)/100);
+    combs.forEach((c,i)=>{
+      c.delay.delayTime.value=Math.max(0.001,Math.min(2.9,base[i]*ss/1000));
+      c.lpf.frequency.value=hiCut; c.fb.gain.value=newFb;
+    });
+    preDelay.delayTime.value=Math.min(0.25,(p.predly??20)/1000);
+    inputGain.gain.value=(p.input??70)/100;
+    reverbSend.gain.value=p.freeze?0:1;
+    const mn2=(p.mix??50)/100;
+    wetL.gain.value=wetR.gain.value=Math.sin(mn2*Math.PI/2);
+    dryL.gain.value=dryR.gain.value=Math.cos(mn2*Math.PI/2);
+    eqFilter.gain.value=((p.eq??50)-50)/50*8;
+    lofiWS.curve=makeLofiCurve(p.lofi==='MIN'?0.5:p.lofi==='MAX'?2.0:0);
+    ap1.Q.value=ap2.Q.value=((p.ebb??50)/100)*4;
+    wowGain.gain.value=((p.flow??50)/100)*0.00015;
+    revGain.gain.value=p.reverse?0.55:0;
+  }
+
+  function swellTick(){
+    if(dead) return;
+    const nowMs=performance.now();
+    const p=mod.params;
+    const anl=p.swellSrc==='OUT'?swAnlOut:swAnlIn;
+    anl.getFloatTimeDomainData(swBuf);
+    let peak=0; for(let i=0;i<32;i++) if(Math.abs(swBuf[i])>peak) peak=Math.abs(swBuf[i]);
+    const thresh=(p.thresh??30)/100*0.7;
+    const riseMs=10*Math.pow(500,(p.rise??30)/100);
+    const fallMs=10*Math.pow(500,(p.fall??40)/100);
+    const above=peak>thresh;
+    const mode=p.swellMode||'oneshot';
+    if(mode==='follow'){
+      swState.voltage=peak*5;
+    } else if(mode==='gated'){
+      swState.voltage=above?5:0;
+    } else if(mode==='oneshot'||mode==='looping'){
+      if(above&&!swState.prevAbove&&swState.s==='idle'){swState.s='rising';swState.startMs=nowMs;}
+      if(swState.s==='rising'){
+        const t=(nowMs-swState.startMs)/riseMs;
+        if(t>=1){swState.voltage=5;swState.s='falling';swState.startMs=nowMs;}
+        else swState.voltage=5*(1-Math.exp(-5*t))/(1-Math.exp(-5));
+      } else if(swState.s==='falling'){
+        const t=(nowMs-swState.startMs)/fallMs;
+        if(t>=1){swState.voltage=0;swState.s=mode==='looping'?'rising':'idle';swState.startMs=nowMs;}
+        else swState.voltage=5*Math.pow(1-t,2);
+      } else swState.voltage=0;
+    }
+    swState.prevAbove=above;
+    swellOut.offset.value=swState.voltage/10;
+    updateParams();
+    const tile=document.getElementById('rmod_'+mod.id);
+    if(tile){const led=tile.querySelector('.sw-swell-led');if(led) led.style.opacity=0.1+swState.voltage/5*0.9;}
+    ticker=setTimeout(swellTick,32);
+  }
+  ticker=setTimeout(swellTick,32);
+
+  mod._swellTrigFn=()=>{if(swState.s==='idle'){swState.s='rising';swState.startMs=performance.now();}};
+  mod._burstFn=()=>{
+    if(noiseSrc) try{noiseSrc.stop();}catch(_){}
+    noiseSrc=ctx.createBufferSource(); noiseSrc.buffer=noiseBuf;
+    noiseSrc.connect(burstGain); noiseSrc.start(); noiseSrc.stop(ctx.currentTime+0.3);
+  };
+
+  rack._nodes.set(mod.id,{
+    input:inGainL, output:outL,
+    _inputs:{inL:inGainL,inR:inGainR,trig:inGainL,sc:inGainL,level:inputGain},
+    _outputs:{swOut:swellOut,outL,outR},
+    _updateParams:updateParams,
+    cleanup:()=>{
+      dead=true; if(ticker) clearTimeout(ticker);
+      try{swellOut.stop();}catch(_){} try{wowLFO.stop();}catch(_){}
+      if(noiseSrc) try{noiseSrc.stop();}catch(_){}
+      [inGainL,inGainR,inSum,inputGain,preDelay,reverbSend,combSum,ap1,ap2,
+       lofiWS,eqFilter,wetL,wetR,dryL,dryR,spreadDelay,outL,outR,
+       wowGain,revDelay,revGain,revInv,swAnlIn,swAnlOut,burstGain
+      ].forEach(n=>{try{n.disconnect();}catch(_){}});
+      combs.forEach(c=>{try{c.delay.disconnect();c.lpf.disconnect();c.fb.disconnect();}catch(_){}});
+    }
+  });
+}
+
+function buildSwellsBody(mod,body,rack){
+  const p=mod.params;
+  const panel=document.createElement('div'); panel.className='sw-panel';
+
+  // ─── 8 vertical faders ───
+  const slidersRow=document.createElement('div'); slidersRow.className='sw-sliders';
+  const FADERS=[
+    {lbl:'PREDLY',param:'predly',init:20},
+    {lbl:'SIZE',  param:'size',  init:55},
+    {lbl:'DECAY', param:'decay', init:60},
+    {lbl:'LO-D',  param:'lodamp',init:80},
+    {lbl:'HI-D',  param:'hidamp',init:70},
+    {lbl:'EBB',   param:'ebb',   init:50},
+    {lbl:'FLOW',  param:'flow',  init:50},
+    {lbl:'EQ',    param:'eq',    init:50},
+  ];
+  FADERS.forEach(({lbl,param,init})=>{
+    const wrap=document.createElement('div'); wrap.className='sw-fader-wrap';
+    const label=document.createElement('div'); label.className='sw-fader-lbl'; label.textContent=lbl;
+    const track=document.createElement('div'); track.className='sw-fader-track';
+    const thumb=document.createElement('div'); thumb.className='sw-fader-thumb';
+    const led=document.createElement('div'); led.className='sw-fader-led';
+    const TH=64,TH2=5;
+    let cur=p[param]??init;
+    function setV(v){cur=Math.max(0,Math.min(100,v));p[param]=cur;thumb.style.top=((1-cur/100)*(TH-TH2))+'px';}
+    setV(cur);
+    let sy,sv;
+    thumb.addEventListener('mousedown',e=>{sy=e.clientY;sv=cur;e.preventDefault();e.stopPropagation();
+      const mv=ev=>setV(sv+(sy-ev.clientY)/TH*100);
+      const up=()=>{window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
+      window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);
+    });
+    track.addEventListener('click',e=>{if(e.target===thumb)return;const r=track.getBoundingClientRect();setV(100*(1-(e.clientY-r.top)/r.height));});
+    track.addEventListener('dblclick',()=>setV(init));
+    track.appendChild(thumb);
+    wrap.appendChild(label); wrap.appendChild(track); wrap.appendChild(led);
+    slidersRow.appendChild(wrap);
+  });
+
+  // ─── Bottom controls ───
+  const bottom=document.createElement('div'); bottom.className='sw-bottom';
+
+  function makeBigKnob(lbl,param,init){
+    const col=document.createElement('div'); col.className='sw-col';
+    const knob=document.createElement('div'); knob.className='sw-big-knob';
+    const tick=document.createElement('div'); tick.className='sw-big-knob-tick'; knob.appendChild(tick);
+    const lb=document.createElement('div'); lb.className='sw-knob-lbl'; lb.textContent=lbl;
+    let cur=p[param]??init;
+    function setV(v){cur=Math.max(0,Math.min(100,v));p[param]=cur;tick.style.transform=`translateX(-50%) rotate(${-135+cur*2.7}deg)`;}
+    setV(cur);
+    let sy,sv;
+    knob.addEventListener('mousedown',e=>{sy=e.clientY;sv=cur;e.preventDefault();e.stopPropagation();
+      const mv=ev=>setV(sv-(ev.clientY-sy)*1.2);
+      const up=()=>{window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
+      window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);
+    });
+    knob.addEventListener('dblclick',()=>setV(init));
+    col.appendChild(knob); col.appendChild(lb);
+    return col;
+  }
+
+  function makeSmKnob(lbl,param,init){
+    const w=document.createElement('div'); w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:1px;';
+    const k=document.createElement('div'); k.className='sw-sm-knob';
+    const t=document.createElement('div'); t.className='sw-sm-knob-tick'; k.appendChild(t);
+    const lb=document.createElement('div'); lb.className='sw-knob-lbl'; lb.style.fontSize='5.5px'; lb.textContent=lbl;
+    let cur=p[param]??init;
+    function setV(v){cur=Math.max(0,Math.min(100,v));p[param]=cur;t.style.transform=`translateX(-50%) rotate(${-135+cur*2.7}deg)`;}
+    setV(cur);
+    let sy,sv;
+    k.addEventListener('mousedown',e=>{sy=e.clientY;sv=cur;e.preventDefault();e.stopPropagation();
+      const mv=ev=>setV(sv-(ev.clientY-sy)*1.2);
+      const up=()=>{window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
+      window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);
+    });
+    k.addEventListener('dblclick',()=>setV(init));
+    w.appendChild(k); w.appendChild(lb);
+    return w;
+  }
+
+  // INPUT knob
+  bottom.appendChild(makeBigKnob('INPUT','input',70));
+  const sep1=document.createElement('div'); sep1.className='sw-col-sep'; bottom.appendChild(sep1);
+
+  // Center column
+  const center=document.createElement('div'); center.className='sw-col'; center.style.cssText='flex:1;gap:3px;padding:4px 6px;';
+
+  // MODEL + LO-FI row
+  const modelRow=document.createElement('div'); modelRow.style.cssText='display:flex;gap:4px;align-items:flex-start;width:100%;';
+
+  // Bank X/Y/Z
+  const bankWrap=document.createElement('div');
+  const bankLbl=document.createElement('div'); bankLbl.className='sw-section-lbl'; bankLbl.textContent='MDL';
+  bankWrap.appendChild(bankLbl);
+  const bankBtns=document.createElement('div'); bankBtns.style.cssText='display:flex;flex-direction:column;gap:1px;';
+  ['X','Y','Z'].forEach(b=>{
+    const btn=document.createElement('button'); btn.className='sw-model-btn'+(p.modelBank===b?' active':''); btn.textContent=b;
+    btn.addEventListener('click',()=>{p.modelBank=b;bankBtns.querySelectorAll('.sw-model-btn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');});
+    bankBtns.appendChild(btn);
+  }); bankWrap.appendChild(bankBtns);
+
+  // Number 1/2/3
+  const numBtns=document.createElement('div'); numBtns.style.cssText='display:flex;flex-direction:column;gap:1px;margin-top:12px;';
+  ['1','2','3'].forEach(n=>{
+    const btn=document.createElement('button'); btn.className='sw-model-btn'+(p.modelNum===n?' active':''); btn.textContent=n;
+    btn.addEventListener('click',()=>{p.modelNum=n;numBtns.querySelectorAll('.sw-model-btn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');});
+    numBtns.appendChild(btn);
+  });
+
+  // LO-FI
+  const lofiWrap=document.createElement('div');
+  const lofiLbl=document.createElement('div'); lofiLbl.className='sw-section-lbl'; lofiLbl.textContent='LOFI';
+  lofiWrap.appendChild(lofiLbl);
+  const lofiBtns=document.createElement('div'); lofiBtns.style.cssText='display:flex;flex-direction:column;gap:1px;';
+  ['OFF','MIN','MAX'].forEach(lf=>{
+    const btn=document.createElement('button'); btn.className='sw-lofi-btn'+(p.lofi===lf?' active':''); btn.textContent=lf;
+    btn.addEventListener('click',()=>{p.lofi=lf;lofiBtns.querySelectorAll('.sw-lofi-btn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');});
+    lofiBtns.appendChild(btn);
+  }); lofiWrap.appendChild(lofiBtns);
+
+  modelRow.appendChild(bankWrap); modelRow.appendChild(numBtns); modelRow.appendChild(lofiWrap);
+  center.appendChild(modelRow);
+
+  // SWELL row: RISE | [SRC+LED+SWELL+MODE] | THRESH | FALL
+  const swRow=document.createElement('div'); swRow.style.cssText='display:flex;gap:3px;align-items:center;border-top:1px solid rgba(0,200,255,0.1);padding-top:3px;width:100%;';
+  swRow.appendChild(makeSmKnob('RISE','rise',30));
+
+  const swCtrl=document.createElement('div'); swCtrl.style.cssText='display:flex;flex-direction:column;align-items:center;gap:1px;flex:1;';
+  // Source switch
+  const srcRow=document.createElement('div'); srcRow.style.cssText='display:flex;gap:1px;';
+  ['IN','SC','OUT'].forEach(src=>{
+    const btn=document.createElement('button'); btn.className='sw-lofi-btn'+(p.swellSrc===src?' active':''); btn.style.cssText='font-size:5px;padding:1px 2px;'; btn.textContent=src;
+    btn.addEventListener('click',()=>{p.swellSrc=src;srcRow.querySelectorAll('.sw-lofi-btn').forEach(x=>x.classList.remove('active'));btn.classList.add('active');});
+    srcRow.appendChild(btn);
+  });
+  const swLED=document.createElement('div'); swLED.className='sw-swell-led';
+  // SWELL trigger button
+  const swBtn=document.createElement('button'); swBtn.className='sw-mode-btn'; swBtn.textContent='SWELL'; swBtn.style.width='100%';
+  swBtn.addEventListener('mousedown',()=>{if(mod._swellTrigFn) mod._swellTrigFn();});
+  // MODE cycle button
+  const SWELL_MODES=['oneshot','looping','follow','gated'];
+  const SWELL_MODE_LBLS={oneshot:'1-SHOT',looping:'LOOP',follow:'FOLLOW',gated:'GATED'};
+  const modeBtn=document.createElement('button'); modeBtn.className='sw-mode-btn'; modeBtn.style.width='100%';
+  modeBtn.textContent=SWELL_MODE_LBLS[p.swellMode||'oneshot']||'1-SHOT';
+  modeBtn.addEventListener('click',()=>{
+    const i=SWELL_MODES.indexOf(p.swellMode||'oneshot');
+    p.swellMode=SWELL_MODES[(i+1)%SWELL_MODES.length];
+    modeBtn.textContent=SWELL_MODE_LBLS[p.swellMode];
+  });
+  swCtrl.appendChild(srcRow); swCtrl.appendChild(swLED); swCtrl.appendChild(swBtn); swCtrl.appendChild(modeBtn);
+
+  swRow.appendChild(swCtrl);
+  swRow.appendChild(makeSmKnob('THRS','thresh',30));
+  swRow.appendChild(makeSmKnob('FALL','fall',40));
+  center.appendChild(swRow);
+
+  bottom.appendChild(center);
+  const sep2=document.createElement('div'); sep2.className='sw-col-sep'; bottom.appendChild(sep2);
+  bottom.appendChild(makeBigKnob('MIX','mix',50));
+
+  // ─── FX buttons ───
+  const fxRow=document.createElement('div'); fxRow.className='sw-fx-row';
+  const frzBtn=document.createElement('button'); frzBtn.className='sw-fx-btn'+(p.freeze?' active':''); frzBtn.textContent='FREEZE';
+  frzBtn.addEventListener('click',()=>{p.freeze=!p.freeze;frzBtn.classList.toggle('active',p.freeze);});
+  const revBtn=document.createElement('button'); revBtn.className='sw-fx-btn'+(p.reverse?' active':''); revBtn.textContent='REVERSE';
+  revBtn.addEventListener('click',()=>{p.reverse=!p.reverse;revBtn.classList.toggle('active',p.reverse);});
+  const brstBtn=document.createElement('button'); brstBtn.className='sw-fx-btn'; brstBtn.textContent='BURST';
+  brstBtn.addEventListener('mousedown',()=>{if(mod._burstFn) mod._burstFn();brstBtn.classList.add('active');});
+  brstBtn.addEventListener('mouseup',()=>brstBtn.classList.remove('active'));
+  fxRow.appendChild(frzBtn); fxRow.appendChild(revBtn); fxRow.appendChild(brstBtn);
+
+  panel.appendChild(slidersRow); panel.appendChild(bottom); panel.appendChild(fxRow);
+  body.appendChild(panel);
+}
+
 function rackInitModNodes(ctx,rack,mod){
   if(mod.type==='joog'){
     rack._nodes.set(mod.id,{input:null,output:getJoogOutputBus(),cleanup:null});
@@ -3497,6 +3974,10 @@ function rackInitModNodes(ctx,rack,mod){
   }
   if(mod.type==='abacus'){
     abacusInitNodes(ctx,rack,mod);
+    return;
+  }
+  if(mod.type==='swells'){
+    swellsInitNodes(ctx,rack,mod);
     return;
   }
   const nodes=createModuleNodes(ctx,mod,440);
@@ -3690,7 +4171,8 @@ function buildRackTile(rack,mod){
   el.className='rmod'+
     (mod.type==='spkr'?' rmod-spkr':'')+
     (mod.type==='joog'?' rmod-joog-tile':'')+
-    (mod.type==='abacus'?' rmod-abacus':'');
+    (mod.type==='abacus'?' rmod-abacus':'')+
+    (mod.type==='swells'?' rmod-swells':'');
   el.id='rmod_'+mod.id; el.dataset.modId=mod.id;
   el.style.left=mod.x+'px'; el.style.top=mod.y+'px';
   if(mod.w) el.style.width=mod.w+'px';
@@ -3714,25 +4196,30 @@ function buildRackTile(rack,mod){
     body.innerHTML='🔊';
   } else if(mod.type==='abacus'){
     buildAbacusBody(mod,body,rack);
+  } else if(mod.type==='swells'){
+    buildSwellsBody(mod,body,rack);
   } else {
     body.innerHTML=buildModBody(mod);
   }
 
   let jackSec;
-  if(mod.type==='abacus'){
-    // Horizontal wrap layout for Abacus — inputs (orange tint) + outputs in a single row
-    jackSec=document.createElement('div'); jackSec.className='abacus-jacks';
+  if(mod.type==='abacus'||mod.type==='swells'){
+    const isSwells=mod.type==='swells';
+    const jackCls=isSwells?'sw-jacks':'abacus-jacks';
+    const itemCls=isSwells?'sw-jack':'abacus-jack';
+    const lblCls=isSwells?'sw-jack-lbl':'abacus-jack-lbl';
+    const sepCls=isSwells?'sw-jack-sep':'abacus-jack-sep';
+    jackSec=document.createElement('div'); jackSec.className=jackCls;
     jackList.forEach((jk,i)=>{
-      // Separator before outputs section
       if(i>0&&jk.dir==='out'&&jackList[i-1].dir==='in'){
-        const sep=document.createElement('div'); sep.className='abacus-jack-sep';
+        const sep=document.createElement('div'); sep.className=sepCls;
         jackSec.appendChild(sep);
       }
-      const j=document.createElement('div'); j.className='abacus-jack';
+      const j=document.createElement('div'); j.className=itemCls;
       j.dataset.modId=mod.id; j.dataset.dir=jk.dir; j.dataset.rackId=rack.id;
       const dotClass=jk.dir==='in'?'jin':'jout';
       const dot=document.createElement('div'); dot.className=`rack-jack-dot ${dotClass}`; dot.id=`jdot_${mod.id}_${jk.name}`;
-      const lbl=document.createElement('div'); lbl.className='abacus-jack-lbl'; lbl.textContent=jk.label;
+      const lbl=document.createElement('div'); lbl.className=lblCls; lbl.textContent=jk.label;
       j.appendChild(dot); j.appendChild(lbl);
       j.addEventListener('click',e=>{e.stopPropagation();rackJackClick(rack,mod.id,jk.dir,jk.name);});
       jackSec.appendChild(j);
@@ -3777,7 +4264,7 @@ function buildRackTile(rack,mod){
   });
 
   // Initialize controls (knobs, buttons, wave selectors)
-  if(mod.type!=='joog'&&mod.type!=='spkr'&&mod.type!=='abacus'){
+  if(mod.type!=='joog'&&mod.type!=='spkr'&&mod.type!=='abacus'&&mod.type!=='swells'){
     el.querySelectorAll('.knob[data-param]').forEach(kEl=>{
       initKnob(kEl,v=>{mod.params[kEl.dataset.param]=v;rackLiveUpdateMod(rack,mod,kEl.dataset.param,v);});
     });
@@ -3979,7 +4466,7 @@ function buildModPickerModal(){
   closeBtn.addEventListener('click',closeModPicker); hdr.appendChild(closeBtn); box.appendChild(hdr);
 
   const cats=[
-    {label:'SPECIAL', types:['joog','spkr','abacus']},
+    {label:'SPECIAL', types:['joog','spkr','abacus','swells']},
     {label:'SOURCES', types:['osc','osc2','noise','tubeosc','dfam']},
     {label:'CONTROL', types:['lfo','env']},
     {label:'EFFECTS', types:['filter','dist','delay','reverb','chorus','compress','bitcrush','panner','tremolo','ringmod','stereomix','reverberator','combfilter']},
