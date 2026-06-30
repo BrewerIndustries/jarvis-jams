@@ -3207,7 +3207,9 @@ function rackInitModNodes(ctx,rack,mod){
     return;
   }
   if(mod.type==='spkr'){
-    rack._nodes.set(mod.id,{input:getMasterAnalyser(),output:null,cleanup:null});
+    const g=ctx.createGain(); g.gain.value=1;
+    g.connect(getMasterAnalyser());
+    rack._nodes.set(mod.id,{input:g,output:null,cleanup:()=>{try{g.disconnect();}catch(_){}}});
     return;
   }
   if(mod.type==='lfo'){
