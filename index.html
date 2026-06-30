@@ -563,6 +563,59 @@
     .sw-jack-lbl { font-size:6px; letter-spacing:0.04em; color:var(--text-muted); white-space:nowrap; }
     .sw-jack .rack-jack-dot { width:10px; height:10px; }
     .sw-jack-sep { width:1px; height:18px; background:rgba(0,200,255,0.12); margin:0 2px; }
+    /* CAPTURE module */
+    .rmod-capture .rmod-hdr { background:rgba(57,255,20,0.07); }
+    .rmod-capture .rmod-name-lbl { color:#39ff14; }
+    .rmod-capture .rmod-body { padding:0; }
+    .cap-panel { display:flex; flex-direction:column; padding:8px; gap:6px; background:var(--surface); }
+    .cap-section-lbl { font-size:5.5px; color:rgba(57,255,20,0.5); letter-spacing:0.08em; text-transform:uppercase; }
+    .cap-mode-row { display:flex; gap:4px; }
+    .cap-mode-btn {
+      font-size:7px; padding:3px 0; border:1px solid rgba(57,255,20,0.25);
+      background:transparent; color:var(--text-muted); cursor:pointer;
+      border-radius:3px; font-family:inherit; letter-spacing:0.06em; flex:1; text-align:center;
+      transition:all 0.1s;
+    }
+    .cap-mode-btn.active { background:rgba(57,255,20,0.15); color:#39ff14; border-color:#39ff14; }
+    .cap-device-row { display:flex; align-items:center; gap:4px; }
+    .cap-device-sel {
+      flex:1; min-width:0; font-size:7px; padding:3px 4px;
+      background:rgba(255,255,255,0.05); color:var(--text-dim); border:1px solid rgba(57,255,20,0.2);
+      border-radius:3px; font-family:inherit; cursor:pointer; outline:none;
+      -webkit-appearance:none; appearance:none;
+    }
+    .cap-device-sel option { background:#1a1a2e; color:#ccc; }
+    .cap-refresh-btn {
+      font-size:11px; padding:1px 6px; border:1px solid rgba(57,255,20,0.2);
+      background:transparent; color:rgba(57,255,20,0.7); cursor:pointer;
+      border-radius:3px; font-family:inherit; flex-shrink:0; line-height:1.4;
+    }
+    .cap-status-row { display:flex; align-items:center; gap:6px; }
+    .cap-led {
+      width:7px; height:7px; border-radius:50%; flex-shrink:0;
+      background:rgba(57,255,20,0.15); border:1px solid rgba(57,255,20,0.3);
+      transition:background 0.2s, box-shadow 0.2s;
+    }
+    .cap-led.active { background:#39ff14; box-shadow:0 0 6px #39ff14; border-color:#39ff14; }
+    .cap-led.error  { background:#ff4444; box-shadow:0 0 6px #ff4444; border-color:#ff4444; }
+    .cap-status-txt { font-size:7px; color:var(--text-muted); letter-spacing:0.06em; }
+    .cap-arm-btn {
+      width:100%; padding:6px; font-size:9px; letter-spacing:0.1em;
+      border:1px solid rgba(57,255,20,0.4); background:rgba(57,255,20,0.08);
+      color:#39ff14; cursor:pointer; border-radius:4px; font-family:inherit;
+      transition:all 0.15s;
+    }
+    .cap-arm-btn:hover:not(:disabled) { background:rgba(57,255,20,0.18); }
+    .cap-arm-btn.active { background:rgba(57,255,20,0.2); border-color:#39ff14; box-shadow:0 0 8px rgba(57,255,20,0.3); }
+    .cap-arm-btn:disabled { opacity:0.5; cursor:default; }
+    .cap-meter {
+      height:6px; background:rgba(255,255,255,0.06); border-radius:3px;
+      overflow:hidden; border:1px solid rgba(57,255,20,0.15);
+    }
+    .cap-meter-bar {
+      height:100%; width:0%; border-radius:3px;
+      background:linear-gradient(to right,#39ff14,#a0ff40); transition:width 0.05s;
+    }
     /* Module picker */
     .mod-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;align-items:center;justify-content:center; }
     .mod-picker-overlay.open { display:flex; }
@@ -1447,6 +1500,9 @@ const MOD_DEFS = {
     ch3Atten:50,
     ch4Rise:30,ch4Fall:40,ch4Resp:50,ch4Cycle:false,
   }},
+  capture:     {label:'Capture',      cat:'special', color:'#39ff14', defaults:{
+    mode:'device', deviceId:'',
+  }},
 };
 const SOURCE_TYPES=new Set(['osc','osc2','noise','tubeosc','dfam']);
 function isSource(t){return SOURCE_TYPES.has(t);}
@@ -1483,6 +1539,10 @@ const RACK_JACK_DEFS = {
     {dir:'out',name:'eoc',    label:'EOC'},
     {dir:'out',name:'unity1', label:'U1'},
     {dir:'out',name:'unity4', label:'U4'},
+  ],
+  capture:[
+    {dir:'out',name:'outL', label:'L'},
+    {dir:'out',name:'outR', label:'R'},
   ],
 };
 
@@ -3349,7 +3409,7 @@ function makeRack(name){
 
 function makeRackMod(type,x,y){
   const def=MOD_DEFS[type]||{};
-  const w=type==='joog'?860:type==='abacus'?300:type==='swells'?380:null;
+  const w=type==='joog'?860:type==='abacus'?300:type==='swells'?380:type==='capture'?230:null;
   return {
     id:'rm_'+(++rackIdSeq)+'_'+Math.random().toString(36).slice(2,5),
     type, x:x||80, y:y||80,
@@ -3947,6 +4007,154 @@ function buildSwellsBody(mod,body,rack){
   body.appendChild(panel);
 }
 
+function captureInitNodes(ctx,rack,mod){
+  const outL=ctx.createGain(); outL.gain.value=1;
+  const outR=ctx.createGain(); outR.gain.value=1;
+  const anlsr=ctx.createAnalyser(); anlsr.fftSize=256;
+  let stream=null, srcNode=null, splitter=null, rafId=null;
+
+  const cleanup=()=>{
+    if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+    if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+    try{srcNode?.disconnect();}catch(e){}
+    try{splitter?.disconnect();}catch(e){}
+    srcNode=null; splitter=null;
+  };
+
+  const arm=async(mode,deviceId,onStatus,onMeter)=>{
+    cleanup();
+    try{
+      if(mode==='device'){
+        stream=await navigator.mediaDevices.getUserMedia({
+          audio:deviceId?{deviceId:{exact:deviceId},echoCancellation:false,noiseSuppression:false,autoGainControl:false}
+                         :{echoCancellation:false,noiseSuppression:false,autoGainControl:false}
+        });
+      } else {
+        stream=await navigator.mediaDevices.getDisplayMedia({audio:true,video:false});
+      }
+      srcNode=ctx.createMediaStreamSource(stream);
+      srcNode.connect(anlsr);
+      const ch=(stream.getAudioTracks()[0]?.getSettings()?.channelCount)||1;
+      if(ch>=2){
+        splitter=ctx.createChannelSplitter(2);
+        srcNode.connect(splitter);
+        splitter.connect(outL,0);
+        splitter.connect(outR,1);
+      } else {
+        srcNode.connect(outL);
+        srcNode.connect(outR);
+      }
+      const buf=new Uint8Array(anlsr.fftSize);
+      const tick=()=>{
+        anlsr.getByteTimeDomainData(buf);
+        let peak=0;
+        for(let i=0;i<buf.length;i++) peak=Math.max(peak,Math.abs(buf[i]-128));
+        onMeter?.(peak/128);
+        rafId=requestAnimationFrame(tick);
+      };
+      rafId=requestAnimationFrame(tick);
+      onStatus?.('active');
+      return true;
+    } catch(e){
+      onStatus?.('error');
+      return false;
+    }
+  };
+
+  rack._nodes.set(mod.id,{
+    input:null,
+    output:outL,
+    _outputs:{outL,outR},
+    _arm:arm,
+    _disarm:cleanup,
+    cleanup:()=>{cleanup();try{outL.disconnect();}catch(e){}try{outR.disconnect();}catch(e){}},
+  });
+}
+
+function buildCaptureBody(mod,body,rack){
+  const p=mod.params;
+  const panel=document.createElement('div'); panel.className='cap-panel';
+
+  // Mode row
+  const modeRow=document.createElement('div'); modeRow.className='cap-mode-row';
+  ['DEVICE','SCREEN'].forEach(m=>{
+    const btn=document.createElement('button');
+    btn.className='cap-mode-btn'+(p.mode===m.toLowerCase()?' active':'');
+    btn.textContent=m;
+    btn.addEventListener('click',()=>{
+      p.mode=m.toLowerCase();
+      modeRow.querySelectorAll('.cap-mode-btn').forEach(b=>b.classList.toggle('active',b===btn));
+      deviceRow.style.display=p.mode==='device'?'flex':'none';
+    });
+    modeRow.appendChild(btn);
+  });
+  panel.appendChild(modeRow);
+
+  // Device select row
+  const deviceRow=document.createElement('div'); deviceRow.className='cap-device-row';
+  deviceRow.style.display=p.mode==='device'?'flex':'none';
+  const sel=document.createElement('select'); sel.className='cap-device-sel';
+  const refreshBtn=document.createElement('button'); refreshBtn.className='cap-refresh-btn'; refreshBtn.textContent='↺';
+  const populateDevices=async()=>{
+    sel.innerHTML='';
+    try{
+      const devices=await navigator.mediaDevices.enumerateDevices();
+      const inputs=devices.filter(d=>d.kind==='audioinput');
+      if(!inputs.length){ const o=document.createElement('option'); o.textContent='(no devices)'; sel.appendChild(o); return; }
+      inputs.forEach(d=>{
+        const o=document.createElement('option'); o.value=d.deviceId;
+        o.textContent=d.label||('Input '+d.deviceId.slice(0,6));
+        if(d.deviceId===p.deviceId) o.selected=true;
+        sel.appendChild(o);
+      });
+    } catch(e){}
+  };
+  populateDevices();
+  sel.addEventListener('change',()=>{p.deviceId=sel.value;});
+  refreshBtn.addEventListener('click',populateDevices);
+  deviceRow.appendChild(sel); deviceRow.appendChild(refreshBtn);
+  panel.appendChild(deviceRow);
+
+  // Status row
+  const statusRow=document.createElement('div'); statusRow.className='cap-status-row';
+  const led=document.createElement('div'); led.className='cap-led';
+  const statusTxt=document.createElement('span'); statusTxt.className='cap-status-txt'; statusTxt.textContent='IDLE';
+  statusRow.appendChild(led); statusRow.appendChild(statusTxt);
+  panel.appendChild(statusRow);
+
+  // Level meter
+  const meter=document.createElement('div'); meter.className='cap-meter';
+  const meterBar=document.createElement('div'); meterBar.className='cap-meter-bar';
+  meter.appendChild(meterBar);
+  panel.appendChild(meter);
+
+  // ARM button
+  const armBtn=document.createElement('button'); armBtn.className='cap-arm-btn'; armBtn.textContent='ARM';
+  let armed=false;
+  const setStatus=s=>{
+    const isActive=s==='active', isErr=s.startsWith('err');
+    statusTxt.textContent=s.toUpperCase();
+    led.className='cap-led'+(isActive?' active':isErr?' error':'');
+    armed=isActive;
+    armBtn.textContent=armed?'DISARM':'ARM';
+    armBtn.classList.toggle('active',armed);
+  };
+  const setMeter=v=>{ meterBar.style.width=Math.min(100,v*100)+'%'; };
+  armBtn.addEventListener('click',async()=>{
+    const nodes=rack._nodes.get(mod.id);
+    if(armed){
+      nodes?._disarm?.(); setStatus('idle'); setMeter(0);
+    } else {
+      statusTxt.textContent='...'; armBtn.disabled=true;
+      const ok=await nodes?._arm?.(p.mode||'device',p.deviceId||'',setStatus,setMeter);
+      armBtn.disabled=false;
+      if(ok) populateDevices();
+    }
+  });
+  panel.appendChild(armBtn);
+  body.appendChild(panel);
+}
+
 function rackInitModNodes(ctx,rack,mod){
   if(mod.type==='joog'){
     rack._nodes.set(mod.id,{input:null,output:getJoogOutputBus(),cleanup:null});
@@ -3978,6 +4186,10 @@ function rackInitModNodes(ctx,rack,mod){
   }
   if(mod.type==='swells'){
     swellsInitNodes(ctx,rack,mod);
+    return;
+  }
+  if(mod.type==='capture'){
+    captureInitNodes(ctx,rack,mod);
     return;
   }
   const nodes=createModuleNodes(ctx,mod,440);
@@ -4172,7 +4384,8 @@ function buildRackTile(rack,mod){
     (mod.type==='spkr'?' rmod-spkr':'')+
     (mod.type==='joog'?' rmod-joog-tile':'')+
     (mod.type==='abacus'?' rmod-abacus':'')+
-    (mod.type==='swells'?' rmod-swells':'');
+    (mod.type==='swells'?' rmod-swells':'')+
+    (mod.type==='capture'?' rmod-capture':'');
   el.id='rmod_'+mod.id; el.dataset.modId=mod.id;
   el.style.left=mod.x+'px'; el.style.top=mod.y+'px';
   if(mod.w) el.style.width=mod.w+'px';
@@ -4198,13 +4411,15 @@ function buildRackTile(rack,mod){
     buildAbacusBody(mod,body,rack);
   } else if(mod.type==='swells'){
     buildSwellsBody(mod,body,rack);
+  } else if(mod.type==='capture'){
+    buildCaptureBody(mod,body,rack);
   } else {
     body.innerHTML=buildModBody(mod);
   }
 
   let jackSec;
-  if(mod.type==='abacus'||mod.type==='swells'){
-    const isSwells=mod.type==='swells';
+  if(mod.type==='abacus'||mod.type==='swells'||mod.type==='capture'){
+    const isSwells=mod.type==='swells'||mod.type==='capture';
     const jackCls=isSwells?'sw-jacks':'abacus-jacks';
     const itemCls=isSwells?'sw-jack':'abacus-jack';
     const lblCls=isSwells?'sw-jack-lbl':'abacus-jack-lbl';
@@ -4264,7 +4479,7 @@ function buildRackTile(rack,mod){
   });
 
   // Initialize controls (knobs, buttons, wave selectors)
-  if(mod.type!=='joog'&&mod.type!=='spkr'&&mod.type!=='abacus'&&mod.type!=='swells'){
+  if(mod.type!=='joog'&&mod.type!=='spkr'&&mod.type!=='abacus'&&mod.type!=='swells'&&mod.type!=='capture'){
     el.querySelectorAll('.knob[data-param]').forEach(kEl=>{
       initKnob(kEl,v=>{mod.params[kEl.dataset.param]=v;rackLiveUpdateMod(rack,mod,kEl.dataset.param,v);});
     });
@@ -4466,7 +4681,7 @@ function buildModPickerModal(){
   closeBtn.addEventListener('click',closeModPicker); hdr.appendChild(closeBtn); box.appendChild(hdr);
 
   const cats=[
-    {label:'SPECIAL', types:['joog','spkr','abacus','swells']},
+    {label:'SPECIAL', types:['joog','spkr','abacus','swells','capture']},
     {label:'SOURCES', types:['osc','osc2','noise','tubeosc','dfam']},
     {label:'CONTROL', types:['lfo','env']},
     {label:'EFFECTS', types:['filter','dist','delay','reverb','chorus','compress','bitcrush','panner','tremolo','ringmod','stereomix','reverberator','combfilter']},
