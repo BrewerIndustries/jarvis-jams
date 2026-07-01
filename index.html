@@ -4110,29 +4110,30 @@ function recInitNodes(ctx,rack,mod){
   const inR=ctx.createGain(); inR.gain.value=1;
   const merger=ctx.createChannelMerger(2);
   inL.connect(merger,0,0); inR.connect(merger,0,1);
-  const dest=ctx.createMediaStreamDestination();
-  merger.connect(dest);
+
+  // ScriptProcessorNode captures raw PCM samples for lossless WAV export
+  const proc=ctx.createScriptProcessor(4096,2,2);
+  merger.connect(proc);
+  // Silent sink keeps proc in the active graph without audible output
+  const sink=ctx.createGain(); sink.gain.value=0;
+  proc.connect(sink); sink.connect(ctx.destination);
+
   const anlsr=ctx.createAnalyser(); anlsr.fftSize=256;
   merger.connect(anlsr);
-  let recorder=null,chunks=[],blobUrl=null,rafId=null;
-  const cleanup=()=>{
-    if(rafId){cancelAnimationFrame(rafId);rafId=null;}
-    if(recorder&&recorder.state!=='inactive'){try{recorder.stop();}catch(e){}}
-    recorder=null; chunks=[];
-    if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl=null;}
+
+  let recActive=false,samplesL=[],samplesR=[],blobUrl=null,rafId=null,_onStatus=null;
+
+  proc.onaudioprocess=e=>{
+    if(!recActive) return;
+    samplesL.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+    samplesR.push(new Float32Array(e.inputBuffer.getChannelData(1)));
   };
-  const arm=async(onStatus,onMeter)=>{
-    cleanup(); chunks=[];
-    const mimeType=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm';
-    recorder=new MediaRecorder(dest.stream,{mimeType});
-    recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
-    recorder.onstop=()=>{
-      const blob=new Blob(chunks,{type:mimeType});
-      if(blobUrl)URL.revokeObjectURL(blobUrl);
-      blobUrl=URL.createObjectURL(blob);
-      onStatus?.('stopped');
-    };
-    recorder.start();
+
+  const arm=(onStatus,onMeter)=>{
+    _onStatus=onStatus;
+    samplesL=[]; samplesR=[];
+    if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl=null;}
+    recActive=true;
     onStatus?.('armed');
     const buf=new Uint8Array(anlsr.fftSize);
     const tick=()=>{
@@ -4142,14 +4143,31 @@ function recInitNodes(ctx,rack,mod){
     };
     rafId=requestAnimationFrame(tick);
   };
+
   const disarm=()=>{
-    if(recorder&&recorder.state!=='inactive') recorder.stop();
+    recActive=false;
     if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+    if(!samplesL.length) return;
+    const total=samplesL.reduce((a,b)=>a+b.length,0);
+    const ab=ctx.createBuffer(2,total,ctx.sampleRate);
+    let off=0; samplesL.forEach(c=>{ab.getChannelData(0).set(c,off);off+=c.length;});
+    off=0;  samplesR.forEach(c=>{ab.getChannelData(1).set(c,off);off+=c.length;});
+    samplesL=[]; samplesR=[];
+    const wav=encodeWAV(ab);
+    const blob=new Blob([wav],{type:'audio/wav'});
+    if(blobUrl)URL.revokeObjectURL(blobUrl);
+    blobUrl=URL.createObjectURL(blob);
+    _onStatus?.('stopped');
   };
+
   rack._nodes.set(mod.id,{
     input:inL, _inputs:{inL,inR}, output:null,
     _arm:arm, _disarm:disarm, _getUrl:()=>blobUrl,
-    cleanup:()=>{cleanup();try{inL.disconnect();}catch(e){}try{inR.disconnect();}catch(e){}try{merger.disconnect();}catch(e){}try{anlsr.disconnect();}catch(e){}},
+    cleanup:()=>{
+      recActive=false; if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+      if(blobUrl){URL.revokeObjectURL(blobUrl);blobUrl=null;}
+      [proc,sink,inL,inR,merger,anlsr].forEach(n=>{try{n.disconnect();}catch(e){}});
+    },
   });
 }
 
@@ -4168,7 +4186,7 @@ function buildRecBody(mod,body,rack){
   const recBtn=document.createElement('button'); recBtn.className='rec-btn'; recBtn.textContent='REC';
   panel.appendChild(recBtn);
   const dlDiv=document.createElement('div'); dlDiv.style.display='none';
-  const dlBtn=document.createElement('button'); dlBtn.className='rec-btn'; dlBtn.textContent='⬇ DOWNLOAD .WEBM';
+  const dlBtn=document.createElement('button'); dlBtn.className='rec-btn'; dlBtn.textContent='⬇ DOWNLOAD .WAV';
   dlDiv.appendChild(dlBtn); panel.appendChild(dlDiv);
   let armed=false,timerInterval=null;
   const setStatus=s=>{
@@ -4176,7 +4194,7 @@ function buildRecBody(mod,body,rack){
     else if(s==='stopped'){
       statusTxt.textContent='DONE';led.className='rec-led';
       const url=rack._nodes.get(mod.id)?._getUrl?.();
-      if(url){dlDiv.style.display='block';dlBtn.onclick=()=>{const a=document.createElement('a');a.href=url;a.download='recording.webm';document.body.appendChild(a);a.click();document.body.removeChild(a);};}
+      if(url){dlDiv.style.display='block';dlBtn.onclick=()=>{const a=document.createElement('a');a.href=url;a.download='recording.wav';document.body.appendChild(a);a.click();document.body.removeChild(a);};}
     } else {statusTxt.textContent=s.toUpperCase();led.className='rec-led';}
   };
   const fmtTime=ms=>{const s=ms/1000,m=Math.floor(s/60),ss=Math.floor(s%60),d=Math.floor((s%1)*10);return m+':'+String(ss).padStart(2,'0')+'.'+d;};
