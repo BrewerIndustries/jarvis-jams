@@ -661,6 +661,27 @@
     .samp-knob { width:24px; height:24px; border-radius:50%; border:2px solid rgba(204,68,255,0.4); background:rgba(204,68,255,0.07); position:relative; cursor:pointer; user-select:none; }
     .samp-knob-tick { position:absolute; bottom:2px; left:50%; width:2px; height:6px; transform-origin:50% -3px; background:#cc44ff; transform:translateX(-50%) rotate(0deg); }
     .samp-knob-lbl { font-size:6px; color:var(--text-muted); letter-spacing:0.06em; text-transform:uppercase; }
+    /* ─── SPLICE Module ─── */
+    .rmod-splice .rmod-hdr { background:rgba(253,150,68,0.08); }
+    .rmod-splice .rmod-name-lbl { color:#fd9644; }
+    .rmod-splice .rmod-body { padding:0; }
+    .splice-panel { display:flex; flex-direction:column; padding:8px; gap:6px; background:var(--surface); }
+    .splice-top-row { display:flex; align-items:center; gap:5px; }
+    .splice-load-btn { font-size:7px; padding:4px 8px; border:1px dashed rgba(253,150,68,0.5); background:transparent; color:#fd9644; cursor:pointer; border-radius:4px; font-family:inherit; letter-spacing:0.06em; text-transform:uppercase; transition:all 0.15s; white-space:nowrap; flex-shrink:0; }
+    .splice-load-btn:hover { background:rgba(253,150,68,0.12); border-color:#fd9644; }
+    .splice-rec-btn { font-size:7px; padding:4px 8px; border:1px solid rgba(255,80,80,0.4); background:transparent; color:#ff5050; cursor:pointer; border-radius:4px; font-family:inherit; letter-spacing:0.06em; text-transform:uppercase; transition:all 0.15s; white-space:nowrap; flex-shrink:0; }
+    .splice-rec-btn:hover { background:rgba(255,80,80,0.12); }
+    .splice-rec-btn.recording { background:rgba(255,80,80,0.2); border-color:#ff5050; animation:rec-pulse 1s ease-in-out infinite; }
+    .splice-filename { font-size:6px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1; }
+    .splice-canvas-wrap { position:relative; width:100%; height:72px; border:1px solid rgba(253,150,68,0.2); border-radius:3px; background:rgba(0,0,0,0.3); overflow:hidden; cursor:crosshair; }
+    .splice-canvas { display:block; width:100%; height:100%; }
+    .splice-info { display:flex; gap:10px; font-size:6px; color:var(--text-muted); letter-spacing:0.05em; }
+    .splice-info-val { color:rgba(253,150,68,0.9); }
+    .splice-btn-row { display:flex; gap:4px; }
+    .splice-action-btn { flex:1; min-width:0; font-size:7px; padding:4px 2px; border:1px solid rgba(253,150,68,0.3); background:transparent; color:rgba(253,150,68,0.7); cursor:pointer; border-radius:3px; font-family:inherit; letter-spacing:0.04em; text-transform:uppercase; transition:all 0.15s; text-align:center; }
+    .splice-action-btn:hover:not(:disabled) { background:rgba(253,150,68,0.12); border-color:#fd9644; color:#fd9644; }
+    .splice-action-btn:disabled { opacity:0.28; cursor:default; }
+    .splice-action-btn.active { background:rgba(253,150,68,0.18); border-color:#fd9644; color:#fd9644; }
     /* Module picker */
     .mod-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;align-items:center;justify-content:center; }
     .mod-picker-overlay.open { display:flex; }
@@ -1564,6 +1585,7 @@ const MOD_DEFS = {
   sampler:     {label:'Sampler',      cat:'special', color:'#cc44ff', defaults:{
     steps:[false,false,false,false,false,false,false,false], rate:1, vol:80,
   }},
+  splice:      {label:'Splice',       cat:'special', color:'#fd9644', defaults:{}},
 };
 const SOURCE_TYPES=new Set(['osc','osc2','noise','tubeosc','dfam']);
 function isSource(t){return SOURCE_TYPES.has(t);}
@@ -1616,6 +1638,12 @@ const RACK_JACK_DEFS = {
   sampler:[
     {dir:'in', name:'trig', label:'TRIG'},
     {dir:'out',name:'out',  label:'OUT'},
+  ],
+  splice:[
+    {dir:'in', name:'inL',  label:'IN L'},
+    {dir:'in', name:'inR',  label:'IN R'},
+    {dir:'out',name:'outL', label:'OUT L'},
+    {dir:'out',name:'outR', label:'OUT R'},
   ],
 };
 
@@ -3482,7 +3510,7 @@ function makeRack(name){
 
 function makeRackMod(type,x,y){
   const def=MOD_DEFS[type]||{};
-  const w=type==='joog'?860:type==='abacus'?300:type==='swells'?380:type==='capture'?230:type==='rec'?200:type==='clock'?180:type==='sampler'?310:null;
+  const w=type==='joog'?860:type==='abacus'?300:type==='swells'?380:type==='capture'?230:type==='rec'?200:type==='clock'?180:type==='sampler'?310:type==='splice'?360:null;
   return {
     id:'rm_'+(++rackIdSeq)+'_'+Math.random().toString(36).slice(2,5),
     type, x:x||80, y:y||80,
@@ -4349,6 +4377,310 @@ function buildSamplerBody(mod,body,rack){
   body.appendChild(panel);
 }
 
+function spliceInitNodes(ctx,rack,mod){
+  const outL=ctx.createGain(); outL.gain.value=1;
+  const outR=ctx.createGain(); outR.gain.value=1;
+  const inL=ctx.createGain(); inL.gain.value=1;
+  const inR=ctx.createGain(); inR.gain.value=1;
+  const merger=ctx.createChannelMerger(2);
+  inL.connect(merger,0,0);
+  inR.connect(merger,0,1);
+  let buf=null, srcNode=null, recorder=null, recChunks=[];
+
+  const startRec=onComplete=>{
+    if(recorder) return;
+    const proc=ctx.createScriptProcessor(4096,2,2);
+    recChunks=[];
+    proc.onaudioprocess=e=>{
+      recChunks.push({
+        L:new Float32Array(e.inputBuffer.getChannelData(0)),
+        R:new Float32Array(e.inputBuffer.getChannelData(1)),
+      });
+    };
+    merger.connect(proc);
+    proc.connect(ctx.destination);
+    recorder={proc,onComplete};
+  };
+
+  const stopRec=()=>{
+    if(!recorder) return;
+    const {proc,onComplete}=recorder;
+    try{merger.disconnect(proc);}catch(e){}
+    try{proc.disconnect();}catch(e){}
+    recorder=null;
+    if(!recChunks.length) return;
+    const totalLen=recChunks.reduce((s,c)=>s+c.L.length,0);
+    const newBuf=ctx.createBuffer(2,totalLen,ctx.sampleRate);
+    const dL=newBuf.getChannelData(0),dR=newBuf.getChannelData(1);
+    let off=0;
+    for(const chunk of recChunks){dL.set(chunk.L,off);dR.set(chunk.R,off);off+=chunk.L.length;}
+    buf=newBuf;
+    onComplete?.(buf);
+  };
+
+  rack._nodes.set(mod.id,{
+    input:inL, _inputs:{inL,inR},
+    output:outL, _outputs:{outL,outR},
+    _setBuffer:ab=>{buf=ab;},
+    _getBuffer:()=>buf,
+    _startRec:startRec,
+    _stopRec:stopRec,
+    _play:(s=0,e=1)=>{
+      if(!buf) return;
+      try{srcNode?.stop();srcNode?.disconnect();}catch(_){}
+      srcNode=ctx.createBufferSource();
+      srcNode.buffer=buf;
+      srcNode.connect(outL); srcNode.connect(outR);
+      const offset=s*buf.duration;
+      const dur=(e-s)*buf.duration;
+      srcNode.start(0,offset,dur);
+      srcNode.onended=()=>{try{srcNode?.disconnect();}catch(_){}srcNode=null;};
+    },
+    _stop:()=>{try{srcNode?.stop();srcNode?.disconnect();}catch(_){}srcNode=null;},
+    cleanup:()=>{
+      try{srcNode?.stop();}catch(_){}
+      try{merger.disconnect();}catch(_){}
+      try{outL.disconnect();outR.disconnect();inL.disconnect();inR.disconnect();}catch(_){}
+    },
+  });
+}
+
+function buildSpliceBody(mod,body,rack){
+  const panel=document.createElement('div'); panel.className='splice-panel';
+
+  // Hidden file input
+  const fileInput=document.createElement('input'); fileInput.type='file'; fileInput.accept='audio/*'; fileInput.style.display='none';
+  panel.appendChild(fileInput);
+
+  // Top row: LOAD | REC | filename
+  const topRow=document.createElement('div'); topRow.className='splice-top-row';
+  const loadBtn=document.createElement('button'); loadBtn.className='splice-load-btn'; loadBtn.textContent='LOAD WAV';
+  const recBtn=document.createElement('button'); recBtn.className='splice-rec-btn'; recBtn.textContent='● REC';
+  const filenameLbl=document.createElement('div'); filenameLbl.className='splice-filename'; filenameLbl.textContent='(no audio)';
+  topRow.appendChild(loadBtn); topRow.appendChild(recBtn); topRow.appendChild(filenameLbl);
+  panel.appendChild(topRow);
+
+  // Waveform canvas
+  const canvasWrap=document.createElement('div'); canvasWrap.className='splice-canvas-wrap';
+  const canvas=document.createElement('canvas'); canvas.className='splice-canvas';
+  canvas.width=344; canvas.height=72;
+  canvasWrap.appendChild(canvas);
+  panel.appendChild(canvasWrap);
+
+  // Info row
+  const infoRow=document.createElement('div'); infoRow.className='splice-info';
+  const durLbl=document.createElement('div'); durLbl.innerHTML='DUR <span class="splice-info-val">—</span>';
+  const selLbl=document.createElement('div'); selLbl.innerHTML='SEL <span class="splice-info-val">—</span>';
+  infoRow.appendChild(durLbl); infoRow.appendChild(selLbl);
+  panel.appendChild(infoRow);
+
+  // Action buttons
+  const btnRow=document.createElement('div'); btnRow.className='splice-btn-row';
+  const mkBtn=(label)=>{const b=document.createElement('button');b.className='splice-action-btn';b.textContent=label;b.disabled=true;return b;};
+  const playBtn=mkBtn('▶ PLAY');
+  const stopBtn=mkBtn('■ STOP');
+  const trimBtn=mkBtn('✂ TRIM');
+  const splitBtn=mkBtn('⊣ SPLIT');
+  const exportBtn=mkBtn('↓ EXPORT');
+  [playBtn,stopBtn,trimBtn,splitBtn,exportBtn].forEach(b=>btnRow.appendChild(b));
+  panel.appendChild(btnRow);
+  body.appendChild(panel);
+
+  // State
+  let buf=null, selStart=null, selEnd=null, isDragging=false, dragAnchor=0;
+
+  const nodes=()=>rack._nodes.get(mod.id);
+
+  const fmtSec=s=>s!=null?s.toFixed(2)+'s':'—';
+
+  const updateInfo=()=>{
+    durLbl.innerHTML=`DUR <span class="splice-info-val">${buf?fmtSec(buf.duration):'—'}</span>`;
+    const hasRange=selStart!=null&&selEnd!=null&&Math.abs(selEnd-selStart)>0.001;
+    selLbl.innerHTML=`SEL <span class="splice-info-val">${hasRange?fmtSec(selStart*buf.duration)+'–'+fmtSec(selEnd*buf.duration):'—'}</span>`;
+  };
+
+  const setEnabled=()=>{
+    const hasBuf=!!buf;
+    const hasSel=selStart!=null&&selEnd!=null&&Math.abs(selEnd-selStart)>0.001;
+    playBtn.disabled=!hasBuf;
+    stopBtn.disabled=!hasBuf;
+    trimBtn.disabled=!hasBuf||!hasSel;
+    splitBtn.disabled=!hasBuf||!hasSel;
+    exportBtn.disabled=!hasBuf;
+  };
+
+  const drawWaveform=()=>{
+    const ctx2=canvas.getContext('2d');
+    const W=canvas.width,H=canvas.height;
+    ctx2.clearRect(0,0,W,H);
+    if(!buf){
+      ctx2.fillStyle='rgba(253,150,68,0.12)';
+      ctx2.fillRect(0,H/2-0.5,W,1);
+      return;
+    }
+    // Selection highlight
+    if(selStart!=null&&selEnd!=null){
+      const sx=Math.round(Math.min(selStart,selEnd)*W);
+      const ex=Math.round(Math.max(selStart,selEnd)*W);
+      ctx2.fillStyle='rgba(253,150,68,0.13)';
+      ctx2.fillRect(sx,0,ex-sx,H);
+      ctx2.fillStyle='rgba(253,150,68,0.4)';
+      ctx2.fillRect(sx,0,1,H);
+      ctx2.fillRect(ex,0,1,H);
+    }
+    // Waveform (min-max per column)
+    const data=buf.getChannelData(0);
+    const step=data.length/W;
+    ctx2.fillStyle='#fd9644';
+    for(let x=0;x<W;x++){
+      const s0=Math.floor(x*step),s1=Math.ceil((x+1)*step);
+      let mn=1,mx=-1;
+      for(let i=s0;i<s1&&i<data.length;i++){if(data[i]<mn)mn=data[i];if(data[i]>mx)mx=data[i];}
+      const yTop=Math.round((1-mx)/2*H);
+      const yBot=Math.round((1-mn)/2*H);
+      ctx2.fillRect(x,yTop,1,Math.max(1,yBot-yTop));
+    }
+  };
+
+  const setBuf=newBuf=>{
+    buf=newBuf;
+    selStart=null; selEnd=null;
+    nodes()?._setBuffer?.(buf);
+    drawWaveform();
+    updateInfo();
+    setEnabled();
+  };
+
+  // Load WAV from file
+  loadBtn.addEventListener('click',()=>fileInput.click());
+  fileInput.addEventListener('change',()=>{
+    const file=fileInput.files[0]; if(!file) return;
+    filenameLbl.textContent=file.name;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      getCtx().decodeAudioData(e.target.result.slice(0),decoded=>{
+        setBuf(decoded);
+      },()=>{filenameLbl.textContent='decode error';});
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  // Record from IN jacks
+  let isRecording=false;
+  recBtn.addEventListener('click',()=>{
+    if(!isRecording){
+      isRecording=true;
+      recBtn.classList.add('recording');
+      recBtn.textContent='■ STOP';
+      filenameLbl.textContent='recording…';
+      nodes()?._startRec?.(newBuf=>{
+        setBuf(newBuf);
+        filenameLbl.textContent='recorded '+fmtSec(newBuf.duration);
+      });
+    } else {
+      nodes()?._stopRec?.();
+      isRecording=false;
+      recBtn.classList.remove('recording');
+      recBtn.textContent='● REC';
+    }
+  });
+
+  // Canvas selection via drag
+  const canvasX=e=>{
+    const r=canvas.getBoundingClientRect();
+    return Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+  };
+  canvasWrap.addEventListener('mousedown',e=>{
+    if(!buf) return;
+    e.preventDefault();
+    dragAnchor=canvasX(e);
+    selStart=dragAnchor; selEnd=dragAnchor;
+    isDragging=true;
+    drawWaveform(); updateInfo(); setEnabled();
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!isDragging) return;
+    const x=canvasX(e);
+    selStart=Math.min(dragAnchor,x);
+    selEnd=Math.max(dragAnchor,x);
+    drawWaveform(); updateInfo(); setEnabled();
+  });
+  window.addEventListener('mouseup',()=>{
+    if(isDragging){ isDragging=false; setEnabled(); }
+  });
+
+  // Play
+  playBtn.addEventListener('click',()=>{
+    if(!buf) return;
+    const s=selStart!=null&&selEnd!=null&&Math.abs(selEnd-selStart)>0.001?selStart:0;
+    const e=selStart!=null&&selEnd!=null&&Math.abs(selEnd-selStart)>0.001?selEnd:1;
+    nodes()?._play?.(s,e);
+    playBtn.classList.add('active');
+  });
+
+  // Stop
+  stopBtn.addEventListener('click',()=>{
+    nodes()?._stop?.();
+    playBtn.classList.remove('active');
+  });
+
+  // Trim — keep selected region
+  trimBtn.addEventListener('click',()=>{
+    if(!buf||selStart==null||selEnd==null) return;
+    const s=Math.floor(Math.min(selStart,selEnd)*buf.length);
+    const e=Math.floor(Math.max(selStart,selEnd)*buf.length);
+    const len=e-s; if(len<1) return;
+    const newBuf=getCtx().createBuffer(buf.numberOfChannels,len,buf.sampleRate);
+    for(let ch=0;ch<buf.numberOfChannels;ch++){
+      newBuf.getChannelData(ch).set(buf.getChannelData(ch).subarray(s,e));
+    }
+    filenameLbl.textContent='trimmed '+fmtSec(newBuf.duration);
+    setBuf(newBuf);
+  });
+
+  // Split — download both halves
+  splitBtn.addEventListener('click',()=>{
+    if(!buf||selStart==null||selEnd==null) return;
+    const mid=Math.floor(((selStart+selEnd)/2)*buf.length);
+    const dlBuf=(slice,name)=>{
+      const wb=getCtx().createBuffer(buf.numberOfChannels,slice.length,buf.sampleRate);
+      for(let ch=0;ch<buf.numberOfChannels;ch++) wb.getChannelData(ch).set(slice.getChannelData(ch));
+      const wav=encodeWAV(wb);
+      const blob=new Blob([wav],{type:'audio/wav'});
+      const url=URL.createObjectURL(blob);
+      Object.assign(document.createElement('a'),{href:url,download:name}).click();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+    };
+    const makeSlice=(start,end)=>{
+      const len=end-start;
+      const sl=getCtx().createBuffer(buf.numberOfChannels,len,buf.sampleRate);
+      for(let ch=0;ch<buf.numberOfChannels;ch++) sl.getChannelData(ch).set(buf.getChannelData(ch).subarray(start,end));
+      return sl;
+    };
+    dlBuf(makeSlice(0,mid),'splice-A.wav');
+    setTimeout(()=>dlBuf(makeSlice(mid,buf.length),'splice-B.wav'),200);
+  });
+
+  // Export
+  exportBtn.addEventListener('click',()=>{
+    if(!buf) return;
+    const expBuf=selStart!=null&&selEnd!=null&&Math.abs(selEnd-selStart)>0.001?(()=>{
+      const s=Math.floor(Math.min(selStart,selEnd)*buf.length);
+      const e=Math.floor(Math.max(selStart,selEnd)*buf.length);
+      const sl=getCtx().createBuffer(buf.numberOfChannels,e-s,buf.sampleRate);
+      for(let ch=0;ch<buf.numberOfChannels;ch++) sl.getChannelData(ch).set(buf.getChannelData(ch).subarray(s,e));
+      return sl;
+    })():buf;
+    const wav=encodeWAV(expBuf);
+    const blob=new Blob([wav],{type:'audio/wav'});
+    const url=URL.createObjectURL(blob);
+    Object.assign(document.createElement('a'),{href:url,download:'splice-export.wav'}).click();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+  });
+
+  drawWaveform();
+}
+
 function captureInitNodes(ctx,rack,mod){
   const outL=ctx.createGain(); outL.gain.value=1;
   const outR=ctx.createGain(); outR.gain.value=1;
@@ -4546,6 +4878,10 @@ function rackInitModNodes(ctx,rack,mod){
   }
   if(mod.type==='sampler'){
     samplerInitNodes(ctx,rack,mod);
+    return;
+  }
+  if(mod.type==='splice'){
+    spliceInitNodes(ctx,rack,mod);
     return;
   }
   const nodes=createModuleNodes(ctx,mod,440);
@@ -4748,7 +5084,8 @@ function buildRackTile(rack,mod){
     (mod.type==='capture'?' rmod-capture':'')+
     (mod.type==='rec'?' rmod-rec':'')+
     (mod.type==='clock'?' rmod-clock':'')+
-    (mod.type==='sampler'?' rmod-sampler':'');
+    (mod.type==='sampler'?' rmod-sampler':'')+
+    (mod.type==='splice'?' rmod-splice':'');
   el.id='rmod_'+mod.id; el.dataset.modId=mod.id;
   el.style.left=mod.x+'px'; el.style.top=mod.y+'px';
   if(mod.w) el.style.width=mod.w+'px';
@@ -4782,12 +5119,14 @@ function buildRackTile(rack,mod){
     buildClockBody(mod,body,rack);
   } else if(mod.type==='sampler'){
     buildSamplerBody(mod,body,rack);
+  } else if(mod.type==='splice'){
+    buildSpliceBody(mod,body,rack);
   } else {
     body.innerHTML=buildModBody(mod);
   }
 
   let jackSec;
-  if(mod.type==='abacus'||mod.type==='swells'||mod.type==='capture'||mod.type==='rec'||mod.type==='clock'||mod.type==='sampler'){
+  if(mod.type==='abacus'||mod.type==='swells'||mod.type==='capture'||mod.type==='rec'||mod.type==='clock'||mod.type==='sampler'||mod.type==='splice'){
     const isSwells=mod.type!=='abacus';
     const jackCls=isSwells?'sw-jacks':'abacus-jacks';
     const itemCls=isSwells?'sw-jack':'abacus-jack';
@@ -4848,7 +5187,7 @@ function buildRackTile(rack,mod){
   });
 
   // Initialize controls (knobs, buttons, wave selectors)
-  if(mod.type!=='joog'&&mod.type!=='spkr'&&mod.type!=='abacus'&&mod.type!=='swells'&&mod.type!=='capture'&&mod.type!=='rec'&&mod.type!=='clock'&&mod.type!=='sampler'){
+  if(mod.type!=='joog'&&mod.type!=='spkr'&&mod.type!=='abacus'&&mod.type!=='swells'&&mod.type!=='capture'&&mod.type!=='rec'&&mod.type!=='clock'&&mod.type!=='sampler'&&mod.type!=='splice'){
     el.querySelectorAll('.knob[data-param]').forEach(kEl=>{
       initKnob(kEl,v=>{mod.params[kEl.dataset.param]=v;rackLiveUpdateMod(rack,mod,kEl.dataset.param,v);});
     });
@@ -5072,7 +5411,7 @@ function buildModPickerModal(){
   closeBtn.addEventListener('click',closeModPicker); hdr.appendChild(closeBtn); box.appendChild(hdr);
 
   const cats=[
-    {label:'SPECIAL', types:['joog','spkr','abacus','swells','capture','rec','clock','sampler']},
+    {label:'SPECIAL', types:['joog','spkr','abacus','swells','capture','rec','clock','sampler','splice']},
     {label:'SOURCES', types:['osc','osc2','noise','tubeosc','dfam']},
     {label:'CONTROL', types:['lfo','env']},
     {label:'EFFECTS', types:['filter','dist','delay','reverb','chorus','compress','bitcrush','panner','tremolo','ringmod','stereomix','reverberator','combfilter']},
