@@ -1608,7 +1608,11 @@ const RACK_JACK_DEFS = {
   bitcrush:['in','out'], panner:['in','out'], tremolo:['in','out'],
   ringmod:['in','out'], vol:['in','out'], stereomix:['in','out'],
   reverberator:['in','out'], combfilter:['in','out'],
-  joog:['out'], spkr:['in'],
+  joog:['out'],
+  spkr:[
+    {dir:'in', name:'inL', label:'IN L'},
+    {dir:'in', name:'inR', label:'IN R'},
+  ],
   swells:[
     {dir:'in',  name:'inL',   label:'IN L'},
     {dir:'in',  name:'inR',   label:'IN R'},
@@ -4224,15 +4228,20 @@ function buildRecBody(mod,body,rack){
   const recBtn=document.createElement('button'); recBtn.className='rec-btn'; recBtn.textContent='REC';
   panel.appendChild(recBtn);
   const dlDiv=document.createElement('div'); dlDiv.style.display='none';
-  const dlBtn=document.createElement('button'); dlBtn.className='rec-btn'; dlBtn.textContent='⬇ DOWNLOAD .WAV';
-  dlDiv.appendChild(dlBtn); panel.appendChild(dlDiv);
+  const fnRow=document.createElement('div'); fnRow.style.cssText='display:flex;gap:4px;align-items:center;margin-bottom:4px;';
+  const fnInput=document.createElement('input'); fnInput.type='text'; fnInput.placeholder='recording'; fnInput.value='recording';
+  fnInput.style.cssText='flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:2px 5px;border-radius:3px;font-size:9px;font-family:inherit;';
+  const fnExt=document.createElement('span'); fnExt.textContent='.wav'; fnExt.style.cssText='font-size:9px;color:var(--text-dim);';
+  fnRow.appendChild(fnInput); fnRow.appendChild(fnExt);
+  const dlBtn=document.createElement('button'); dlBtn.className='rec-btn'; dlBtn.textContent='⬇ SAVE';
+  dlDiv.appendChild(fnRow); dlDiv.appendChild(dlBtn); panel.appendChild(dlDiv);
   let armed=false,timerInterval=null;
   const setStatus=s=>{
     if(s==='armed'){statusTxt.textContent='REC';led.className='rec-led armed';}
     else if(s==='stopped'){
       statusTxt.textContent='DONE';led.className='rec-led';
       const url=rack._nodes.get(mod.id)?._getUrl?.();
-      if(url){dlDiv.style.display='block';dlBtn.onclick=()=>{const a=document.createElement('a');a.href=url;a.download='recording.wav';document.body.appendChild(a);a.click();document.body.removeChild(a);};}
+      if(url){dlDiv.style.display='block';dlBtn.onclick=()=>{const name=(fnInput.value.trim()||'recording')+'.wav';const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);};}
     } else {statusTxt.textContent=s.toUpperCase();led.className='rec-led';}
   };
   const fmtTime=ms=>{const s=ms/1000,m=Math.floor(s/60),ss=Math.floor(s%60),d=Math.floor((s%1)*10);return m+':'+String(ss).padStart(2,'0')+'.'+d;};
@@ -4489,10 +4498,11 @@ function buildSpliceBody(mod,body,rack){
   const mkBtn=(label)=>{const b=document.createElement('button');b.className='splice-action-btn';b.textContent=label;b.disabled=true;return b;};
   const playBtn=mkBtn('▶ PLAY');
   const stopBtn=mkBtn('■ STOP');
-  const trimBtn=mkBtn('✂ TRIM');
+  const trimBtn=mkBtn('✂ TRIM'); trimBtn.title='Keep selected region, discard rest';
+  const cutBtn=mkBtn('✁ CUT'); cutBtn.title='Remove selected region, keep rest';
   const splitBtn=mkBtn('⊣ SPLIT');
   const exportBtn=mkBtn('↓ EXPORT');
-  [playBtn,stopBtn,trimBtn,splitBtn,exportBtn].forEach(b=>btnRow.appendChild(b));
+  [playBtn,stopBtn,trimBtn,cutBtn,splitBtn,exportBtn].forEach(b=>btnRow.appendChild(b));
   panel.appendChild(btnRow);
   body.appendChild(panel);
 
@@ -4515,6 +4525,7 @@ function buildSpliceBody(mod,body,rack){
     playBtn.disabled=!hasBuf;
     stopBtn.disabled=!hasBuf;
     trimBtn.disabled=!hasBuf||!hasSel;
+    cutBtn.disabled=!hasBuf||!hasSel;
     splitBtn.disabled=!hasBuf||!hasSel;
     exportBtn.disabled=!hasBuf;
   };
@@ -4645,6 +4656,23 @@ function buildSpliceBody(mod,body,rack){
       newBuf.getChannelData(ch).set(buf.getChannelData(ch).subarray(s,e));
     }
     filenameLbl.textContent='trimmed '+fmtSec(newBuf.duration);
+    setBuf(newBuf);
+  });
+
+  // Cut — remove selected region, keep before+after
+  cutBtn.addEventListener('click',()=>{
+    if(!buf||selStart==null||selEnd==null) return;
+    const s=Math.floor(Math.min(selStart,selEnd)*buf.length);
+    const e=Math.floor(Math.max(selStart,selEnd)*buf.length);
+    const lenA=s, lenB=buf.length-e;
+    const lenTotal=lenA+lenB; if(lenTotal<1) return;
+    const newBuf=getCtx().createBuffer(buf.numberOfChannels,lenTotal,buf.sampleRate);
+    for(let ch=0;ch<buf.numberOfChannels;ch++){
+      const src=buf.getChannelData(ch), dst=newBuf.getChannelData(ch);
+      dst.set(src.subarray(0,s), 0);
+      dst.set(src.subarray(e), lenA);
+    }
+    filenameLbl.textContent='cut '+fmtSec(newBuf.duration);
     setBuf(newBuf);
   });
 
@@ -4847,9 +4875,13 @@ function rackInitModNodes(ctx,rack,mod){
     return;
   }
   if(mod.type==='spkr'){
-    const g=ctx.createGain(); g.gain.value=1;
-    g.connect(getMasterAnalyser());
-    rack._nodes.set(mod.id,{input:g,output:null,cleanup:()=>{try{g.disconnect();}catch(_){}}});
+    const inL=ctx.createGain(); inL.gain.value=1;
+    const inR=ctx.createGain(); inR.gain.value=1;
+    const merger=ctx.createChannelMerger(2);
+    inL.connect(merger,0,0); inR.connect(merger,0,1);
+    merger.connect(getMasterAnalyser());
+    rack._nodes.set(mod.id,{input:inL,_inputs:{inL,inR},output:null,
+      cleanup:()=>{try{inL.disconnect();inR.disconnect();merger.disconnect();}catch(_){}}});
     return;
   }
   if(mod.type==='lfo'){
@@ -5137,7 +5169,7 @@ function buildRackTile(rack,mod){
   }
 
   let jackSec;
-  if(mod.type==='abacus'||mod.type==='swells'||mod.type==='capture'||mod.type==='rec'||mod.type==='clock'||mod.type==='sampler'||mod.type==='splice'){
+  if(mod.type==='abacus'||mod.type==='swells'||mod.type==='capture'||mod.type==='rec'||mod.type==='clock'||mod.type==='sampler'||mod.type==='splice'||mod.type==='spkr'){
     const isSwells=mod.type!=='abacus';
     const jackCls=isSwells?'sw-jacks':'abacus-jacks';
     const itemCls=isSwells?'sw-jack':'abacus-jack';
