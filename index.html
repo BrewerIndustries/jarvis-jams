@@ -5607,8 +5607,9 @@ function buildRackTile(rack,mod){
 
   const body=document.createElement('div'); body.className='rmod-body';
   if(mod.type==='joog'){
-    const joogDiv=document.createElement('div'); joogDiv.id='panel-joog';
-    body.appendChild(joogDiv);
+    const existingJoog=document.getElementById('panel-joog');
+    if(existingJoog){ body.appendChild(existingJoog); }
+    else { const joogDiv=document.createElement('div'); joogDiv.id='panel-joog'; body.appendChild(joogDiv); }
     setTimeout(()=>{
       if(!joogInitialized){ joogInitialized=true; initJoog(); }
       syncJoogBusDirect();
@@ -5789,6 +5790,8 @@ function rackSave(rack){
 }
 
 function rackLoadFromData(rack,data){
+  // Rescue persistent panel nodes before tiles are removed from the DOM
+  ['panel-joog','panel-keys'].forEach(id=>{const p=document.getElementById(id);if(p)document.body.appendChild(p);});
   [...rack.modules].forEach(m=>rackRemoveModule(rack,m.id));
   rack.name=data.name||'Rack';
   const nameEl=rack._el&&rack._el.querySelector('.rack-name-inp');
