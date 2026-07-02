@@ -2764,23 +2764,25 @@ function initKeyboard() {
 // ═════════════════════════════════════════
 // TAB SWITCHING
 // ═════════════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
+  localStorage.setItem('jj-active-tab',tab);
+  if(tab!=='tuner') stopAllTones();
+  if(tab!=='rack') { stopAllPatches(); joogStop(); }
+  kbTabActive = (tab==='keys');
+  joogTabActive = (tab==='rack');
+  if(tab==='rack'){
+    if(joogInitialized) setTimeout(startJoogScope, 80);
+    if(joogInitialized&&!joogVoice) setTimeout(()=>joogInitVoice(joogLastFreq||joogFreqFromMidi(60)),100);
+  }
+  else stopJoogScope();
+  if(tab==='keys') setTimeout(drawLoopViz,50);
+}
 document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const tab=btn.dataset.tab;
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b===btn));
-    document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
-    if(tab!=='tuner') stopAllTones();
-    if(tab!=='rack') { stopAllPatches(); joogStop(); }
-    kbTabActive = (tab==='keys');
-    joogTabActive = (tab==='rack');
-    if(tab==='rack'){
-      if(joogInitialized) setTimeout(startJoogScope, 80);
-      if(joogInitialized&&!joogVoice) setTimeout(()=>joogInitVoice(joogLastFreq||joogFreqFromMidi(60)),100);
-    }
-    else stopJoogScope();
-    if(tab==='keys') setTimeout(drawLoopViz,50);
-  });
+  btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
 });
+(()=>{ const t=localStorage.getItem('jj-active-tab'); if(t&&t!=='beat') switchTab(t); })();
 
 // ═════════════════════════════════════════
 // JARVIS JOOG — Moog Mavis-style monosynth
