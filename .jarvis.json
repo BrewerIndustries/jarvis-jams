@@ -1,10 +1,13 @@
 {
   "id": "jarvis-jams",
   "name": "Jarvis Jams",
+  "description": "Browser-based modular synth studio built on the Web Audio API. Patch oscillators, filters, envelopes, and effects in a drag-and-drop rack. Includes a 16-step beat machine, Joog (Moog Mavis-style synth voice), Abacus (dual ADSR with CV outputs), Swells (multi-model reverb with swell envelope), and Capture (route mic or system audio into the rack).",
   "category": "standalone",
   "status": { "prod": "live", "dev": "live" },
   "deploy": {
     "prod": { "url": "https://jarvis-jams.dabrewer.dev/" },
     "dev": { "url": "https://jarvis-jams.dabrewer.dev/dev/" }
-  }
+  },
+  "tech": ["Web Audio API", "Vanilla JS", "HTML/CSS"],
+  "repo": "https://github.com/BrewerIndustries/jarvis-jams"
 }
