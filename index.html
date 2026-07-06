@@ -690,6 +690,67 @@
     .splice-action-btn:hover:not(:disabled) { background:rgba(253,150,68,0.12); border-color:#fd9644; color:#fd9644; }
     .splice-action-btn:disabled { opacity:0.28; cursor:default; }
     .splice-action-btn.active { background:rgba(253,150,68,0.18); border-color:#fd9644; color:#fd9644; }
+/* Sampler redesign */
+.rmod-sampler .rmod-hdr { background:rgba(204,68,255,0.08); }
+.rmod-sampler .rmod-name-lbl { color:#cc44ff; }
+.samp2-panel { display:flex; flex-direction:column; gap:3px; padding:6px; background:var(--surface); }
+.samp2-slot { display:flex; align-items:center; gap:4px; padding:2px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.samp2-slot:last-child { border-bottom:none; }
+.samp2-num { font-size:7px; color:var(--text-dim); width:10px; text-align:center; flex-shrink:0; }
+.samp2-name { font-size:7px; color:var(--text-dim); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.samp2-name.loaded { color:var(--text); }
+.samp2-btn { font-size:6px; padding:1px 4px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--text); border-radius:2px; cursor:pointer; white-space:nowrap; }
+.samp2-btn:hover { background:rgba(255,255,255,0.12); }
+.samp2-btn.load { color:#cc44ff; border-color:rgba(204,68,255,0.4); }
+.samp2-btn.trig { color:#05ffa1; border-color:rgba(5,255,161,0.4); }
+.samp2-btn.trig:active, .samp2-btn.trig.playing { background:rgba(5,255,161,0.2); }
+.samp2-btn.clear { color:#ff5050; border-color:rgba(255,80,80,0.4); }
+.samp2-stop-row { display:flex; gap:4px; padding-top:4px; }
+.samp2-stop-btn { flex:1; font-size:7px; padding:2px 6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:var(--text); border-radius:3px; cursor:pointer; }
+.samp2-stop-btn:hover { background:rgba(255,255,255,0.12); }
+
+/* Splitter / Merger */
+.rmod-split .rmod-hdr { background:rgba(162,155,254,0.08); }
+.rmod-split .rmod-name-lbl { color:#a29bfe; }
+.rmod-merge .rmod-hdr { background:rgba(116,185,255,0.08); }
+.rmod-merge .rmod-name-lbl { color:#74b9ff; }
+.splitmerge-body { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px; gap:4px; min-height:40px; }
+.splitmerge-icon { font-size:20px; line-height:1; }
+.splitmerge-lbl { font-size:7px; color:var(--text-dim); text-align:center; }
+
+/* Looper */
+.rmod-looper .rmod-hdr { background:rgba(0,206,201,0.08); }
+.rmod-looper .rmod-name-lbl { color:#00cec9; }
+.looper-panel { display:flex; flex-direction:column; gap:6px; padding:8px; background:var(--surface); }
+.looper-canvas-wrap { position:relative; width:100%; height:36px; background:rgba(0,206,201,0.04); border:1px solid rgba(0,206,201,0.15); border-radius:3px; overflow:hidden; cursor:default; }
+.looper-canvas { display:block; width:100%; height:100%; }
+.looper-status { font-size:7px; color:var(--text-dim); text-align:center; }
+.looper-btn-row { display:flex; gap:4px; }
+.looper-btn { flex:1; font-size:8px; padding:3px 4px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:var(--text); border-radius:3px; cursor:pointer; }
+.looper-btn:hover { background:rgba(255,255,255,0.12); }
+.looper-btn.rec { color:#ff5050; border-color:rgba(255,80,80,0.4); }
+.looper-btn.rec.active { background:rgba(255,80,80,0.2); border-color:#ff5050; animation:rec-pulse 1s ease-in-out infinite; }
+.looper-btn.play { color:#00cec9; border-color:rgba(0,206,201,0.4); }
+.looper-btn.play.active { background:rgba(0,206,201,0.2); border-color:#00cec9; }
+.looper-dur { font-size:6px; color:var(--text-dim); text-align:center; }
+.rmod-keys .rmod-hdr { background:rgba(255,113,206,0.08); }
+.rmod-keys .rmod-name-lbl { color:#ff71ce; }
+.rmod-keys .rmod-body { padding:0; overflow:auto; }
+.rmod-keys .rmod-body .keys-toolbar { font-size:8px; padding:4px 6px; flex-wrap:wrap; gap:4px; }
+.rmod-keys .rmod-body .ctrl-label { font-size:7px; }
+.rmod-keys .rmod-body .piano-wrap { padding:4px 2px 2px; }
+.rmod-keys .rmod-body .looper-section { padding:4px 6px 6px; }
+.rmod-keys .rmod-body .looper-section h3 { font-size:8px; margin:0 0 4px; }
+.rmod-keys .rmod-body .kb-hint { font-size:6px; padding:3px 6px 4px; }
+.mod-help-btn { background:none; border:none; color:rgba(255,255,255,0.3); font-size:9px; cursor:pointer; padding:0 3px; line-height:1; flex-shrink:0; }
+.mod-help-btn:hover { color:rgba(255,255,255,0.8); }
+.mod-help-overlay { position:fixed; inset:0; z-index:9000; }
+.mod-help-popover { position:fixed; z-index:9001; background:#1a1a2e; border:1px solid rgba(255,255,255,0.18); border-radius:6px; padding:10px 12px; max-width:280px; box-shadow:0 8px 32px rgba(0,0,0,0.7); font-size:9px; line-height:1.5; }
+.mod-help-popover h3 { font-size:10px; margin:0 0 6px; }
+.mod-help-section { margin-bottom:6px; }
+.mod-help-section:last-child { margin-bottom:0; }
+.mod-help-section-title { font-size:7.5px; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:2px; }
+.mod-help-text { color:rgba(255,255,255,0.78); }
     /* Module picker */
     .mod-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;display:none;align-items:center;justify-content:center; }
     .mod-picker-overlay.open { display:flex; }
@@ -1064,7 +1125,6 @@
   <div class="tabs">
     <button class="tab-btn active" data-tab="beat">Beat Machine</button>
     <button class="tab-btn" data-tab="tuner">Tuner</button>
-    <button class="tab-btn" data-tab="keys">Keys</button>
     <button class="tab-btn" data-tab="rack">Rack</button>
   </div>
 </header>
@@ -1595,6 +1655,10 @@ const MOD_DEFS = {
     steps:[false,false,false,false,false,false,false,false], rate:1, vol:80,
   }},
   splice:      {label:'Splice',       cat:'special', color:'#fd9644', defaults:{}},
+  split:  {label:'Split',  cat:'special', color:'#a29bfe', defaults:{}},
+  merge:  {label:'Merge',  cat:'special', color:'#74b9ff', defaults:{}},
+  looper: {label:'Looper', cat:'special', color:'#00cec9', defaults:{}},
+  keys:   {label:'Keys',   cat:'special', color:'#ff71ce', defaults:{}},
 };
 const SOURCE_TYPES=new Set(['osc','osc2','noise','tubeosc','dfam']);
 function isSource(t){return SOURCE_TYPES.has(t);}
@@ -1649,8 +1713,31 @@ const RACK_JACK_DEFS = {
     {dir:'out',name:'beat', label:'BEAT'},
   ],
   sampler:[
-    {dir:'in', name:'trig', label:'TRIG'},
-    {dir:'out',name:'out',  label:'OUT'},
+    {dir:'in', name:'trig1', label:'T1'},
+    {dir:'in', name:'trig2', label:'T2'},
+    {dir:'in', name:'trig3', label:'T3'},
+    {dir:'in', name:'trig4', label:'T4'},
+    {dir:'in', name:'trig5', label:'T5'},
+    {dir:'in', name:'trig6', label:'T6'},
+    {dir:'in', name:'trig7', label:'T7'},
+    {dir:'in', name:'trig8', label:'T8'},
+    {dir:'out',name:'out',   label:'OUT'},
+  ],
+  split:[
+    {dir:'in',  name:'in',   label:'IN'},
+    {dir:'out', name:'outL', label:'L'},
+    {dir:'out', name:'outR', label:'R'},
+  ],
+  merge:[
+    {dir:'in',  name:'inL', label:'L'},
+    {dir:'in',  name:'inR', label:'R'},
+    {dir:'out', name:'out', label:'OUT'},
+  ],
+  looper:[
+    {dir:'in',  name:'inL',  label:'IN L'},
+    {dir:'in',  name:'inR',  label:'IN R'},
+    {dir:'out', name:'outL', label:'OUT L'},
+    {dir:'out', name:'outR', label:'OUT R'},
   ],
   splice:[
     {dir:'in', name:'inL',  label:'IN L'},
@@ -2783,14 +2870,13 @@ function switchTab(tab){
   localStorage.setItem('jj-active-tab',tab);
   if(tab!=='tuner') stopAllTones();
   if(tab!=='rack') { stopAllPatches(); joogStop(); }
-  kbTabActive = (tab==='keys');
+  kbTabActive = true;
   joogTabActive = (tab==='rack');
   if(tab==='rack'){
     if(joogInitialized) setTimeout(startJoogScope, 80);
     if(joogInitialized&&!joogVoice) setTimeout(()=>joogInitVoice(joogLastFreq||joogFreqFromMidi(60)),100);
   }
   else stopJoogScope();
-  if(tab==='keys') setTimeout(drawLoopViz,50);
 }
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
@@ -3524,7 +3610,7 @@ function makeRack(name){
 
 function makeRackMod(type,x,y){
   const def=MOD_DEFS[type]||{};
-  const w=type==='joog'?860:type==='abacus'?300:type==='swells'?380:type==='capture'?230:type==='rec'?200:type==='clock'?180:type==='sampler'?310:type==='splice'?360:null;
+  const w=type==='joog'?860:type==='abacus'?300:type==='swells'?380:type==='capture'?230:type==='rec'?200:type==='clock'?180:type==='sampler'?360:type==='splice'?360:type==='looper'?260:type==='split'?160:type==='merge'?160:null;
   return {
     id:'rm_'+(++rackIdSeq)+'_'+Math.random().toString(36).slice(2,5),
     type, x:x||80, y:y||80,
@@ -4302,98 +4388,293 @@ function buildClockBody(mod,body,rack){
 }
 
 function samplerInitNodes(ctx,rack,mod){
-  const outGain=ctx.createGain(); outGain.gain.value=(mod.params.vol??80)/100;
-  const trigIn=ctx.createGain(); trigIn.gain.value=1;
-  const trigAnlsr=ctx.createAnalyser(); trigAnlsr.fftSize=32;
-  trigIn.connect(trigAnlsr);
-  if(!mod.params.steps) mod.params.steps=[false,false,false,false,false,false,false,false];
-  const stepActive=mod.params.steps;
-  let buf=null,curStep=0,prevTrigHigh=false,dead=false;
-  const trigBuf=new Uint8Array(trigAnlsr.fftSize);
+  const outGain=ctx.createGain(); outGain.gain.value=1;
+  const bufs=new Array(8).fill(null);
+  const trigIns=[],trigAnlsrs=[];
+  const prevHighs=new Array(8).fill(false);
+  let dead=false;
+  for(let i=0;i<8;i++){
+    const tg=ctx.createGain(); tg.gain.value=1;
+    const ta=ctx.createAnalyser(); ta.fftSize=32;
+    tg.connect(ta); trigIns.push(tg); trigAnlsrs.push(ta);
+  }
+  const trigBuf=new Uint8Array(32);
+  const play=i=>{
+    if(!bufs[i]) return;
+    const src=ctx.createBufferSource(); src.buffer=bufs[i];
+    src.connect(outGain); src.start();
+    src.onended=()=>{try{src.disconnect();}catch(e){}};
+    const tile=document.getElementById('rmod_'+mod.id);
+    if(tile){
+      const btn=tile.querySelectorAll('.samp2-btn.trig')[i];
+      if(btn){btn.classList.add('playing');setTimeout(()=>btn.classList.remove('playing'),150);}
+    }
+  };
   const tick=()=>{
     if(dead) return;
-    trigAnlsr.getByteTimeDomainData(trigBuf);
-    let peak=0; for(let i=0;i<trigBuf.length;i++) peak=Math.max(peak,Math.abs(trigBuf[i]-128));
-    const trigHigh=(peak/128)>0.5;
-    if(trigHigh&&!prevTrigHigh){
-      curStep=(curStep+1)%8;
-      if(buf&&stepActive[curStep]){
-        const src=ctx.createBufferSource(); src.buffer=buf;
-        src.playbackRate.value=mod.params.rate||1;
-        src.connect(outGain); src.start();
-        src.onended=()=>{try{src.disconnect();}catch(e){}};
-      }
-      const tile=document.getElementById('rmod_'+mod.id);
-      if(tile){
-        tile.querySelectorAll('.samp-step').forEach((el,i)=>el.classList.toggle('playing',i===curStep&&stepActive[curStep]));
-        setTimeout(()=>{if(tile)tile.querySelectorAll('.samp-step').forEach(el=>el.classList.remove('playing'));},120);
-      }
+    for(let i=0;i<8;i++){
+      trigAnlsrs[i].getByteTimeDomainData(trigBuf);
+      let peak=0; for(let j=0;j<trigBuf.length;j++) peak=Math.max(peak,Math.abs(trigBuf[j]-128));
+      const high=(peak/128)>0.5;
+      if(high&&!prevHighs[i]) play(i);
+      prevHighs[i]=high;
     }
-    prevTrigHigh=trigHigh;
     if(!dead) setTimeout(tick,32);
   };
   tick();
+  const _inputs={};
+  for(let i=0;i<8;i++) _inputs[`trig${i+1}`]=trigIns[i];
   rack._nodes.set(mod.id,{
-    input:null,_inputs:{trig:trigIn},output:outGain,
-    _setBuffer:ab=>{buf=ab;},
-    cleanup:()=>{dead=true;try{trigIn.disconnect();}catch(e){}try{trigAnlsr.disconnect();}catch(e){}try{outGain.disconnect();}catch(e){}},
+    input:null, _inputs, output:outGain,
+    _setBuffer:(i,ab)=>{bufs[i]=ab;},
+    _clearBuffer:i=>{bufs[i]=null;},
+    _play:i=>play(i),
+    cleanup:()=>{
+      dead=true;
+      trigIns.forEach(t=>{try{t.disconnect();}catch(e){}});
+      trigAnlsrs.forEach(a=>{try{a.disconnect();}catch(e){}});
+      try{outGain.disconnect();}catch(e){}
+    },
   });
 }
 
 function buildSamplerBody(mod,body,rack){
-  const p=mod.params;
-  if(!p.steps) p.steps=[false,false,false,false,false,false,false,false];
-  const panel=document.createElement('div'); panel.className='samp-panel';
-  const fileInput=document.createElement('input'); fileInput.type='file'; fileInput.accept='audio/*'; fileInput.style.display='none';
-  panel.appendChild(fileInput);
-  const loadBtn=document.createElement('button'); loadBtn.className='samp-load-btn'; loadBtn.textContent='LOAD SAMPLE'; panel.appendChild(loadBtn);
-  const filenameLbl=document.createElement('div'); filenameLbl.className='samp-filename'; filenameLbl.textContent='(no sample)'; panel.appendChild(filenameLbl);
-  loadBtn.addEventListener('click',()=>fileInput.click());
-  fileInput.addEventListener('change',()=>{
-    const file=fileInput.files[0]; if(!file) return;
-    filenameLbl.textContent=file.name;
-    const reader=new FileReader();
-    reader.onload=e=>{
-      getCtx().decodeAudioData(e.target.result.slice(0),decoded=>{
-        rack._nodes.get(mod.id)?._setBuffer?.(decoded);
-      },()=>{filenameLbl.textContent='decode error';});
-    };
-    reader.readAsArrayBuffer(file);
-  });
-  const grid=document.createElement('div'); grid.className='samp-grid';
+  const panel=document.createElement('div'); panel.className='samp2-panel';
+  const fileInputs=[];
   for(let i=0;i<8;i++){
-    const btn=document.createElement('button'); btn.className='samp-step'; btn.textContent=i+1;
-    if(p.steps[i]) btn.classList.add('active');
-    btn.addEventListener('click',()=>{p.steps[i]=!p.steps[i];btn.classList.toggle('active',p.steps[i]);});
-    grid.appendChild(btn);
-  }
-  panel.appendChild(grid);
-  const buildKnob=(label,paramKey,minVal,maxVal)=>{
-    const wrap=document.createElement('div'); wrap.className='samp-knob-wrap';
-    const knob=document.createElement('div'); knob.className='samp-knob';
-    const tick=document.createElement('div'); tick.className='samp-knob-tick'; knob.appendChild(tick);
-    const lbl=document.createElement('div'); lbl.className='samp-knob-lbl'; lbl.textContent=label;
-    wrap.appendChild(knob); wrap.appendChild(lbl);
-    let pos=Math.round(((p[paramKey]??minVal)-minVal)/(maxVal-minVal)*100);
-    const updTick=v=>{tick.style.transform=`translateX(-50%) rotate(${(v/100)*270-135}deg)`;};
-    updTick(pos);
-    knob.addEventListener('mousedown',e=>{
-      e.preventDefault(); const sy=e.clientY,sp=pos;
-      const mv=ev=>{
-        pos=Math.max(0,Math.min(100,sp-(ev.clientY-sy)*0.8));
-        updTick(pos); p[paramKey]=minVal+(pos/100)*(maxVal-minVal);
-        if(paramKey==='vol'){const n=rack._nodes.get(mod.id);if(n?.output)n.output.gain.value=p[paramKey]/100;}
+    const fi=document.createElement('input'); fi.type='file'; fi.accept='audio/*'; fi.style.display='none';
+    panel.appendChild(fi); fileInputs.push(fi);
+    const slot=document.createElement('div'); slot.className='samp2-slot';
+    const num=document.createElement('div'); num.className='samp2-num'; num.textContent=i+1;
+    const nameLbl=document.createElement('div'); nameLbl.className='samp2-name'; nameLbl.textContent='—';
+    const loadBtn=document.createElement('button'); loadBtn.className='samp2-btn load'; loadBtn.textContent='LOAD';
+    const clearBtn=document.createElement('button'); clearBtn.className='samp2-btn clear'; clearBtn.textContent='CLR';
+    const trigBtn=document.createElement('button'); trigBtn.className='samp2-btn trig'; trigBtn.textContent='▶';
+    slot.appendChild(num); slot.appendChild(nameLbl); slot.appendChild(loadBtn); slot.appendChild(clearBtn); slot.appendChild(trigBtn);
+    panel.appendChild(slot);
+    const idx=i;
+    loadBtn.addEventListener('click',()=>fi.click());
+    fi.addEventListener('change',()=>{
+      const file=fi.files[0]; if(!file) return;
+      nameLbl.textContent=file.name.replace(/\.[^.]+$/,'');
+      nameLbl.classList.add('loaded');
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        getCtx().decodeAudioData(ev.target.result.slice(0),decoded=>{
+          rack._nodes.get(mod.id)?._setBuffer?.(idx,decoded);
+        },()=>{nameLbl.textContent='err';nameLbl.classList.remove('loaded');});
       };
-      const up=()=>{window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
-      window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+      reader.readAsArrayBuffer(file);
     });
-    return wrap;
-  };
-  const knobRow=document.createElement('div'); knobRow.className='samp-knob-row';
-  knobRow.appendChild(buildKnob('RATE','rate',0.25,4));
-  knobRow.appendChild(buildKnob('VOL','vol',0,100));
-  panel.appendChild(knobRow);
+    clearBtn.addEventListener('click',()=>{
+      rack._nodes.get(mod.id)?._clearBuffer?.(idx);
+      nameLbl.textContent='—'; nameLbl.classList.remove('loaded');
+    });
+    trigBtn.addEventListener('click',()=>rack._nodes.get(mod.id)?._play?.(idx));
+  }
+  const stopRow=document.createElement('div'); stopRow.className='samp2-stop-row';
+  const stopAllBtn=document.createElement('button'); stopAllBtn.className='samp2-stop-btn'; stopAllBtn.textContent='■ STOP ALL';
+  stopRow.appendChild(stopAllBtn); panel.appendChild(stopRow);
+  stopAllBtn.addEventListener('click',()=>{
+    const nodes=rack._nodes.get(mod.id); if(!nodes) return;
+    // Rebuild output gain to stop all playing sounds
+    rackRebuildModNodes(rack,mod);
+  });
   body.appendChild(panel);
+}
+
+function splitInitNodes(ctx,rack,mod){
+  const inGain=ctx.createGain(); inGain.gain.value=1;
+  const splitter=ctx.createChannelSplitter(2);
+  const outL=ctx.createGain(); outL.gain.value=1;
+  const outR=ctx.createGain(); outR.gain.value=1;
+  inGain.connect(splitter);
+  splitter.connect(outL,0); splitter.connect(outR,1);
+  rack._nodes.set(mod.id,{
+    input:inGain, output:outL, _outputs:{outL,outR},
+    cleanup:()=>{try{inGain.disconnect();splitter.disconnect();outL.disconnect();outR.disconnect();}catch(e){}},
+  });
+}
+
+function mergeInitNodes(ctx,rack,mod){
+  const inL=ctx.createGain(); inL.gain.value=1;
+  const inR=ctx.createGain(); inR.gain.value=1;
+  const merger=ctx.createChannelMerger(2);
+  const outGain=ctx.createGain(); outGain.gain.value=1;
+  inL.connect(merger,0,0); inR.connect(merger,0,1);
+  merger.connect(outGain);
+  rack._nodes.set(mod.id,{
+    input:inL, _inputs:{inL,inR}, output:outGain,
+    cleanup:()=>{try{inL.disconnect();inR.disconnect();merger.disconnect();outGain.disconnect();}catch(e){}},
+  });
+}
+
+function looperInitNodes(ctx,rack,mod){
+  const inL=ctx.createGain(); inL.gain.value=1;
+  const inR=ctx.createGain(); inR.gain.value=1;
+  const inMerger=ctx.createChannelMerger(2);
+  inL.connect(inMerger,0,0); inR.connect(inMerger,0,1);
+  const outL=ctx.createGain(); outL.gain.value=1;
+  const outR=ctx.createGain(); outR.gain.value=1;
+  const loopSplitter=ctx.createChannelSplitter(2);
+  loopSplitter.connect(outL,0); loopSplitter.connect(outR,1);
+  let loopBuf=null, loopSrc=null, recorder=null, recChunks=[], dead=false;
+  let posRaf=null, _onStatus=null;
+  const stopLoop=()=>{
+    if(loopSrc){try{loopSrc.stop();loopSrc.disconnect();}catch(e){}loopSrc=null;}
+    if(posRaf){cancelAnimationFrame(posRaf);posRaf=null;}
+    _onStatus?.('stopped');
+  };
+  const startLoop=()=>{
+    if(!loopBuf) return;
+    stopLoop();
+    loopSrc=ctx.createBufferSource();
+    loopSrc.buffer=loopBuf; loopSrc.loop=true;
+    loopSrc.connect(loopSplitter);
+    loopSrc.start();
+    _onStatus?.('playing');
+  };
+  const startRec=onStatus=>{
+    if(recorder) return;
+    _onStatus=onStatus;
+    recChunks=[];
+    const proc=ctx.createScriptProcessor(4096,2,2);
+    proc.onaudioprocess=e=>{
+      if(!recorder) return;
+      recChunks.push({L:new Float32Array(e.inputBuffer.getChannelData(0)),R:new Float32Array(e.inputBuffer.getChannelData(1))});
+    };
+    const sink=ctx.createGain(); sink.gain.value=0;
+    inMerger.connect(proc); proc.connect(sink); sink.connect(ctx.destination);
+    recorder={proc,sink};
+    onStatus?.('recording');
+  };
+  const stopRec=()=>{
+    if(!recorder) return;
+    const {proc,sink}=recorder;
+    try{inMerger.disconnect(proc);}catch(e){}
+    try{proc.disconnect();}catch(e){}
+    try{sink.disconnect();}catch(e){}
+    recorder=null;
+    if(!recChunks.length){_onStatus?.('stopped');return;}
+    const total=recChunks.reduce((s,c)=>s+c.L.length,0);
+    const nb=ctx.createBuffer(2,total,ctx.sampleRate);
+    let off=0; for(const c of recChunks){nb.getChannelData(0).set(c.L,off);nb.getChannelData(1).set(c.R,off);off+=c.L.length;}
+    loopBuf=nb;
+    startLoop();
+  };
+  rack._nodes.set(mod.id,{
+    input:inL, _inputs:{inL,inR},
+    output:outL, _outputs:{outL,outR},
+    _startRec:startRec, _stopRec:stopRec,
+    _startLoop:startLoop, _stopLoop:stopLoop,
+    _getLoopBuf:()=>loopBuf,
+    _clearLoop:()=>{stopLoop();loopBuf=null;_onStatus?.('empty');},
+    cleanup:()=>{
+      dead=true; stopLoop();
+      if(recorder){try{inMerger.disconnect(recorder.proc);}catch(e){}try{recorder.proc.disconnect();}catch(e){}try{recorder.sink?.disconnect();}catch(e){}}
+      try{inL.disconnect();inR.disconnect();inMerger.disconnect();loopSplitter.disconnect();outL.disconnect();outR.disconnect();}catch(e){}
+    },
+  });
+}
+
+function buildSplitBody(mod,body,rack){
+  const d=document.createElement('div'); d.className='splitmerge-body';
+  const icon=document.createElement('div'); icon.className='splitmerge-icon'; icon.textContent='⑂';
+  const lbl=document.createElement('div'); lbl.className='splitmerge-lbl'; lbl.textContent='Stereo → L / R';
+  d.appendChild(icon); d.appendChild(lbl); body.appendChild(d);
+}
+
+function buildMergeBody(mod,body,rack){
+  const d=document.createElement('div'); d.className='splitmerge-body';
+  const icon=document.createElement('div'); icon.className='splitmerge-icon'; icon.textContent='⑁';
+  const lbl=document.createElement('div'); lbl.className='splitmerge-lbl'; lbl.textContent='L / R → Stereo';
+  d.appendChild(icon); d.appendChild(lbl); body.appendChild(d);
+}
+
+function buildLooperBody(mod,body,rack){
+  const panel=document.createElement('div'); panel.className='looper-panel';
+  const canvasWrap=document.createElement('div'); canvasWrap.className='looper-canvas-wrap';
+  const canvas=document.createElement('canvas'); canvas.className='looper-canvas'; canvas.width=220; canvas.height=36;
+  canvasWrap.appendChild(canvas);
+  const statusLbl=document.createElement('div'); statusLbl.className='looper-status'; statusLbl.textContent='EMPTY';
+  const durLbl=document.createElement('div'); durLbl.className='looper-dur'; durLbl.textContent='—';
+  const btnRow=document.createElement('div'); btnRow.className='looper-btn-row';
+  const recBtn=document.createElement('button'); recBtn.className='looper-btn rec'; recBtn.textContent='⏺ REC';
+  const playBtn=document.createElement('button'); playBtn.className='looper-btn play'; playBtn.textContent='▶ PLAY';
+  const stopBtn=document.createElement('button'); stopBtn.className='looper-btn'; stopBtn.textContent='■ STOP';
+  const clearBtn=document.createElement('button'); clearBtn.className='looper-btn'; clearBtn.textContent='✕ CLR';
+  btnRow.appendChild(recBtn); btnRow.appendChild(playBtn); btnRow.appendChild(stopBtn); btnRow.appendChild(clearBtn);
+  panel.appendChild(canvasWrap); panel.appendChild(statusLbl); panel.appendChild(durLbl); panel.appendChild(btnRow);
+  body.appendChild(panel);
+
+  let isRec=false;
+  const fmtSec=s=>s!=null?s.toFixed(2)+'s':'—';
+  const drawWave=buf=>{
+    const ctx2=canvas.getContext('2d');
+    const W=canvas.width,H=canvas.height;
+    ctx2.clearRect(0,0,W,H);
+    if(!buf){ctx2.fillStyle='rgba(0,206,201,0.1)';ctx2.fillRect(0,H/2-0.5,W,1);return;}
+    const data=buf.getChannelData(0);
+    const step=data.length/W;
+    ctx2.fillStyle='#00cec9';
+    for(let x=0;x<W;x++){
+      const s0=Math.floor(x*step),s1=Math.ceil((x+1)*step);
+      let mn=1,mx=-1;
+      for(let i=s0;i<s1&&i<data.length;i++){if(data[i]<mn)mn=data[i];if(data[i]>mx)mx=data[i];}
+      const yT=Math.round((1-mx)/2*H),yB=Math.round((1-mn)/2*H);
+      ctx2.fillRect(x,yT,1,Math.max(1,yB-yT));
+    }
+  };
+  const setStatus=s=>{
+    if(s==='recording'){statusLbl.textContent='● REC';statusLbl.style.color='#ff5050';}
+    else if(s==='playing'){statusLbl.textContent='▶ PLAYING';statusLbl.style.color='#00cec9';}
+    else if(s==='stopped'){
+      statusLbl.textContent='READY';statusLbl.style.color='';
+      const lb=rack._nodes.get(mod.id)?._getLoopBuf?.();
+      durLbl.textContent=lb?fmtSec(lb.duration):'—';
+      drawWave(lb);
+    }
+    else if(s==='empty'){statusLbl.textContent='EMPTY';statusLbl.style.color='';durLbl.textContent='—';drawWave(null);}
+  };
+  drawWave(null);
+
+  recBtn.addEventListener('click',()=>{
+    const nodes=rack._nodes.get(mod.id);
+    if(!isRec){
+      isRec=true; recBtn.classList.add('active'); recBtn.textContent='■ STOP REC';
+      playBtn.disabled=true; stopBtn.disabled=true; clearBtn.disabled=true;
+      nodes?._startRec?.(setStatus);
+    } else {
+      isRec=false; recBtn.classList.remove('active'); recBtn.textContent='⏺ REC';
+      playBtn.disabled=false; stopBtn.disabled=false; clearBtn.disabled=false;
+      nodes?._stopRec?.();
+    }
+  });
+  playBtn.addEventListener('click',()=>{
+    rack._nodes.get(mod.id)?._startLoop?.();
+    playBtn.classList.add('active'); statusLbl.textContent='▶ PLAYING'; statusLbl.style.color='#00cec9';
+  });
+  stopBtn.addEventListener('click',()=>{
+    rack._nodes.get(mod.id)?._stopLoop?.();
+    playBtn.classList.remove('active');
+  });
+  clearBtn.addEventListener('click',()=>{
+    rack._nodes.get(mod.id)?._clearLoop?.();
+    playBtn.classList.remove('active');
+    setStatus('empty');
+  });
+}
+
+let kbModInitialized=false;
+function buildKeyboardBody(mod,body,rack){
+  const existing=document.getElementById('panel-keys');
+  if(existing){
+    body.appendChild(existing);
+  } else {
+    const kbDiv=document.createElement('div'); kbDiv.id='panel-keys';
+    body.appendChild(kbDiv);
+  }
+  if(!kbModInitialized){ kbModInitialized=true; setTimeout(()=>initKeyboard(),0); }
 }
 
 function spliceInitNodes(ctx,rack,mod){
@@ -4922,8 +5203,24 @@ function rackInitModNodes(ctx,rack,mod){
     samplerInitNodes(ctx,rack,mod);
     return;
   }
+  if(mod.type==='split'){
+    splitInitNodes(ctx,rack,mod);
+    return;
+  }
+  if(mod.type==='merge'){
+    mergeInitNodes(ctx,rack,mod);
+    return;
+  }
+  if(mod.type==='looper'){
+    looperInitNodes(ctx,rack,mod);
+    return;
+  }
   if(mod.type==='splice'){
     spliceInitNodes(ctx,rack,mod);
+    return;
+  }
+  if(mod.type==='keys'){
+    rack._nodes.set(mod.id,{input:null,output:null,cleanup:()=>{}});
     return;
   }
   const nodes=createModuleNodes(ctx,mod,440);
@@ -5017,7 +5314,7 @@ function rackCableCreate(rack,fromModId,toModId,fromJack,toJack){
   fromJack=fromJack||'out'; toJack=toJack||'in';
   const existing=rack.cables.find(c=>c.toMod===toModId&&(c.toJack||'in')===toJack);
   const toMod=rack.modules.find(m=>m.id===toModId);
-  if(existing&&toMod?.type!=='spkr') rackCableRemove(rack,existing.id);
+  if(existing&&toMod?.type!=='spkr'&&toMod?.type!=='merge'&&toMod?.type!=='looper'&&toMod?.type!=='sampler') rackCableRemove(rack,existing.id);
   const cable={id:'cable_'+(++rackIdSeq),fromMod:fromModId,fromJack,toMod:toModId,toJack};
   rack.cables.push(cable);
   const fn=rack._nodes.get(fromModId),tn=rack._nodes.get(toModId);
@@ -5111,6 +5408,171 @@ function makeDraggableMod(rack,el,mod,handle){
   });
 }
 
+const MODULE_HELP={
+  osc:{name:'Oscillator',sections:[
+    {title:'OUT',text:'Audio output — connect to effects or mixer.'},
+    {title:'Controls',text:'WAVE: waveform shape (sine/square/saw/tri). FREQ: base frequency in Hz. OCT: octave shift. DETUNE: fine pitch offset in cents. LEVEL: output gain.'},
+    {title:'Tip',text:'Pitch is controlled via QWERTY keyboard or MIDI when connected to Joog.'},
+  ]},
+  osc2:{name:'Osc 2',sections:[
+    {title:'OUT',text:'Audio output.'},
+    {title:'Controls',text:'Same as Oscillator. Default is detuned square wave one octave below, for fat layered sounds.'},
+  ]},
+  noise:{name:'Noise',sections:[
+    {title:'OUT',text:'Audio output.'},
+    {title:'Controls',text:'COLOR: white (all frequencies equal) or pink (bassier). LEVEL: output gain.'},
+  ]},
+  tubeosc:{name:'Tube Osc',sections:[
+    {title:'OUT',text:'Audio output — warm, overdriven oscillator tone.'},
+    {title:'Controls',text:'FREQ: base pitch. OCT: octave offset. DRIVE: harmonic saturation. BRIGHTNESS: high-frequency content. LEVEL: output gain.'},
+  ]},
+  dfam:{name:'DFAM',sections:[
+    {title:'OUT',text:'Percussion audio output (kick/tom style).'},
+    {title:'Controls',text:'TEMPO: steps-per-minute. VCO1/VCO2: pitch of two oscillators. NOISE MIX: noise blend. CUTOFF: filter cutoff. RESONANCE: filter resonance. DECAY: envelope length. STEPS: 8-step pattern (1=on, 0=off).'},
+  ]},
+  lfo:{name:'LFO',sections:[
+    {title:'OUT',text:'Modulation output — connect to a filter, volume, or oscillator CV in.'},
+    {title:'Controls',text:'RATE: oscillation speed in Hz. DEPTH: modulation amount (0–100). WAVE: modulation shape. TARGET: what the LFO modulates when patched to Joog.'},
+  ]},
+  env:{name:'Envelope',sections:[
+    {title:'OUT',text:'Modulation output — amplitude curve triggered by gate signal.'},
+    {title:'Controls',text:'ATTACK: rise time (ms). DECAY: fall from peak (ms). SUSTAIN: held level (%). RELEASE: tail after gate-off (ms).'},
+  ]},
+  filter:{name:'Filter',sections:[
+    {title:'IN / OUT',text:'Audio in → filtered audio out.'},
+    {title:'Controls',text:'TYPE: lowpass, highpass, bandpass, notch. CUTOFF: frequency (Hz). Q: resonance / peak sharpness.'},
+  ]},
+  dist:{name:'Distortion',sections:[
+    {title:'IN / OUT',text:'Audio in → distorted audio out.'},
+    {title:'Controls',text:'DRIVE: distortion intensity. MIX: dry/wet blend. TYPE: soft (warm) or hard (aggressive) clipping.'},
+  ]},
+  delay:{name:'Delay',sections:[
+    {title:'IN / OUT',text:'Audio in → delay effect out.'},
+    {title:'Controls',text:'TIME: delay length (ms). FEEDBACK: echo decay amount. MIX: dry/wet blend.'},
+  ]},
+  reverb:{name:'Reverb',sections:[
+    {title:'IN / OUT',text:'Audio in → reverberant audio out.'},
+    {title:'Controls',text:'SIZE: room size. DECAY: reverb tail length (s). MIX: dry/wet blend.'},
+  ]},
+  chorus:{name:'Chorus',sections:[
+    {title:'IN / OUT',text:'Audio in → chorus effect out.'},
+    {title:'Controls',text:'RATE: modulation speed. DEPTH: pitch variation depth. MIX: dry/wet blend.'},
+  ]},
+  compress:{name:'Compressor',sections:[
+    {title:'IN / OUT',text:'Audio in → compressed audio out.'},
+    {title:'Controls',text:'THRESHOLD: level where compression starts (dB). RATIO: gain reduction ratio. ATK: attack time (s). REL: release time (s).'},
+  ]},
+  bitcrush:{name:'Bitcrusher',sections:[
+    {title:'IN / OUT',text:'Audio in → bit-reduced audio out.'},
+    {title:'Controls',text:'BITS: bit depth (1–16; lower = crunchier). RATE: sample rate reduction (%).'},
+  ]},
+  panner:{name:'Panner',sections:[
+    {title:'IN / OUT',text:'Audio in → panned stereo out.'},
+    {title:'Controls',text:'PAN: stereo position (−100 = full left, 0 = center, +100 = full right).'},
+  ]},
+  tremolo:{name:'Tremolo',sections:[
+    {title:'IN / OUT',text:'Audio in → amplitude-modulated audio out.'},
+    {title:'Controls',text:'RATE: tremolo speed (Hz). DEPTH: volume fluctuation amount.'},
+  ]},
+  ringmod:{name:'Ring Mod',sections:[
+    {title:'IN / OUT',text:'Audio in → ring-modulated out (metallic sidebands).'},
+    {title:'Controls',text:'MOD FREQ: carrier frequency for ring modulation. MIX: dry/wet blend.'},
+  ]},
+  stereomix:{name:'Stereo Mix',sections:[
+    {title:'IN / OUT',text:'Mono audio in → stereo out with panning and width.'},
+    {title:'Controls',text:'PAN: stereo position. LEVEL: output gain. WIDTH: stereo spread.'},
+  ]},
+  reverberator:{name:'Reverberator',sections:[
+    {title:'IN / OUT',text:'Audio in → lush convolution-style reverb out.'},
+    {title:'Controls',text:'PREDELAY: initial delay before reverb onset (ms). ROOM SIZE: reverb space size. DAMPING: high-frequency absorption. MIX: dry/wet blend.'},
+  ]},
+  combfilter:{name:'Comb Filter',sections:[
+    {title:'IN / OUT',text:'Audio in → comb-filtered out (resonant comb coloration).'},
+    {title:'Controls',text:'FREQ: comb frequency (sets spacing of peaks). FEEDBACK: resonance/feedback level. DAMP: high-frequency rolloff. MIX: dry/wet blend.'},
+  ]},
+  vol:{name:'Volume',sections:[
+    {title:'IN / OUT',text:'Audio in → level-adjusted out.'},
+    {title:'Controls',text:'LEVEL: output gain (0–100).'},
+  ]},
+  joog:{name:'Joog',sections:[
+    {title:'OUT',text:'Polyphonic synthesizer audio out.'},
+    {title:'Controls',text:'Full Joog synth UI: oscillators, filter, envelope, arpeggiator, effects, and MIDI routing all built-in.'},
+    {title:'Keyboard',text:'QWERTY keys A–K play notes. Z/X shift octave. MIDI controllers are supported via the MIDI panel.'},
+  ]},
+  spkr:{name:'Speaker',sections:[
+    {title:'IN L / IN R',text:'Stereo audio inputs — patch any source into IN L and/or IN R to monitor.'},
+    {title:'Tip',text:'The speaker is the final destination in your signal chain. You can patch multiple sources — each jack accepts one cable.'},
+  ]},
+  abacus:{name:'Abacus',sections:[
+    {title:'IN 1–4 / OUT 1–4',text:'Four independent stereo channels. Each channel has its own envelope follower or VCA.'},
+    {title:'Controls',text:'CH1/CH4 RISE/FALL: envelope follower attack and release. CH2/CH3 ATTEN: manual attenuation level. CYCLE: latch the envelope follower into loop mode.'},
+  ]},
+  swells:{name:'Swells',sections:[
+    {title:'IN / OUT',text:'Audio in → reverb-based swell/freeze out.'},
+    {title:'Controls',text:'PREDLY: pre-delay. SIZE/DECAY: reverb space. LO DAMP/HI DAMP: frequency damping. EBB/FLOW: swell fade-in/out. EQ: tonal balance. INPUT/MIX: levels. MODEL: algorithm bank. FREEZE: sustain reverb tail. REVERSE: time-reversed reverb. BURST: one-shot swell.'},
+  ]},
+  capture:{name:'Capture',sections:[
+    {title:'OUT',text:'Audio output from microphone or system audio device.'},
+    {title:'Controls',text:'MODE: switch between device (microphone/line-in) or tab audio capture. DEVICE: select input device from the list.'},
+  ]},
+  rec:{name:'Rec',sections:[
+    {title:'IN',text:'Audio input to record.'},
+    {title:'Controls',text:'⏺ REC: start recording. ■ STOP: stop and prepare download. Filename field: name the file before saving. ⬇ SAVE: download as a WAV file.'},
+  ]},
+  clock:{name:'Clock',sections:[
+    {title:'OUT',text:'Trigger pulse output — fires once per beat.'},
+    {title:'Controls',text:'BPM: tempo. START/STOP: run or halt the clock. The output sends a trigger that can drive sampler slots or other trigger-sensitive modules.'},
+  ]},
+  sampler:{name:'Sampler',sections:[
+    {title:'T1–T8 (Inputs)',text:'Trigger inputs — a high signal (>50% amplitude) fires the corresponding sample slot.'},
+    {title:'OUT',text:'Mixed audio output from all active sample voices.'},
+    {title:'Controls',text:'Each slot has: LOAD (pick a file), CLR (clear slot), ▶ TRIG (manual trigger). STOP ALL: silence all playing samples.'},
+  ]},
+  splice:{name:'Splice',sections:[
+    {title:'Controls',text:'LOAD: open an audio file. Waveform canvas: click-drag to select a region. TRIM: keep only the selected region. CUT: delete the selected region, keeping the rest. PLAY/STOP: preview the current buffer. LOOP: toggle loop. SAVE: download the edited audio as WAV.'},
+    {title:'Tip',text:'TRIM keeps the selection (like crop). CUT removes it (like delete). Use them in combination for non-destructive sample editing.'},
+  ]},
+  split:{name:'Split',sections:[
+    {title:'IN',text:'Stereo audio input.'},
+    {title:'L / R (Outputs)',text:'Left channel out and right channel out — splits a stereo signal into two separate mono paths.'},
+  ]},
+  merge:{name:'Merge',sections:[
+    {title:'L / R (Inputs)',text:'Left mono in and right mono in.'},
+    {title:'OUT',text:'Combined stereo output — merges two mono sources into one stereo signal.'},
+  ]},
+  looper:{name:'Looper',sections:[
+    {title:'IN L / IN R',text:'Stereo audio inputs — anything connected here gets captured when recording.'},
+    {title:'OUT L / OUT R',text:'Stereo looped playback outputs.'},
+    {title:'Controls',text:'⏺ REC: start recording. ■ STOP: stop recording (loop is ready). ▶ PLAY: start loop playback. ✕ CLR: clear the loop buffer.'},
+    {title:'Waveform',text:'The canvas shows the recorded loop. Playback loops continuously until stopped or cleared.'},
+  ]},
+  keys:{name:'Keys',sections:[
+    {title:'Overview',text:'Full piano keyboard with QWERTY and MIDI input — the same keyboard that was previously in the Keys tab, now as a rack module.'},
+    {title:'QWERTY',text:'Home row (A–K) plays notes. Z/X shift octave down/up.'},
+    {title:'MIDI',text:'Connect a MIDI controller via the MIDI panel inside the module. Channel and note range configurable.'},
+  ]},
+};
+
+function showModHelp(type,anchorEl){
+  document.querySelectorAll('.mod-help-overlay').forEach(e=>e.remove());
+  const help=MODULE_HELP[type];
+  if(!help) return;
+  const overlay=document.createElement('div'); overlay.className='mod-help-overlay';
+  overlay.addEventListener('click',()=>overlay.remove());
+  const pop=document.createElement('div'); pop.className='mod-help-popover';
+  pop.addEventListener('click',e=>e.stopPropagation());
+  pop.innerHTML=`<h3>${help.name}</h3>`+
+    help.sections.map(s=>`<div class="mod-help-section"><div class="mod-help-section-title">${s.title}</div><div class="mod-help-text">${s.text}</div></div>`).join('');
+  overlay.appendChild(pop);
+  document.body.appendChild(overlay);
+  const r=anchorEl.getBoundingClientRect();
+  const pw=280, ph=pop.scrollHeight||200;
+  let left=r.right+6, top=r.top;
+  if(left+pw>window.innerWidth) left=r.left-pw-6;
+  if(top+ph>window.innerHeight) top=window.innerHeight-ph-8;
+  pop.style.left=Math.max(4,left)+'px'; pop.style.top=Math.max(4,top)+'px';
+}
+
 function buildRackTile(rack,mod){
   const def=MOD_DEFS[mod.type]||{label:mod.type,color:'#555'};
   const rawJacks=RACK_JACK_DEFS[mod.type]||[];
@@ -5128,20 +5590,26 @@ function buildRackTile(rack,mod){
     (mod.type==='rec'?' rmod-rec':'')+
     (mod.type==='clock'?' rmod-clock':'')+
     (mod.type==='sampler'?' rmod-sampler':'')+
-    (mod.type==='splice'?' rmod-splice':'');
+    (mod.type==='splice'?' rmod-splice':'')+
+    (mod.type==='split'?' rmod-split':'')+
+    (mod.type==='merge'?' rmod-merge':'')+
+    (mod.type==='looper'?' rmod-looper':'')+
+    (mod.type==='keys'?' rmod-keys':'');
   el.id='rmod_'+mod.id; el.dataset.modId=mod.id;
   el.style.left=mod.x+'px'; el.style.top=mod.y+'px';
   if(mod.w) el.style.width=mod.w+'px';
   if(mod.h) el.style.height=mod.h+'px';
 
   const hdr=document.createElement('div'); hdr.className='rmod-hdr';
-  hdr.innerHTML=`<div class="rmod-color-dot" style="background:${def.color}"></div><span class="rmod-name-lbl">${def.label||mod.type}</span><button class="rmod-del-btn" title="Remove">✕</button>`;
+  hdr.innerHTML=`<div class="rmod-color-dot" style="background:${def.color}"></div><span class="rmod-name-lbl">${def.label||mod.type}</span><button class="mod-help-btn" title="Help">?</button><button class="rmod-del-btn" title="Remove">✕</button>`;
   hdr.querySelector('.rmod-del-btn').addEventListener('click',e=>{e.stopPropagation();rackRemoveModule(rack,mod.id);});
+  hdr.querySelector('.mod-help-btn').addEventListener('click',e=>{e.stopPropagation();showModHelp(mod.type,e.currentTarget);});
 
   const body=document.createElement('div'); body.className='rmod-body';
   if(mod.type==='joog'){
-    const joogDiv=document.createElement('div'); joogDiv.id='panel-joog';
-    body.appendChild(joogDiv);
+    const existingJoog=document.getElementById('panel-joog');
+    if(existingJoog){ body.appendChild(existingJoog); }
+    else { const joogDiv=document.createElement('div'); joogDiv.id='panel-joog'; body.appendChild(joogDiv); }
     setTimeout(()=>{
       if(!joogInitialized){ joogInitialized=true; initJoog(); }
       syncJoogBusDirect();
@@ -5162,14 +5630,22 @@ function buildRackTile(rack,mod){
     buildClockBody(mod,body,rack);
   } else if(mod.type==='sampler'){
     buildSamplerBody(mod,body,rack);
+  } else if(mod.type==='split'){
+    buildSplitBody(mod,body,rack);
+  } else if(mod.type==='merge'){
+    buildMergeBody(mod,body,rack);
+  } else if(mod.type==='looper'){
+    buildLooperBody(mod,body,rack);
   } else if(mod.type==='splice'){
     buildSpliceBody(mod,body,rack);
+  } else if(mod.type==='keys'){
+    buildKeyboardBody(mod,body,rack);
   } else {
     body.innerHTML=buildModBody(mod);
   }
 
   let jackSec;
-  if(mod.type==='abacus'||mod.type==='swells'||mod.type==='capture'||mod.type==='rec'||mod.type==='clock'||mod.type==='sampler'||mod.type==='splice'||mod.type==='spkr'){
+  if(mod.type==='abacus'||mod.type==='swells'||mod.type==='capture'||mod.type==='rec'||mod.type==='clock'||mod.type==='sampler'||mod.type==='splice'||mod.type==='spkr'||mod.type==='split'||mod.type==='merge'||mod.type==='looper'){
     const isSwells=mod.type!=='abacus';
     const jackCls=isSwells?'sw-jacks':'abacus-jacks';
     const itemCls=isSwells?'sw-jack':'abacus-jack';
@@ -5230,7 +5706,7 @@ function buildRackTile(rack,mod){
   });
 
   // Initialize controls (knobs, buttons, wave selectors)
-  if(mod.type!=='joog'&&mod.type!=='spkr'&&mod.type!=='abacus'&&mod.type!=='swells'&&mod.type!=='capture'&&mod.type!=='rec'&&mod.type!=='clock'&&mod.type!=='sampler'&&mod.type!=='splice'){
+  if(mod.type!=='joog'&&mod.type!=='spkr'&&mod.type!=='abacus'&&mod.type!=='swells'&&mod.type!=='capture'&&mod.type!=='rec'&&mod.type!=='clock'&&mod.type!=='sampler'&&mod.type!=='splice'&&mod.type!=='split'&&mod.type!=='merge'&&mod.type!=='looper'){
     el.querySelectorAll('.knob[data-param]').forEach(kEl=>{
       kEl.dataset.modId=mod.id;
       initKnob(kEl,v=>{mod.params[kEl.dataset.param]=v;rackLiveUpdateMod(rack,mod,kEl.dataset.param,v);});
@@ -5314,6 +5790,8 @@ function rackSave(rack){
 }
 
 function rackLoadFromData(rack,data){
+  // Rescue persistent panel nodes before tiles are removed from the DOM
+  ['panel-joog','panel-keys'].forEach(id=>{const p=document.getElementById(id);if(p)document.body.appendChild(p);});
   [...rack.modules].forEach(m=>rackRemoveModule(rack,m.id));
   rack.name=data.name||'Rack';
   const nameEl=rack._el&&rack._el.querySelector('.rack-name-inp');
@@ -5587,7 +6065,7 @@ function buildModPickerModal(){
   closeBtn.addEventListener('click',closeModPicker); hdr.appendChild(closeBtn); box.appendChild(hdr);
 
   const cats=[
-    {label:'SPECIAL', types:['joog','spkr','abacus','swells','capture','rec','clock','sampler','splice']},
+    {label:'SPECIAL', types:['joog','spkr','abacus','swells','capture','rec','clock','sampler','splice','split','merge','looper','keys']},
     {label:'SOURCES', types:['osc','osc2','noise','tubeosc','dfam']},
     {label:'CONTROL', types:['lfo','env']},
     {label:'EFFECTS', types:['filter','dist','delay','reverb','chorus','compress','bitcrush','panner','tremolo','ringmod','stereomix','reverberator','combfilter']},

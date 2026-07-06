@@ -1,6 +1,6 @@
 # Jarvis Jams
 
-Browser-based music sandbox — a step-sequencer beat machine and a guitar tuner / tone generator. No backend, no login, no install. Everything runs in the Web Audio API and persists to localStorage.
+Browser-based music sandbox — a step-sequencer beat machine, a guitar tuner / tone generator, and a drag-and-drop modular synth rack. No backend, no login, no install. Everything runs in the Web Audio API and persists to localStorage.
 
 Part of the Jarvis constellation.
 
@@ -19,6 +19,24 @@ Part of the Jarvis constellation.
 - 8 preset tunings: Standard, Drop D, Open G, Open D, DADGAD, Drop C, Half-step down, Full-step down
 - Custom tuning editor — note + octave picker per string, live Hz preview
 - Save named tunings to localStorage · Export as JSON
+
+### Rack
+
+A drag-and-drop modular synth studio — add modules, wire them together, and the whole rack serializes to localStorage.
+
+- ~30 module types, grouped by category:
+  - **Source** — Oscillator, Osc 2, Noise, Tube Osc
+  - **Control** — Envelope, LFO
+  - **Effect** — Filter, Distortion, Delay, Reverb, Chorus, Compressor, Bitcrusher, Panner, Tremolo, Ring Mod, Stereo Mix, Reverberator, Comb Filter
+  - **Output** — Volume
+- Special modules:
+  - **Joog** — Moog Mavis-style synth voice with patch bay + 13-key rubber pad
+  - **Abacus** — dual ADSR with CV outputs
+  - **Swells** — multi-model reverb with a swell envelope
+  - **Capture** — route mic or system audio into the rack
+  - **DFAM** — percussive step voice
+  - **Sampler**, **Looper**, **Rec**, **Clock**, **Splice**, **Split** / **Merge**, **Speaker**
+- **Piano keyboard** — polyphonic voice pool, playable via on-screen keys, QWERTY, or a connected controller over **Web MIDI**
 
 ## Environments
 
